@@ -140,10 +140,14 @@
 const initialUsers = [
   { username: "regan.beaver@agora.co.nz", name: "Regan Beaver", password: "Moometrics24", role: "admin" },
   { username: "ahren.lomas@agora.co.nz", name: "Ahren lomas", password: "Moometrics24", role: "admin" },
-  { username: "Caroline@agora.co.nz", name: "Caroline Wallace", password: "dairy123", role: "admin" }
-{ username: "admin", name: "test", password: "test123", role: "admin" }
+  { username: "caroline@agora.co.nz", name: "Caroline Wallace", password: "dairy123", role: "admin" },
+  { username: "admin", name: "test", password: "test123", role: "admin" }
 ];
-if(!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify(initialUsers));
+// Always store usernames lowercased for reliable login:
+if(!localStorage.getItem("users")) {
+  const saveUsers = initialUsers.map(u => ({...u, username: u.username.toLowerCase()}));
+  localStorage.setItem("users", JSON.stringify(saveUsers));
+}
 
 // ========== Firebase Storage config for ticket upload/download =====
 const firebaseConfig = {
@@ -192,7 +196,10 @@ function logout() { curUser = null; location.reload(); }
 
 function getUsers() { return JSON.parse(localStorage.getItem("users")||"[]"); }
 function setUsers(users) { localStorage.setItem("users", JSON.stringify(users)); }
-function findUser(username) { return getUsers().find(u=>u.username.toLowerCase()===username.toLowerCase()); }
+function findUser(username) {
+  username = username.trim().toLowerCase();
+  return getUsers().find(u => u.username === username);
+}
 function doLogin() {
   let username = document.getElementById('login-user').value.trim().toLowerCase();
   let password = document.getElementById('login-pass').value;
@@ -211,7 +218,7 @@ function doSignup() {
   if(!name||!username||!password) return document.getElementById('login-msg').textContent="All fields required.";
   if(findUser(username)) return document.getElementById('login-msg').textContent="Username already exists.";
   let users = getUsers();
-  let user = {username,name,password,role:"service"};
+  let user = {username, name, password, role:"service"};
   users.push(user); setUsers(users);
   curUser = user;
   showMain();
@@ -434,7 +441,7 @@ function adminPanel() {
 function promoteUser() {
   let username = document.getElementById('promote-user').value.trim().toLowerCase();
   let users = getUsers();
-  let user = users.find(u=>u.username===username);
+  let user = users.find(u=>u.username === username);
   if(!user) return document.getElementById('promote-msg').textContent = "User not found.";
   user.role = "admin";
   setUsers(users);
