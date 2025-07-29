@@ -156,6 +156,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
 <script>
+// --- START OF SCRIPT SECTION ---
 const initialUsers = [
   { username: "regan.beaver@agora.co.nz", name: "Regan Beaver", password: "Moometrics24", role: "admin" },
   { username: "ahren.lomas@agora.co.nz", name: "Ahren lomas", password: "Moometrics24", role: "admin" },
@@ -194,7 +195,6 @@ emailjs.init(EMAILJS_PUBLIC_KEY);
     document.getElementById("logo-img").style.display = "block";
   } catch {}
 })();
-
 /* ========== DEMO AUTH ========== */
 let curUser = null;
 function showLogin() {
@@ -327,8 +327,6 @@ async function submitTicket() {
   loadOpenTicketCount();
   sendTicketEmailNotification(data);
 }
-
-// Attachments upload helper
 async function uploadFileBlob(file, ticketId) {
   let ref = storage.ref(`${ticketsFolder}/attachments/${ticketId}_${file.name}`);
   await ref.put(file);
@@ -604,7 +602,7 @@ function promoteUser() {
   document.getElementById('promote-msg').textContent = "Promoted to admin.";
 }
 
-// ----------- EMAILJS SEND NOTIFICATION FUNCTION -----------
+// ----------- EMAILJS SEND NOTIFICATION FUNCTION (WITH ALERT) -----------
 function sendTicketEmailNotification(ticket) {
   const users = getUsers();
   const assignUser = users.find(u=>u.username === ticket.assignedTo);
@@ -628,9 +626,13 @@ function sendTicketEmailNotification(ticket) {
     email_cc: email_cc
   };
 
-  // EmailJS actual send
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
-    .then(()=>{}, (err)=>{console.error("EmailJS send error", err);});
+    .then(function(response) {
+      alert("Ticket notification email sent successfully!");
+    }, function(error) {
+      alert("Error sending ticket notification email. " + (error.text||""));
+      console.error("EmailJS send error", error);
+    });
 }
 
 /* ========== SUPPORT: URL Deep Linking ========== */
@@ -647,6 +649,7 @@ function checkHashForTicket() {
     // Optionally: highlight
   }
 }
+// --- END SCRIPT SECTION ---
 </script>
 </body>
 </html>
