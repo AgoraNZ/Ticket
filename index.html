@@ -565,11 +565,17 @@ async function expandDairyTickets(dn) {
 }
 async function exportToCSV() {
   let tickets = await loadAllTickets();
-  let header = ["ID","DairyNumber","FarmName","AlertType","Priority","AssignedTo","Status","CreatedDate","ClosedDate","OpenedBy","ClosedBy","CommentsCount","HistoryCount"];
+  let header = [
+    "ID","DairyNumber","FarmName","AlertType","Priority","AssignedTo","Status",
+    "CreatedDate","ClosedDate","OpenedBy","ClosedBy",
+    "IssueDescription","CloseDescription","CommentsCount","HistoryCount"
+  ];
   let rows = [header.join(",")];
   tickets.forEach(t=>{
     let row = [
-      t.id, t.dairyNumber, t.farmName, t.alertType, t.priority, t.assignedName||"", t.status, t.createdDate, t.closedDate||"", t.openedBy, t.closedBy||"", (t.comments||[]).length, (t.history||[]).length
+      t.id, t.dairyNumber, t.farmName, t.alertType, t.priority, t.assignedName||"", t.status,
+      t.createdDate, t.closedDate||"", t.openedBy, t.closedBy||"",
+      t.issueDesc||"", t.closeComment||"", (t.comments||[]).length, (t.history||[]).length
     ];
     rows.push(row.map(x=>'"'+String(x||"").replace(/"/g,'""')+'"').join(","));
   });
