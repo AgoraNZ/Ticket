@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Agora Ticketing (Demo Auth)</title>
+  <title>Ticketing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Bootstrap -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
@@ -138,9 +138,10 @@
 /* ========== CONFIG: Preload User List for Demo ==================== */
 // These are the demo users. Edit/add more as you wish!
 const initialUsers = [
-  { username: "admin", name: "Site Admin", password: "admin", role: "admin" },
-  { username: "john", name: "John Carter", password: "test123", role: "service" },
-  { username: "alice", name: "Alice Lane", password: "dairy456", role: "service" }
+  { username: "regan.beaver@agora.co.nz", name: "Regan Beaver", password: "Moometrics24", role: "admin" },
+  { username: "ahren.lomas@agora.co.nz", name: "Ahren lomas", password: "Moometrics24", role: "admin" },
+  { username: "Caroline@agora.co.nz", name: "Caroline Wallace", password: "dairy123", role: "admin" }
+{ username: "admin", name: "test", password: "test123", role: "admin" }
 ];
 if(!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify(initialUsers));
 
