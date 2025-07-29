@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Agora Dairy Ticketing</title>
+  <title>Agora Ticketing Advanced</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Bootstrap -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
@@ -151,17 +151,11 @@
     <div id="ticket-view-modal" style="display:none;" class="mt-3"></div>
   </div>
 </div>
-
 <!-- Firebase for Storage Only -->
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
 <script>
-const EMAILJS_SERVICE_ID = "service_228tpco";
-const EMAILJS_TEMPLATE_ID = "template_9s0ckye";
-const EMAILJS_PUBLIC_KEY = "8uQgECrkNStKV41S-";
-const TICKET_URL_ROOT = "https://agoranz.github.io/Ticket/";
-
 const initialUsers = [
   { username: "regan.beaver@agora.co.nz", name: "Regan Beaver", password: "Moometrics24", role: "admin" },
   { username: "ahren.lomas@agora.co.nz", name: "Ahren lomas", password: "Moometrics24", role: "admin" },
@@ -173,7 +167,7 @@ if(!localStorage.getItem("users")) {
   localStorage.setItem("users", JSON.stringify(saveUsers));
 }
 const firebaseConfig = {
-  apiKey: "AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
+  apiKey: "AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI", // <--- YOUR KEY HERE
   authDomain: "dairy-farm-record-system.firebaseapp.com",
   projectId: "dairy-farm-record-system",
   storageBucket: "dairy-farm-record-system.appspot.com",
@@ -184,9 +178,14 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 const ticketsFolder = "Agora V1 Tickets";
 
+// EmailJS config
+const EMAILJS_SERVICE_ID = "service_228tpco";
+const EMAILJS_TEMPLATE_ID = "template_9s0ckye";
+const EMAILJS_PUBLIC_KEY = "8uQgECrkNStKV41S-";
+const TICKET_URL_ROOT = "https://agoranz.github.io/Ticket/";
+
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
-/* LOGO LOAD */
 (async function(){
   try {
     const logoRef = storage.ref("Agora Logo/2F6-1YdaEP.jpeg");
@@ -196,7 +195,7 @@ emailjs.init(EMAILJS_PUBLIC_KEY);
   } catch {}
 })();
 
-/* DEMO AUTH */
+/* ========== DEMO AUTH ========== */
 let curUser = null;
 function showLogin() {
   document.getElementById('login-box').style.display = '';
@@ -215,9 +214,9 @@ function showMain() {
   updateNavButtons();
   autoFillTicketForm();
   loadOpenTicketCount();
-  checkHashForTicket();
+  checkHashForTicket(); // deep-link support
 }
-function logout() { curUser = null; location.hash = ""; location.reload(); }
+function logout() { curUser = null; location.reload(); }
 function getUsers() { return JSON.parse(localStorage.getItem("users")||"[]"); }
 function setUsers(users) { localStorage.setItem("users", JSON.stringify(users)); }
 function findUser(username) { return getUsers().find(u => u.username === username.trim().toLowerCase()); }
@@ -251,10 +250,11 @@ function updateNavButtons() {
   document.getElementById('btn-admin').style.display = curUser.role==="admin" ? "" : "none";
 }
 
-/* TICKET FORM LOGIC */
+/* ========== Ticket Form Logic ========== */
 function autoFillTicketForm() {
   document.getElementById('service-person').value = curUser.name;
   document.getElementById('ticket-date').value = (new Date()).toISOString().substr(0,10);
+  // Populate assign-to dropdown
   let users = getUsers().filter(u=>u.role!=="admin"||curUser.role==="admin");
   let assignSel = document.getElementById('assign-to');
   assignSel.innerHTML = '';
@@ -325,9 +325,10 @@ async function submitTicket() {
   document.getElementById('ticket-form').reset();
   autoFillTicketForm();
   loadOpenTicketCount();
-  // EMAIL NOTIFICATION
   sendTicketEmailNotification(data);
 }
+
+// Attachments upload helper
 async function uploadFileBlob(file, ticketId) {
   let ref = storage.ref(`${ticketsFolder}/attachments/${ticketId}_${file.name}`);
   await ref.put(file);
@@ -339,50 +340,7 @@ async function loadOpenTicketCount() {
   document.getElementById('num-open-tix').textContent = n;
 }
 
-// ---- EMAIL NOTIFICATION ----
-function sendTicketEmailNotification(ticket) {
-  // get users
-  const users = getUsers();
-  const assignUser = users.find(u=>u.username === ticket.assignedTo);
-  const openedUser = users.find(u=>u.username === ticket.openedByUser);
-  // To: assigned user; CC: opened by user if different
-  let email_to = assignUser ? assignUser.username : "";
-  let email_cc = (assignUser && openedUser && assignUser.username !== openedUser.username) ? openedUser.username : "";
-  // Build ticket link
-  let ticket_link = TICKET_URL_ROOT + "#ticket=" + ticket.id;
-  // EmailJS send
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-    name: ticket.openedBy,
-    assigned: ticket.assignedName,
-    priority: ticket.priority,
-    email_to,
-    email_cc,
-    ticket_link,
-    farm: ticket.farmName,
-    dairy: ticket.dairyNumber,
-    alert_type: ticket.alertType === "Other" ? (ticket.alertOther || "Other") : ticket.alertType,
-    message: ticket.issueDesc,
-    time: ticket.createdDate
-  }).then(function(){
-    document.getElementById('ticket-msg').textContent += " & notification sent.";
-  },function(e){
-    document.getElementById('ticket-msg').textContent += " & email failed.";
-  });
-}
-
-/* DIRECT TICKET LINK SUPPORT */
-function checkHashForTicket() {
-  if (location.hash.startsWith("#ticket=")) {
-    let ticketId = location.hash.replace("#ticket=", "");
-    showOpenTickets().then(() => {
-      setTimeout(() => {
-        window.viewTicketDetails(ticketId, false);
-      }, 600);
-    });
-  }
-}
-
-/* TICKET LOAD/VIEW */
+/* ========== TICKET LOAD/VIEW ========= */
 async function loadAllTickets() {
   try {
     let folderRef = storage.ref(ticketsFolder);
@@ -406,16 +364,289 @@ function backToMain() {
   document.getElementById('btn-csv').style.display = "none";
 }
 
-/* Open/Closed/Summary/Filtering/Export Logic etc */
-// ...YOUR FULL LOGIC FROM BEFORE (unchanged, already included in above versions)...
+/* ========== Open/Closed/Summary ========= */
+async function showOpenTickets() {
+  document.getElementById('ticket-section').style.display="none";
+  document.getElementById('ticket-list-section').style.display="";
+  document.getElementById('btn-csv').style.display = curUser.role==="admin" ? "" : "none";
+  ticketFilterUI('open');
+}
+async function showClosedTickets() {
+  if(curUser.role!=="admin") return alert("Admins only.");
+  document.getElementById('ticket-section').style.display="none";
+  document.getElementById('ticket-list-section').style.display="";
+  document.getElementById('btn-csv').style.display = "";
+  ticketFilterUI('closed');
+}
+function ticketFilterUI(status) {
+  let users = getUsers();
+  let ctrl = `<input type="text" class="form-control search-box d-inline" id="filter-search" placeholder="Keyword">
+  <select id="filter-assignee" class="form-select search-box"><option value="">All Users</option>${users.map(u=>`<option value="${u.username}">${u.name}</option>`)}</select>
+  <select id="filter-priority" class="form-select search-box"><option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option></select>
+  <input type="date" id="filter-date" class="form-control search-box">
+  <button class="btn btn-outline" onclick="filterTickets('${status}')">Filter</button>`;
+  document.getElementById('ticket-list-controls').innerHTML = ctrl;
+  document.getElementById('filter-search').onkeydown = function(e){ if(e.key=="Enter")filterTickets(status); };
+  filterTickets(status);
+}
+async function filterTickets(status) {
+  let tickets = (await loadAllTickets()).filter(t=>t.status===status);
+  let search = (document.getElementById('filter-search')||{}).value||"";
+  let assignee = (document.getElementById('filter-assignee')||{}).value||"";
+  let priority = (document.getElementById('filter-priority')||{}).value||"";
+  let date = (document.getElementById('filter-date')||{}).value||"";
+  tickets = tickets.filter(t=>
+    (!search || JSON.stringify(t).toLowerCase().includes(search.toLowerCase())) &&
+    (!assignee || t.assignedTo===assignee) &&
+    (!priority || t.priority===priority) &&
+    (!date || (t.createdDate||"").startsWith(date))
+  );
+  renderTicketTable(tickets,status==="closed");
+}
+function renderTicketTable(tickets,isClosed) {
+  if(!tickets.length) {
+    document.getElementById('ticket-list-table').innerHTML = "<i>No tickets found.</i>"; return;
+  }
+  let group = {};
+  tickets.forEach(t=>{ if(!group[t.dairyNumber]) group[t.dairyNumber]=[]; group[t.dairyNumber].push(t); });
+  let html = `<table class="table table-bordered table-sm"><thead><tr>
+    <th>Dairy #</th><th>Farm</th><th>Alert Type</th><th>Priority</th><th>Assigned</th><th>Opened By</th><th>Date</th><th>Status</th><th></th>
+    </tr></thead><tbody>`;
+  for(let dairyNum in group) {
+    group[dairyNum].forEach(t=>{
+      html += `<tr>
+        <td><span class="ticket-link" onclick="viewTicketDetails('${t.id}','${isClosed}')">${t.dairyNumber}</span></td>
+        <td>${t.farmName}</td>
+        <td>${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}</td>
+        <td>${t.priority}</td>
+        <td>${t.assignedName||""}</td>
+        <td>${t.openedBy}</td>
+        <td>${t.createdDate||""}</td>
+        <td><span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span></td>
+        <td>${!isClosed && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="closeTicketPrompt('${t.id}')">Close</button>` : ""}</td>
+        </tr>`;
+    });
+  }
+  html += "</tbody></table>";
+  document.getElementById('ticket-list-table').innerHTML = html;
+}
+window.viewTicketDetails = async function(id,isClosed) {
+  let tickets = await loadAllTickets();
+  let t = tickets.find(t=>t.id===id);
+  if(!t) return;
+  let html = `<h5>Ticket for #${t.dairyNumber}</h5>
+    <b>Farm Name:</b> ${t.farmName}<br>
+    <b>Alert Type:</b> ${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}<br>
+    <b>Priority:</b> ${t.priority}<br>
+    <b>Assigned To:</b> ${t.assignedName||""}<br>
+    <b>Status:</b> <span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span><br>
+    <b>Issue:</b> ${t.issueDesc}<br>
+    <b>Opened by:</b> ${t.openedBy} (${t.position})<br>
+    <b>Date Opened:</b> ${t.createdDate||""}<br>
+    <b>Ticket ID:</b> ${t.id}<br>`;
+  // Attached files/photos
+  if(t.files && t.files.length){
+    html += `<div class="mt-2"><b>Files:</b> `;
+    t.files.forEach(f=>{
+      if(f.type && f.type.startsWith('image/')) html += `<a href="${f.url}" target="_blank"><img src="${f.url}" class="photo-thumb"></a> `;
+      else html += `<a href="${f.url}" target="_blank">${f.name}</a> `;
+    });
+    html += `</div>`;
+  }
+  // Comments thread
+  html += `<div class="mt-2"><b>Comments:</b><br>`;
+  (t.comments||[]).forEach(c=>{
+    html += `<div class="comment-box"><div class="comment-meta">${c.user} @ ${c.date}</div>${c.text}</div>`;
+  });
+  html += `</div>`;
+  // Add comment box
+  if(t.status==="open"){
+    html += `<div class="mt-2">
+      <textarea id="new-comment" class="form-control" rows="2" placeholder="Add internal note..."></textarea>
+      <button class="btn btn-agora mt-1" onclick="addComment('${t.id}')">Add Comment</button>
+    </div>`;
+  }
+  // Ticket history
+  html += `<div class="mt-2"><b>Ticket History:</b><br>`;
+  (t.history||[]).forEach(h=>{
+    html += `<div class="history-box">${h.action} by ${h.user} @ ${h.date}${h.details?": "+h.details:""}</div>`;
+  });
+  html += `</div>`;
+  if(t.status==="closed") html+=`<b>Closed by:</b> ${t.closedBy}<br><b>Date Closed:</b> ${t.closedDate||""}<br><b>Resolution:</b> ${t.closeComment||""}<br>`;
+  document.getElementById('ticket-view-modal').innerHTML = html;
+  document.getElementById('ticket-view-modal').style.display="";
+};
+window.addComment = async function(id) {
+  let comment = document.getElementById('new-comment').value.trim();
+  if(!comment) return;
+  let tickets = await loadAllTickets();
+  let t = tickets.find(t=>t.id===id);
+  if(!t) return;
+  t.comments = t.comments||[];
+  t.comments.push({text: comment, user: curUser.name, date: (new Date()).toLocaleString()});
+  t.history = t.history||[];
+  t.history.push({action:"Comment", user:curUser.name, date:(new Date()).toISOString(), details:comment});
+  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
+  viewTicketDetails(id, t.status==="closed");
+};
+window.closeTicketPrompt = function(id) {
+  let comment = prompt("Describe the fix / action taken:");
+  if(!comment) return;
+  closeTicket(id, comment);
+};
+async function closeTicket(id, closeComment) {
+  let tickets = await loadAllTickets();
+  let t = tickets.find(t=>t.id===id);
+  if(!t) return;
+  t.status = "closed";
+  t.closeComment = closeComment;
+  t.closedBy = curUser.name;
+  t.closedDate = (new Date()).toISOString().substr(0,10);
+  t.history = t.history||[];
+  t.history.push({action:"Closed", user:curUser.name, date:(new Date()).toISOString(), details:closeComment});
+  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
+  alert("Ticket closed.");
+  showOpenTickets();
+}
 
-/* --- Rest of ticket viewing, admin, summary, export, comments, close ticket, etc ---
-  (from your last working all-in-one version, unchanged, as in all the code above!)
-  Copy-paste everything from your previous code after the backToMain()
-  No logic is lost — this is just to keep the message under the limit and readable here.
-  If you want the literal copy-paste "entire all-in" file, just paste your last full code and I'll integrate the email+link patch directly, preserving every line.
-*/
+/* ========== SUMMARY/EXPORT ========== */
+async function showSummary() {
+  if(curUser.role!=="admin") return alert("Admins only.");
+  document.getElementById('ticket-section').style.display="none";
+  document.getElementById('ticket-list-section').style.display="";
+  document.getElementById('btn-csv').style.display = "";
+  let tickets = await loadAllTickets();
+  let group = {}; tickets.forEach(t=>{if(!group[t.dairyNumber])group[t.dairyNumber]=[];group[t.dairyNumber].push(t);});
+  let sorted = Object.keys(group).sort((a,b)=>group[b].length-group[a].length);
+  let alertCounts = {};
+  tickets.forEach(t=>{let type=t.alertType||"Unknown";alertCounts[type]=(alertCounts[type]||0)+1;});
+  document.getElementById('ticket-list-controls').innerHTML =
+    `<div class="mb-2"><b>Alert Type Breakdown:</b> ${Object.keys(alertCounts).map(k=>`${k}: <b>${alertCounts[k]}</b>`).join(" &nbsp; ")}</div>
+     <input type="text" class="form-control search-box d-inline" id="search-sum" placeholder="Search Dairy #">`;
+  document.getElementById('search-sum').oninput = function() {
+    let v=this.value.toLowerCase();
+    renderSummary(sorted.filter(dn=>dn.toLowerCase().includes(v)), group);
+  };
+  renderSummary(sorted, group);
+}
+function renderSummary(sorted, group) {
+  let html = `<table class="table table-bordered table-sm"><thead><tr>
+    <th>Dairy #</th><th>Num Tickets</th></tr></thead><tbody>`;
+  sorted.forEach(dn=>{
+    html += `<tr>
+      <td><span class="ticket-link" onclick="expandDairy('${dn}')">${dn}</span></td>
+      <td>${group[dn].length}</td>
+      </tr>`;
+  });
+  html += "</tbody></table>";
+  document.getElementById('ticket-list-table').innerHTML = html;
+  document.getElementById('ticket-view-modal').innerHTML = '';
+  document.getElementById('ticket-view-modal').style.display = "none";
+}
+window.expandDairy = function(dn) {
+  expandDairyTickets(dn);
+};
+async function expandDairyTickets(dn) {
+  let tickets = await loadAllTickets();
+  let arr = tickets.filter(t=>t.dairyNumber===dn);
+  arr.sort((a,b)=>(b.createdDate||"").localeCompare((a.createdDate||"")));
+  let html = `<h5>Tickets for Dairy #${dn}</h5><ul>`;
+  arr.forEach(t=>{
+    html += `<li>
+      <span class="ticket-link" onclick="viewTicketDetails('${t.id}',${t.status==="closed"})">${t.status==='closed'?'(Closed)':''} ${t.createdDate||""}
+        - ${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}
+      </span>
+    </li>`;
+  });
+  html += "</ul>";
+  document.getElementById('ticket-view-modal').innerHTML = html;
+  document.getElementById('ticket-view-modal').style.display = "";
+}
+async function exportToCSV() {
+  let tickets = await loadAllTickets();
+  let header = ["ID","DairyNumber","FarmName","AlertType","Priority","AssignedTo","Status","CreatedDate","ClosedDate","OpenedBy","ClosedBy","CommentsCount","HistoryCount"];
+  let rows = [header.join(",")];
+  tickets.forEach(t=>{
+    let row = [
+      t.id, t.dairyNumber, t.farmName, t.alertType, t.priority, t.assignedName||"", t.status, t.createdDate, t.closedDate||"", t.openedBy, t.closedBy||"", (t.comments||[]).length, (t.history||[]).length
+    ];
+    rows.push(row.map(x=>'"'+String(x||"").replace(/"/g,'""')+'"').join(","));
+  });
+  let csv = rows.join("\r\n");
+  let blob = new Blob([csv], {type:"text/csv"});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href = url; a.download = "tickets_export.csv";
+  document.body.appendChild(a);
+  a.click(); setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},1000);
+}
 
+/* ========== ADMIN PANEL ========== */
+function adminPanel() {
+  if(curUser.role!=="admin") return alert("Admins only.");
+  let html = `<h5>Admin: User Permissions</h5>
+    <div class="mb-2">Promote users to Admin by username:</div>
+    <input type="text" class="form-control search-box d-inline" id="promote-user" placeholder="Username">
+    <button class="btn btn-admin mt-2 ms-2" onclick="promoteUser()">Promote to Admin</button>
+    <div class="mt-2" id="promote-msg"></div>`;
+  document.getElementById('ticket-list-controls').innerHTML = html;
+  document.getElementById('ticket-list-table').innerHTML = "";
+  document.getElementById('ticket-view-modal').innerHTML = '';
+  document.getElementById('ticket-view-modal').style.display = "none";
+}
+function promoteUser() {
+  let username = document.getElementById('promote-user').value.trim().toLowerCase();
+  let users = getUsers();
+  let user = users.find(u=>u.username === username);
+  if(!user) return document.getElementById('promote-msg').textContent = "User not found.";
+  user.role = "admin";
+  setUsers(users);
+  document.getElementById('promote-msg').textContent = "Promoted to admin.";
+}
+
+// ----------- EMAILJS SEND NOTIFICATION FUNCTION -----------
+function sendTicketEmailNotification(ticket) {
+  const users = getUsers();
+  const assignUser = users.find(u=>u.username === ticket.assignedTo);
+  const openedUser = users.find(u=>u.username === (ticket.openedByUser||""));
+  let email_to = assignUser ? assignUser.username : "";
+  let email_cc = (assignUser && openedUser && assignUser.username !== openedUser.username) ? openedUser.username : "";
+  let ticketLink = TICKET_URL_ROOT + "#ticket=" + ticket.id;
+
+  let emailVars = {
+    ticket_id: ticket.id,
+    dairy_number: ticket.dairyNumber,
+    farm_name: ticket.farmName,
+    alert_type: ticket.alertType === "Other" ? (ticket.alertType + ": " + (ticket.alertOther||"")) : ticket.alertType,
+    priority: ticket.priority,
+    assigned_to: assignUser ? assignUser.name : "",
+    opened_by: ticket.openedBy,
+    created_date: ticket.createdDate,
+    description: ticket.issueDesc,
+    ticket_link: ticketLink,
+    email_to: email_to,
+    email_cc: email_cc
+  };
+
+  // EmailJS actual send
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
+    .then(()=>{}, (err)=>{console.error("EmailJS send error", err);});
+}
+
+/* ========== SUPPORT: URL Deep Linking ========== */
+window.addEventListener("hashchange", checkHashForTicket);
+function checkHashForTicket() {
+  // If hash is #ticket=xxxx
+  let hash = location.hash||"";
+  if(hash.startsWith("#ticket=")) {
+    let ticketId = hash.replace("#ticket=","");
+    // Show ticket section if not visible
+    if(document.getElementById('ticket-section').style.display==="none")
+      showMain();
+    setTimeout(()=>{viewTicketDetails(ticketId,false);}, 100); // wait for DOM
+    // Optionally: highlight
+  }
+}
 </script>
 </body>
 </html>
