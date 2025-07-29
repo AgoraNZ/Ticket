@@ -2,84 +2,62 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Agora Ticketing System</title>
+  <title>Agora Ticketing (Demo Auth)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Bootstrap & Icons -->
+  <!-- Bootstrap -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-  <!-- Custom styles and settings -->
   <style>
-    /* === CONFIGURABLE SETTINGS === */
     :root {
-      --main-bg: #f8faff;
-      --primary: #001F3F;
-      --accent: #FF851B;
-      --danger: #FF4136;
-      --success: #2ECC40;
-      --font-main: 'Segoe UI', Arial, sans-serif;
-      --logo-width: 220px;
-      --input-radius: 7px;
-      --btn-radius: 5px;
-      --max-width: 950px;
-      --text-size: 1rem;
-      --heading-size: 2rem;
-      --label-size: 1.05rem;
+      --main-bg: #f8faff; --primary: #001F3F; --accent: #FF851B;
+      --danger: #FF4136; --success: #2ECC40; --font-main: 'Segoe UI', Arial, sans-serif;
+      --logo-width: 210px; --max-width: 900px; --heading-size: 2rem;
     }
-    html, body { background: var(--main-bg); color: var(--primary); font-family: var(--font-main); font-size: var(--text-size);}
-    .container-main { background: #fff; border-radius: 18px; max-width: var(--max-width); margin: 30px auto 0 auto; padding: 32px 24px 34px 24px; box-shadow: 0 2px 32px #001F3F12; }
-    .logo-header { max-width: var(--logo-width); display:block; margin:0 auto 18px auto; }
-    h1,h2 { color: var(--accent); font-size: var(--heading-size); text-align: center; }
-    .form-label { color: var(--primary); font-size: var(--label-size); font-weight:500; }
-    .form-control, .form-select { border-radius: var(--input-radius); }
-    .btn-agora { background: var(--accent); color:#fff; border:none; border-radius:var(--btn-radius); font-weight:500; }
-    .btn-agora:hover { background: var(--danger); color:#fff; }
-    .btn-admin { background: var(--primary); color: #fff; border:none; border-radius:var(--btn-radius);}
-    .btn-admin:hover { background: #193a5e; }
+    body { background: var(--main-bg); color: var(--primary); font-family: var(--font-main);}
+    .container-main { background: #fff; border-radius: 18px; max-width: var(--max-width); margin: 32px auto 0 auto; padding: 32px 20px 34px 20px; box-shadow: 0 2px 32px #001F3F11;}
+    .logo-header { max-width: var(--logo-width); display:block; margin:0 auto 18px auto;}
+    h1 { color: var(--accent); font-size: var(--heading-size); text-align:center;}
+    .form-label { color: var(--primary); font-size: 1.08rem; font-weight:500;}
+    .form-control, .form-select { border-radius: 8px;}
+    .btn-agora { background: var(--accent); color:#fff; border:none; border-radius:5px; font-weight:500;}
+    .btn-agora:hover { background: var(--danger); color:#fff;}
+    .btn-admin { background: var(--primary); color:#fff; border:none; border-radius:5px;}
+    .btn-admin:hover { background: #193a5e;}
     .btn-outline { background: #fff; color: var(--primary); border:1px solid var(--accent);}
     .btn-outline:hover { background: var(--accent); color:#fff;}
-    .ticket-status-open { color: var(--success); font-weight:600;}
-    .ticket-status-closed { color: var(--danger);}
-    .hidden { display: none; }
-    .nav-btns { display:flex; gap:13px; justify-content:center; margin:16px 0 4px 0;}
+    .nav-btns { display:flex; gap:10px; justify-content:center; margin:16px 0 6px 0;}
     .ticket-link { cursor:pointer; text-decoration:underline; color:var(--primary);}
     .ticket-link:hover { color: var(--accent);}
-    .search-box { max-width: 260px; margin: 0 0 10px 0; }
-    .alert-summary-box { background:#f1f4f9; border-radius:7px; padding:11px 18px; margin-bottom:18px;}
-    .summary-list { font-size:1.13em; margin-top:4px; }
-    .table-smaller td, .table-smaller th { font-size:0.97em; padding:6px;}
-    .logout-link { float:right; color:#a00; text-decoration:underline; cursor:pointer; font-size:0.96em;}
-    .input-smaller { font-size: 0.97em; }
-    .mt-04 { margin-top: 0.5rem;}
-    .mt-2x { margin-top: 2.2rem;}
-    @media (max-width:600px) {
-      .container-main { padding: 9px 2vw; }
-      h1,h2 { font-size:1.5rem;}
-      .logo-header { max-width: 120px;}
-    }
+    .ticket-status-open { color: var(--success); font-weight:600;}
+    .ticket-status-closed { color: var(--danger);}
+    .search-box { max-width: 210px; margin: 0 0 10px 0;}
+    .logout-link { float:right; color:#a00; text-decoration:underline; cursor:pointer; font-size:0.97em;}
+    .mt-2x { margin-top:2.2rem;}
+    @media (max-width:600px) { .container-main {padding:9px 2vw;} h1{font-size:1.3rem;}.logo-header{max-width:120px;}}
   </style>
 </head>
 <body>
 <div class="container-main" id="main-box">
   <img id="logo-img" class="logo-header" style="display:none;">
-  <h1>Agora Dairy Service Ticketing</h1>
+  <h1>Agora Dairy Ticketing (Demo Auth)</h1>
 
   <!-- LOGIN/SIGNUP SECTION -->
   <div id="login-section">
     <div id="login-box" class="mb-3">
-      <label class="form-label">Email</label>
-      <input type="email" id="login-email" class="form-control" autocomplete="username" required>
-      <label class="form-label mt-04">Password</label>
+      <label class="form-label">Username</label>
+      <input type="text" id="login-user" class="form-control" autocomplete="username" required>
+      <label class="form-label mt-2">Password</label>
       <input type="password" id="login-pass" class="form-control" autocomplete="current-password" required>
       <button class="btn btn-agora mt-3 w-100" onclick="doLogin()">Login</button>
       <div class="mt-2 text-center">
         <span style="font-size:0.98em;">No account? <a href="#" onclick="showSignup()">Sign Up</a></span>
       </div>
     </div>
-    <div id="signup-box" class="mb-3 hidden">
+    <div id="signup-box" class="mb-3" style="display:none;">
       <label class="form-label">Full Name</label>
       <input type="text" id="signup-name" class="form-control" required>
-      <label class="form-label mt-04">Email</label>
-      <input type="email" id="signup-email" class="form-control" required>
-      <label class="form-label mt-04">Password</label>
+      <label class="form-label mt-2">Username</label>
+      <input type="text" id="signup-user" class="form-control" required>
+      <label class="form-label mt-2">Password</label>
       <input type="password" id="signup-pass" class="form-control" required>
       <button class="btn btn-agora mt-3 w-100" onclick="doSignup()">Sign Up</button>
       <div class="mt-2 text-center">
@@ -90,29 +68,29 @@
   </div>
 
   <!-- MAIN TICKET PAGE -->
-  <div id="ticket-section" class="hidden">
+  <div id="ticket-section" style="display:none;">
     <span class="logout-link" onclick="logout()">Logout</span>
     <div class="mb-2 text-center"><b id="user-position"></b></div>
     <form id="ticket-form" autocomplete="off">
-      <div class="mb-3">
+      <div class="mb-2">
         <label class="form-label">Service Person</label>
-        <input type="text" id="service-person" class="form-control input-smaller" readonly>
+        <input type="text" id="service-person" class="form-control" readonly>
       </div>
-      <div class="mb-3">
+      <div class="mb-2">
         <label class="form-label">Date</label>
-        <input type="date" id="ticket-date" class="form-control input-smaller" required>
+        <input type="date" id="ticket-date" class="form-control" required>
       </div>
-      <div class="mb-3">
+      <div class="mb-2">
         <label class="form-label">Dairy Number</label>
-        <input type="text" id="dairy-number" class="form-control input-smaller" required>
+        <input type="text" id="dairy-number" class="form-control" required>
       </div>
-      <div class="mb-3">
+      <div class="mb-2">
         <label class="form-label">Farm Name</label>
-        <input type="text" id="farm-name" class="form-control input-smaller" required>
+        <input type="text" id="farm-name" class="form-control" required>
       </div>
-      <div class="mb-3">
+      <div class="mb-2">
         <label class="form-label">Alert Type</label>
-        <select id="alert-type" class="form-select input-smaller" onchange="toggleOtherAlert()">
+        <select id="alert-type" class="form-select" onchange="toggleOtherAlert()">
           <option value="">Select...</option>
           <option value="Temperature">Temperature</option>
           <option value="Concentration">Concentration</option>
@@ -122,66 +100,64 @@
           <option value="Other">Other</option>
         </select>
       </div>
-      <div class="mb-3 hidden" id="other-alert-div">
+      <div class="mb-2" id="other-alert-div" style="display:none;">
         <label class="form-label">Other Alert Type</label>
-        <input type="text" id="alert-other" class="form-control input-smaller">
+        <input type="text" id="alert-other" class="form-control">
       </div>
-      <div class="mb-3">
+      <div class="mb-2">
         <label class="form-label">Description of Issue</label>
         <textarea id="issue-desc" class="form-control" rows="2" required></textarea>
       </div>
       <button type="button" class="btn btn-agora mt-2" onclick="submitTicket()">Create Ticket</button>
     </form>
     <div class="nav-btns mt-2x">
-      <button class="btn btn-outline" id="btn-open-tickets" onclick="showOpenTickets()">Open Tickets <span id="num-open-tix" class="badge bg-success"></span></button>
-      <button class="btn btn-outline" id="btn-closed-tickets" onclick="showClosedTickets()">Closed Tickets</button>
-      <button class="btn btn-admin" id="btn-summary" onclick="showSummary()">Summary</button>
-      <button class="btn btn-admin ms-3" id="btn-admin" onclick="adminPanel()">Admin Panel</button>
+      <button class="btn btn-outline" onclick="showOpenTickets()">Open Tickets <span id="num-open-tix" class="badge bg-success"></span></button>
+      <button class="btn btn-outline" id="btn-closed-tickets" onclick="showClosedTickets()" style="display:none;">Closed Tickets</button>
+      <button class="btn btn-admin" id="btn-summary" onclick="showSummary()" style="display:none;">Summary</button>
+      <button class="btn btn-admin ms-3" id="btn-admin" onclick="adminPanel()" style="display:none;">Admin Panel</button>
     </div>
     <div id="ticket-msg" class="mt-2" style="min-height:22px;"></div>
   </div>
 
-  <!-- TICKET VIEWS (open/closed/summary) -->
-  <div id="ticket-list-section" class="hidden">
+  <!-- TICKET VIEWS -->
+  <div id="ticket-list-section" style="display:none;">
     <div class="mb-2">
       <button class="btn btn-outline" onclick="backToMain()">Back</button>
     </div>
     <div id="ticket-list-controls" class="mb-3"></div>
     <div id="ticket-list-table"></div>
-    <div id="ticket-view-modal" class="hidden mt-3"></div>
+    <div id="ticket-view-modal" style="display:none;" class="mt-3"></div>
   </div>
 </div>
 
-<!-- Firebase and dependencies -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
+<!-- Firebase for Storage Only -->
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/3.0.3/dexie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
 <script>
-/* === CONFIGURE THIS SECTION === */
+/* ========== CONFIG: Preload User List for Demo ==================== */
+// These are the demo users. Edit/add more as you wish!
+const initialUsers = [
+  { username: "admin", name: "Site Admin", password: "adminpass", role: "admin" },
+  { username: "john", name: "John Carter", password: "test123", role: "service" },
+  { username: "alice", name: "Alice Lane", password: "dairy456", role: "service" }
+];
+if(!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify(initialUsers));
+
+// ========== Firebase Storage config for ticket upload/download =====
 const firebaseConfig = {
-  apiKey: "AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
+  apiKey: "AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI", // <--- YOUR KEY HERE
   authDomain: "dairy-farm-record-system.firebaseapp.com",
   projectId: "dairy-farm-record-system",
   storageBucket: "dairy-farm-record-system.appspot.com",
   messagingSenderId: "422124188212",
   appId: "1:422124188212:web:1bd31bee8d6e91e301d061"
 };
-const bucketPath = "Agora V1 Tickets"; // All tickets stored here
-
-// ============ APP STARTUP ==============
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
 const storage = firebase.storage();
-const usersRef = db.collection("users");
-const ticketsRef = db.collection("tickets");
+const ticketsFolder = "Agora V1 Tickets";
 
-let user = null, userProfile = null, isAdmin = false;
-
-// === Load Logo ===
+// ========== Logo Load ===========
 (async function(){
   try {
     const logoRef = storage.ref("Agora Logo/2F6-1YdaEP.jpeg");
@@ -191,89 +167,73 @@ let user = null, userProfile = null, isAdmin = false;
   } catch {}
 })();
 
+/* ========== DEMO AUTH ========== */
+let curUser = null;
 function showLogin() {
-  document.getElementById('login-box').classList.remove('hidden');
-  document.getElementById('signup-box').classList.add('hidden');
+  document.getElementById('login-box').style.display = '';
+  document.getElementById('signup-box').style.display = 'none';
   document.getElementById('login-msg').textContent = '';
 }
 function showSignup() {
-  document.getElementById('login-box').classList.add('hidden');
-  document.getElementById('signup-box').classList.remove('hidden');
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('signup-box').style.display = '';
   document.getElementById('login-msg').textContent = '';
 }
 function showMain() {
-  document.getElementById('login-section').classList.add('hidden');
-  document.getElementById('ticket-section').classList.remove('hidden');
-  document.getElementById('ticket-list-section').classList.add('hidden');
-  setTimeout(() => document.getElementById('ticket-msg').textContent = '', 1500);
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('ticket-section').style.display = '';
+  document.getElementById('ticket-list-section').style.display = 'none';
+  updateNavButtons();
+  autoFillTicketForm();
+  loadOpenTicketCount();
 }
-function showTicketList() {
-  document.getElementById('ticket-section').classList.add('hidden');
-  document.getElementById('ticket-list-section').classList.remove('hidden');
-}
+function logout() { curUser = null; location.reload(); }
 
-// ==== LOGIN/SIGNUP LOGIC ====
-async function doLogin() {
-  let email = document.getElementById('login-email').value.trim();
-  let pass = document.getElementById('login-pass').value;
-  try {
-    let res = await auth.signInWithEmailAndPassword(email, pass);
-    user = res.user;
-    await loadProfile();
+function getUsers() { return JSON.parse(localStorage.getItem("users")||"[]"); }
+function setUsers(users) { localStorage.setItem("users", JSON.stringify(users)); }
+function findUser(username) { return getUsers().find(u=>u.username.toLowerCase()===username.toLowerCase()); }
+function doLogin() {
+  let username = document.getElementById('login-user').value.trim().toLowerCase();
+  let password = document.getElementById('login-pass').value;
+  let user = findUser(username);
+  if(user && user.password === password) {
+    curUser = user;
     showMain();
-    autoFillTicketForm();
-  } catch(e) {
-    document.getElementById('login-msg').textContent = "Login failed: " + (e.message||"Check details");
+  } else {
+    document.getElementById('login-msg').textContent = "Login failed: Wrong username or password.";
   }
 }
-async function doSignup() {
+function doSignup() {
   let name = document.getElementById('signup-name').value.trim();
-  let email = document.getElementById('signup-email').value.trim();
-  let pass = document.getElementById('signup-pass').value;
-  if (!name || !email || !pass) { document.getElementById('login-msg').textContent = "All fields required."; return;}
-  try {
-    let res = await auth.createUserWithEmailAndPassword(email, pass);
-    await usersRef.doc(res.user.uid).set({
-      name, email, position: "service", created: new Date(), admin: false
-    });
-    user = res.user;
-    await loadProfile();
-    showMain();
-    autoFillTicketForm();
-  } catch(e) {
-    document.getElementById('login-msg').textContent = "Sign up failed: " + (e.message||"");
-  }
+  let username = document.getElementById('signup-user').value.trim().toLowerCase();
+  let password = document.getElementById('signup-pass').value;
+  if(!name||!username||!password) return document.getElementById('login-msg').textContent="All fields required.";
+  if(findUser(username)) return document.getElementById('login-msg').textContent="Username already exists.";
+  let users = getUsers();
+  let user = {username,name,password,role:"service"};
+  users.push(user); setUsers(users);
+  curUser = user;
+  showMain();
 }
-async function loadProfile() {
-  if (!auth.currentUser) return;
-  let doc = await usersRef.doc(auth.currentUser.uid).get();
-  userProfile = doc.exists ? doc.data() : {};
-  isAdmin = !!(userProfile.admin || userProfile.position === 'admin');
-  document.getElementById('user-position').textContent =
-    `Position: Agora Service | ${userProfile.name||"??"}${isAdmin ? " (Admin)" : ""}`;
+function updateNavButtons() {
+  document.getElementById('user-position').textContent = `Position: Agora Service | ${curUser.name} (${curUser.role})`;
+  document.getElementById('btn-closed-tickets').style.display = curUser.role==="admin" ? "" : "none";
+  document.getElementById('btn-summary').style.display = curUser.role==="admin" ? "" : "none";
+  document.getElementById('btn-admin').style.display = curUser.role==="admin" ? "" : "none";
 }
-async function logout() {
-  await auth.signOut();
-  location.reload();
-}
-auth.onAuthStateChanged(async (u) => {
-  if (u) { user = u; await loadProfile(); showMain(); autoFillTicketForm(); loadOpenTicketCount(); }
-  else { user = null; userProfile = null; isAdmin = false; showLogin(); }
-});
 
-// =========== TICKET FORM LOGIC ============
+/* ========== Ticket Form Logic ========== */
 function autoFillTicketForm() {
-  document.getElementById('service-person').value = userProfile ? userProfile.name : "";
+  document.getElementById('service-person').value = curUser.name;
   document.getElementById('ticket-date').value = (new Date()).toISOString().substr(0,10);
 }
 function toggleOtherAlert() {
   let v = document.getElementById('alert-type').value;
-  document.getElementById('other-alert-div').classList.toggle('hidden', v !== 'Other');
+  document.getElementById('other-alert-div').style.display = v==="Other"?"":"none";
 }
 async function submitTicket() {
   let data = {
-    id: uuidv4(), // unique ID
-    created: firebase.firestore.FieldValue.serverTimestamp(),
+    id: uuidv4(),
     createdDate: document.getElementById('ticket-date').value,
     dairyNumber: document.getElementById('dairy-number').value.trim(),
     farmName: document.getElementById('farm-name').value.trim(),
@@ -281,227 +241,202 @@ async function submitTicket() {
     alertOther: document.getElementById('alert-other').value.trim(),
     issueDesc: document.getElementById('issue-desc').value.trim(),
     status: "open",
-    openedBy: userProfile ? userProfile.name : "",
+    openedBy: curUser.name,
     position: "Agora Service",
-    openedUid: user ? user.uid : "",
-    closedBy: "", closedUid: "", closeComment: "", closedDate: null
+    closedBy: "", closeComment: "", closedDate: null
   };
-  if (!data.dairyNumber || !data.farmName || !data.alertType || !data.issueDesc)
-    return (document.getElementById('ticket-msg').textContent = "All required fields must be filled out.");
-  if (data.alertType === 'Other' && !data.alertOther)
-    return (document.getElementById('ticket-msg').textContent = "Specify the 'Other' alert type.");
-  await ticketsRef.doc(data.id).set(data);
+  if(!data.dairyNumber||!data.farmName||!data.alertType||!data.issueDesc)
+    return (document.getElementById('ticket-msg').textContent="All required fields must be filled out.");
+  if(data.alertType==="Other" && !data.alertOther)
+    return (document.getElementById('ticket-msg').textContent="Specify the 'Other' alert type.");
+  await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
   document.getElementById('ticket-msg').textContent = "Ticket created.";
   document.getElementById('ticket-form').reset();
   autoFillTicketForm();
   loadOpenTicketCount();
 }
 async function loadOpenTicketCount() {
-  let qs = await ticketsRef.where("status","==","open").get();
-  document.getElementById("num-open-tix").textContent = qs.size;
+  let tickets = await loadAllTickets();
+  let n = tickets.filter(t=>t.status==="open").length;
+  document.getElementById('num-open-tix').textContent = n;
 }
 
-// =========== NAV BUTTONS ==============
+/* ========== TICKET LOAD/VIEW ========= */
+async function loadAllTickets() {
+  try {
+    let folderRef = storage.ref(ticketsFolder);
+    let res = await folderRef.listAll();
+    let arr = [];
+    for(let fileRef of res.items) {
+      let url = await fileRef.getDownloadURL();
+      let data = await fetch(url).then(r=>r.json());
+      arr.push(data);
+    }
+    return arr;
+  } catch { return []; }
+}
 function backToMain() {
   showMain();
   document.getElementById('ticket-list-table').innerHTML = "";
   document.getElementById('ticket-list-controls').innerHTML = "";
-  document.getElementById('ticket-view-modal').classList.add('hidden');
+  document.getElementById('ticket-view-modal').style.display = "none";
 }
-// --- Only admin can see Closed, Summary, Admin Panel ---
-document.getElementById('btn-closed-tickets').style.display = "none";
-document.getElementById('btn-summary').style.display = "none";
-document.getElementById('btn-admin').style.display = "none";
-setInterval(() => {
-  if (isAdmin) {
-    document.getElementById('btn-closed-tickets').style.display = "";
-    document.getElementById('btn-summary').style.display = "";
-    document.getElementById('btn-admin').style.display = "";
-  }
-}, 2000);
 
-// =========== OPEN/CLOSED TICKETS =============
+/* ========== Open/Closed/Summary ========= */
 async function showOpenTickets() {
-  showTicketList();
-  document.getElementById('ticket-list-controls').innerHTML =
-    '<b>Open Tickets</b>';
-  let qs = await ticketsRef.where("status","==","open").get();
-  let arr = qs.docs.map(doc => doc.data());
-  renderTicketTable(arr, false);
+  document.getElementById('ticket-section').style.display="none";
+  document.getElementById('ticket-list-section').style.display="";
+  document.getElementById('ticket-list-controls').innerHTML = '<b>Open Tickets</b>';
+  let tickets = (await loadAllTickets()).filter(t=>t.status==="open");
+  renderTicketTable(tickets,false);
 }
 async function showClosedTickets() {
-  if (!isAdmin) return alert("Admins only.");
-  showTicketList();
+  if(curUser.role!=="admin") return alert("Admins only.");
+  document.getElementById('ticket-section').style.display="none";
+  document.getElementById('ticket-list-section').style.display="";
   document.getElementById('ticket-list-controls').innerHTML =
     `<input type="text" class="form-control search-box d-inline" id="search-closed" placeholder="Search Dairy #">
      <b>Closed Tickets</b>`;
-  document.getElementById('search-closed').oninput = async function() {
+  let all = await loadAllTickets();
+  let tickets = all.filter(t=>t.status==="closed");
+  document.getElementById('search-closed').oninput = function() {
     let search = this.value.toLowerCase();
-    let qs = await ticketsRef.where("status","==","closed").get();
-    let arr = qs.docs.map(d=>d.data()).filter(t=>t.dairyNumber.toLowerCase().includes(search));
-    renderTicketTable(arr, true);
+    renderTicketTable(tickets.filter(t=>t.dairyNumber.toLowerCase().includes(search)),true);
   };
-  let qs = await ticketsRef.where("status","==","closed").get();
-  renderTicketTable(qs.docs.map(d=>d.data()), true);
+  renderTicketTable(tickets,true);
 }
-
-function renderTicketTable(tickets, isClosed) {
-  if (!tickets.length) {
-    document.getElementById('ticket-list-table').innerHTML = "<i>No tickets found.</i>";
-    return;
+function renderTicketTable(tickets,isClosed) {
+  if(!tickets.length) {
+    document.getElementById('ticket-list-table').innerHTML = "<i>No tickets found.</i>"; return;
   }
   let group = {};
-  tickets.forEach(t => {
-    if (!group[t.dairyNumber]) group[t.dairyNumber] = [];
-    group[t.dairyNumber].push(t);
-  });
-  let html = `<table class="table table-bordered table-smaller"><thead><tr>
+  tickets.forEach(t=>{ if(!group[t.dairyNumber]) group[t.dairyNumber]=[]; group[t.dairyNumber].push(t); });
+  let html = `<table class="table table-bordered table-sm"><thead><tr>
     <th>Dairy #</th><th>Farm</th><th>Alert Type</th><th>Opened By</th><th>Date</th><th>Status</th><th></th>
     </tr></thead><tbody>`;
-  for (let dairyNum in group) {
-    group[dairyNum].forEach(t => {
+  for(let dairyNum in group) {
+    group[dairyNum].forEach(t=>{
       html += `<tr>
         <td><span class="ticket-link" onclick="viewTicketDetails('${t.id}','${isClosed}')">${t.dairyNumber}</span></td>
         <td>${t.farmName}</td>
-        <td>${t.alertType}${t.alertType==='Other' ? ": "+(t.alertOther||"") : ""}</td>
+        <td>${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}</td>
         <td>${t.openedBy}</td>
         <td>${t.createdDate||""}</td>
         <td><span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span></td>
-        <td>${!isClosed && (isAdmin||t.openedUid===user.uid) ? `<button class="btn btn-sm btn-agora" onclick="closeTicketPrompt('${t.id}')">Close</button>` : ""}</td>
+        <td>${!isClosed && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="closeTicketPrompt('${t.id}')">Close</button>` : ""}</td>
         </tr>`;
     });
   }
   html += "</tbody></table>";
   document.getElementById('ticket-list-table').innerHTML = html;
 }
-window.viewTicketDetails = async function(id, isClosed) {
-  let doc = await ticketsRef.doc(id).get();
-  if (!doc.exists) return;
-  let t = doc.data();
+window.viewTicketDetails = async function(id,isClosed) {
+  let tickets = await loadAllTickets();
+  let t = tickets.find(t=>t.id===id);
+  if(!t) return;
   let html = `<h5>Ticket for #${t.dairyNumber}</h5>
     <b>Farm Name:</b> ${t.farmName}<br>
-    <b>Alert Type:</b> ${t.alertType}${t.alertType==='Other'? ": "+(t.alertOther||""):""}<br>
+    <b>Alert Type:</b> ${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}<br>
     <b>Status:</b> <span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span><br>
     <b>Issue:</b> ${t.issueDesc}<br>
     <b>Opened by:</b> ${t.openedBy} (${t.position})<br>
     <b>Date Opened:</b> ${t.createdDate||""}<br>
     <b>Ticket ID:</b> ${t.id}<br>`;
-  if (t.status === "closed")
-    html += `<b>Closed by:</b> ${t.closedBy}<br>
-    <b>Date Closed:</b> ${t.closedDate||""}<br>
-    <b>Resolution:</b> ${t.closeComment||""}<br>`;
+  if(t.status==="closed") html+=`<b>Closed by:</b> ${t.closedBy}<br><b>Date Closed:</b> ${t.closedDate||""}<br><b>Resolution:</b> ${t.closeComment||""}<br>`;
   document.getElementById('ticket-view-modal').innerHTML = html;
-  document.getElementById('ticket-view-modal').classList.remove('hidden');
+  document.getElementById('ticket-view-modal').style.display="";
 };
-
 window.closeTicketPrompt = function(id) {
   let comment = prompt("Describe the fix / action taken:");
-  if (!comment) return;
+  if(!comment) return;
   closeTicket(id, comment);
 };
 async function closeTicket(id, closeComment) {
-  let doc = await ticketsRef.doc(id).get();
-  if (!doc.exists) return;
-  let t = doc.data();
-  await ticketsRef.doc(id).update({
-    status: "closed",
-    closeComment,
-    closedBy: userProfile ? userProfile.name : "",
-    closedUid: user ? user.uid : "",
-    closedDate: (new Date()).toISOString().substr(0,10)
-  });
+  let tickets = await loadAllTickets();
+  let t = tickets.find(t=>t.id===id);
+  if(!t) return;
+  t.status = "closed";
+  t.closeComment = closeComment;
+  t.closedBy = curUser.name;
+  t.closedDate = (new Date()).toISOString().substr(0,10);
+  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
   alert("Ticket closed.");
   showOpenTickets();
 }
 
-// ============== SUMMARY ===============
+/* ========== SUMMARY ========== */
 async function showSummary() {
-  if (!isAdmin) return alert("Admins only.");
-  showTicketList();
-  let tickets = (await ticketsRef.get()).docs.map(d=>d.data());
-  // Dairy number with most tickets first
-  let group = {};
-  tickets.forEach(t=>{
-    if (!group[t.dairyNumber]) group[t.dairyNumber]=[];
-    group[t.dairyNumber].push(t);
-  });
+  if(curUser.role!=="admin") return alert("Admins only.");
+  document.getElementById('ticket-section').style.display="none";
+  document.getElementById('ticket-list-section').style.display="";
+  let tickets = await loadAllTickets();
+  let group = {}; tickets.forEach(t=>{if(!group[t.dairyNumber])group[t.dairyNumber]=[];group[t.dairyNumber].push(t);});
   let sorted = Object.keys(group).sort((a,b)=>group[b].length-group[a].length);
-  // Alert type counts
   let alertCounts = {};
-  tickets.forEach(t=>{
-    let type = t.alertType || "Unknown";
-    alertCounts[type] = (alertCounts[type]||0)+1;
-  });
-  // Controls
+  tickets.forEach(t=>{let type=t.alertType||"Unknown";alertCounts[type]=(alertCounts[type]||0)+1;});
   document.getElementById('ticket-list-controls').innerHTML =
-    `<div class="alert-summary-box">
-      <b>Alert Type Breakdown:</b>
-      <div class="summary-list">
-      ${Object.keys(alertCounts).map(k=>`${k}: <b>${alertCounts[k]}</b>`).join(" &nbsp; ")}
-      </div>
-     </div>
+    `<div class="mb-2"><b>Alert Type Breakdown:</b> ${Object.keys(alertCounts).map(k=>`${k}: <b>${alertCounts[k]}</b>`).join(" &nbsp; ")}</div>
      <input type="text" class="form-control search-box d-inline" id="search-sum" placeholder="Search Dairy #">`;
   document.getElementById('search-sum').oninput = function() {
-    let v = this.value.toLowerCase();
+    let v=this.value.toLowerCase();
     renderSummary(sorted.filter(dn=>dn.toLowerCase().includes(v)), group);
   };
   renderSummary(sorted, group);
 }
 function renderSummary(sorted, group) {
-  let html = `<table class="table table-bordered table-smaller"><thead><tr>
-    <th>Dairy #</th><th>Num Tickets</th><th></th></tr></thead><tbody>`;
+  let html = `<table class="table table-bordered table-sm"><thead><tr>
+    <th>Dairy #</th><th>Num Tickets</th></tr></thead><tbody>`;
   sorted.forEach(dn=>{
     html += `<tr>
       <td><span class="ticket-link" onclick="expandDairy('${dn}')">${dn}</span></td>
       <td>${group[dn].length}</td>
-      <td></td>
       </tr>`;
   });
   html += "</tbody></table>";
   document.getElementById('ticket-list-table').innerHTML = html;
   document.getElementById('ticket-view-modal').innerHTML = '';
-  document.getElementById('ticket-view-modal').classList.add('hidden');
+  document.getElementById('ticket-view-modal').style.display = "none";
 }
 window.expandDairy = function(dn) {
   expandDairyTickets(dn);
 };
 async function expandDairyTickets(dn) {
-  let qs = await ticketsRef.where("dairyNumber","==",dn).get();
-  let arr = qs.docs.map(d=>d.data());
-  arr.sort((a,b)=>(b.created||"").toString().localeCompare((a.created||"").toString()));
+  let tickets = await loadAllTickets();
+  let arr = tickets.filter(t=>t.dairyNumber===dn);
+  arr.sort((a,b)=>(b.createdDate||"").localeCompare((a.createdDate||"")));
   let html = `<h5>Tickets for Dairy #${dn}</h5><ul>`;
   arr.forEach(t=>{
     html += `<li>
       <span class="ticket-link" onclick="viewTicketDetails('${t.id}',${t.status==="closed"})">${t.status==='closed'?'(Closed)':''} ${t.createdDate||""}
-        - ${t.alertType}${t.alertType==='Other'? ": "+(t.alertOther||""):""}
+        - ${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}
       </span>
     </li>`;
   });
   html += "</ul>";
   document.getElementById('ticket-view-modal').innerHTML = html;
-  document.getElementById('ticket-view-modal').classList.remove('hidden');
+  document.getElementById('ticket-view-modal').style.display = "";
 }
 
-// ========== ADMIN PANEL ===============
+/* ========== ADMIN PANEL ========== */
 function adminPanel() {
-  if (!isAdmin) return alert("Admins only.");
+  if(curUser.role!=="admin") return alert("Admins only.");
   let html = `<h5>Admin: User Permissions</h5>
-    <div class="mb-2">Promote users to Admin by email:</div>
-    <input type="text" class="form-control search-box d-inline" id="promote-email" placeholder="User Email">
+    <div class="mb-2">Promote users to Admin by username:</div>
+    <input type="text" class="form-control search-box d-inline" id="promote-user" placeholder="Username">
     <button class="btn btn-admin mt-2 ms-2" onclick="promoteUser()">Promote to Admin</button>
     <div class="mt-2" id="promote-msg"></div>`;
   document.getElementById('ticket-list-controls').innerHTML = html;
   document.getElementById('ticket-list-table').innerHTML = "";
   document.getElementById('ticket-view-modal').innerHTML = '';
-  document.getElementById('ticket-view-modal').classList.add('hidden');
+  document.getElementById('ticket-view-modal').style.display = "none";
 }
-async function promoteUser() {
-  let email = document.getElementById('promote-email').value.trim().toLowerCase();
-  if (!email) return document.getElementById('promote-msg').textContent = "Enter a user email.";
-  let snap = await usersRef.where("email","==",email).get();
-  if (!snap.size) return document.getElementById('promote-msg').textContent = "User not found.";
-  let doc = snap.docs[0];
-  await usersRef.doc(doc.id).update({ admin:true, position:"admin" });
+function promoteUser() {
+  let username = document.getElementById('promote-user').value.trim().toLowerCase();
+  let users = getUsers();
+  let user = users.find(u=>u.username===username);
+  if(!user) return document.getElementById('promote-msg').textContent = "User not found.";
+  user.role = "admin";
+  setUsers(users);
   document.getElementById('promote-msg').textContent = "Promoted to admin.";
 }
 
