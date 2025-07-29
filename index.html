@@ -259,9 +259,9 @@ function autoFillTicketForm() {
   let assignSel = document.getElementById('assign-to');
   assignSel.innerHTML = '';
   users.forEach(u=>{
-    assignSel.innerHTML += `<option value="${u.username}">${u.name}</option>`;
+    assignSel.innerHTML += `<option value="${u.username.toLowerCase()}">${u.name}</option>`;
   });
-  if(users.length && !assignSel.value) assignSel.value = users[0].username;
+  if(users.length && !assignSel.value) assignSel.value = users[0].username.toLowerCase();
   document.getElementById('ticket-file').value = '';
   document.getElementById('ticket-file-preview').innerHTML = '';
 }
@@ -287,6 +287,9 @@ document.getElementById('ticket-file').addEventListener('change', function(){
   });
 });
 async function submitTicket() {
+  let assignedToValue = document.getElementById('assign-to').value.toLowerCase();
+  let users = getUsers();
+  let assignedUserObj = users.find(u=>u.username.toLowerCase()===assignedToValue);
   let data = {
     id: uuidv4(),
     createdDate: document.getElementById('ticket-date').value,
@@ -296,8 +299,8 @@ async function submitTicket() {
     alertOther: document.getElementById('alert-other').value.trim(),
     issueDesc: document.getElementById('issue-desc').value.trim(),
     priority: document.getElementById('priority').value,
-    assignedTo: document.getElementById('assign-to').value,
-    assignedName: getUsers().find(u=>u.username===document.getElementById('assign-to').value).name,
+    assignedTo: assignedToValue,
+    assignedName: assignedUserObj ? assignedUserObj.name : "",
     status: "open",
     openedBy: curUser.name,
     openedByUser: curUser.username,
@@ -379,7 +382,7 @@ async function showClosedTickets() {
 function ticketFilterUI(status) {
   let users = getUsers();
   let ctrl = `<input type="text" class="form-control search-box d-inline" id="filter-search" placeholder="Keyword">
-  <select id="filter-assignee" class="form-select search-box"><option value="">All Users</option>${users.map(u=>`<option value="${u.username}">${u.name}</option>`)}</select>
+  <select id="filter-assignee" class="form-select search-box"><option value="">All Users</option>${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`)}</select>
   <select id="filter-priority" class="form-select search-box"><option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option></select>
   <input type="date" id="filter-date" class="form-control search-box">
   <button class="btn btn-outline" onclick="filterTickets('${status}')">Filter</button>`;
@@ -395,7 +398,7 @@ async function filterTickets(status) {
   let date = (document.getElementById('filter-date')||{}).value||"";
   tickets = tickets.filter(t=>
     (!search || JSON.stringify(t).toLowerCase().includes(search.toLowerCase())) &&
-    (!assignee || t.assignedTo===assignee) &&
+    (!assignee || t.assignedTo && t.assignedTo.toLowerCase()===assignee.toLowerCase()) &&
     (!priority || t.priority===priority) &&
     (!date || (t.createdDate||"").startsWith(date))
   );
@@ -595,7 +598,7 @@ function adminPanel() {
 function promoteUser() {
   let username = document.getElementById('promote-user').value.trim().toLowerCase();
   let users = getUsers();
-  let user = users.find(u=>u.username === username);
+  let user = users.find(u=>u.username.toLowerCase() === username);
   if(!user) return document.getElementById('promote-msg').textContent = "User not found.";
   user.role = "admin";
   setUsers(users);
@@ -605,11 +608,17 @@ function promoteUser() {
 // ----------- EMAILJS SEND NOTIFICATION FUNCTION (WITH ALERT) -----------
 function sendTicketEmailNotification(ticket) {
   const users = getUsers();
-  const assignUser = users.find(u=>u.username === ticket.assignedTo);
-  const openedUser = users.find(u=>u.username === (ticket.openedByUser||""));
+  // Always match by .toLowerCase()
+  const assignUser = users.find(u=>u.username.toLowerCase() === (ticket.assignedTo||"").toLowerCase());
+  const openedUser = users.find(u=>u.username.toLowerCase() === (ticket.openedByUser||"").toLowerCase());
   let email_to = assignUser ? assignUser.username : "";
   let email_cc = (assignUser && openedUser && assignUser.username !== openedUser.username) ? openedUser.username : "";
   let ticketLink = TICKET_URL_ROOT + "#ticket=" + ticket.id;
+
+  if(!email_to){
+    alert("Error sending ticket notification email. The recipient's address is empty");
+    return;
+  }
 
   let emailVars = {
     ticket_id: ticket.id,
