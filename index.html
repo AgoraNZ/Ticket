@@ -629,7 +629,7 @@ function sendTicketEmailNotification(ticket) {
     assigned_to: assignUser ? assignUser.name : "",
     opened_by: ticket.openedBy,
     created_date: ticket.createdDate,
-    description: ticket.issueDesc,
+    issue_desc: ticket.issueDesc,
     ticket_link: ticketLink,
     to_email: email_to,
     cc_email: email_cc
