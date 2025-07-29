@@ -631,8 +631,8 @@ function sendTicketEmailNotification(ticket) {
     created_date: ticket.createdDate,
     description: ticket.issueDesc,
     ticket_link: ticketLink,
-    email_to: email_to,
-    email_cc: email_cc
+    to_email: email_to,
+    cc_email: email_cc
   };
 
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
