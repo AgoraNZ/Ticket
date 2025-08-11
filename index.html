@@ -12,11 +12,10 @@
     :root {
       --main-bg: #f8faff; --primary: #001F3F; --accent: #FF851B;
       --danger: #FF4136; --success: #2ECC40; --font-main: 'Segoe UI', Arial, sans-serif;
-      --logo-width: 210px; --max-width: 980px; --heading-size: 2rem;
-      --table-font: 0.95rem;
+      --logo-width: 210px; --max-width: 980px; --heading-size: 2rem; --table-font: 0.95rem;
     }
     body { background: var(--main-bg); color: var(--primary); font-family: var(--font-main); }
-    .container-main { background: #fff; border-radius: 18px; max-width: var(--max-width); margin: 32px auto 0 auto; padding: 32px 20px 34px 20px; box-shadow: 0 2px 32px #001F3F11; }
+    .container-main { background: #fff; border-radius: 18px; max-width: var(--max-width); margin: 32px auto 48px auto; padding: 32px 20px 34px 20px; box-shadow: 0 2px 32px #001F3F11; }
     .logo-header { max-width: var(--logo-width); display:block; margin:0 auto 18px auto; }
     h1 { color: var(--accent); font-size: var(--heading-size); text-align:center; }
     .form-label { color: var(--primary); font-size: 1.08rem; font-weight:500; }
@@ -27,7 +26,7 @@
     .btn-admin:hover { background: #193a5e; }
     .btn-outline { background: #fff; color: var(--primary); border:1px solid var(--accent); }
     .btn-outline:hover { background: var(--accent); color:#fff; }
-    .nav-btns { display:flex; gap:10px; justify-content:center; margin:16px 0 6px 0; }
+    .nav-btns { display:flex; gap:10px; justify-content:center; margin:16px 0 6px 0; flex-wrap:wrap; }
     .ticket-link { cursor:pointer; text-decoration:underline; color:var(--primary); }
     .ticket-link:hover { color: var(--accent); }
     .ticket-status-open { color: var(--success); font-weight:600; }
@@ -55,6 +54,7 @@
     .modal-card { width: min(600px, 94vw); background:#fff; border-radius:12px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,0.2); }
     .modal-header { font-weight:700; margin-bottom:8px; color: var(--primary); }
     .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:12px; }
+    footer { text-align:center; color:#999; font-size:0.85em; margin-top:18px; }
     @media (max-width:600px) { .container-main { padding:9px 2vw; } h1{ font-size:1.3rem; } .logo-header{ max-width:120px; } }
   </style>
 
@@ -160,8 +160,7 @@
 
       <div class="mb-2">
         <label class="form-label">Attach Photo/File</label>
-        <input type="file" id="ticket-file" class="form-control"
-               accept="image/*,.pdf,.doc,.docx,.txt" multiple>
+        <input type="file" id="ticket-file" class="form-control" accept="image/*,.pdf,.doc,.docx,.txt" multiple>
         <div id="ticket-file-preview"></div>
       </div>
 
@@ -194,6 +193,8 @@
     <div id="ticket-list-table"></div>
     <div id="ticket-view-modal" style="display:none;" class="mt-3"></div>
   </div>
+
+  <footer>Agora Ticketing v1.3 (2025-08-11)</footer>
 </div>
 
 <!-- Close Modal -->
@@ -554,14 +555,12 @@ function renderTicketTable(tickets,isClosed) {
   if(!tickets.length) {
     document.getElementById('ticket-list-table').innerHTML = "<i>No tickets found.</i>"; return;
   }
-  // Flatten for sorting
   const rows = tickets.map(t=>({
     dairyNumber: t.dairyNumber, farmName: t.farmName,
     alert: t.alertType+(t.alertType==='Other'?": "+(t.alertOther||""):""),
     priority: t.priority, assigned: (t.assignedNames||[]).join(', '),
     openedBy: t.openedBy, createdDate: t.createdDate||"", status: t.status, id: t.id
   }));
-  // Build head with sort
   let html = `<table class="table table-bordered table-sm"><thead><tr>
     <th class="th-sort" onclick="renderSorted('dairyNumber', ${isClosed})">Dairy #</th>
     <th class="th-sort" onclick="renderSorted('farmName', ${isClosed})">Farm</th>
@@ -572,7 +571,6 @@ function renderTicketTable(tickets,isClosed) {
     <th class="th-sort" onclick="renderSorted('createdDate', ${isClosed})">Date</th>
     <th>Status</th><th></th>
     </tr></thead><tbody id="ticket-tbody">`;
-
   rows.forEach(r=>{
     const t = tickets.find(x=>x.id===r.id);
     const daysOpen = t.status==="open" ? Math.max(0, Math.ceil((Date.now()-Date.parse(t.createdDate||new Date()))/86400000)) : 0;
@@ -591,8 +589,6 @@ function renderTicketTable(tickets,isClosed) {
   });
   html += "</tbody></table>";
   document.getElementById('ticket-list-table').innerHTML = html;
-
-  // helper to resort using current data
   window.renderSorted = async function(key, isClosedFlag){
     let tickets2 = (await loadAllTickets()).filter(t=>t.status=== (isClosedFlag?"closed":"open"));
     const rows2 = tickets2.map(t=>({
@@ -634,7 +630,6 @@ window.viewTicketDetails = async function(id,isClosed) {
     <b>Priority:</b> ${t.priority}<br>
     <b>Assigned To:</b> ${(t.assignedNames||[]).join(', ')}<br>`;
 
-  // Admin reassign (edit block)
   if (curUser.role==="admin" && t.status==="open") {
     const users = getUsers();
     html += `<div class="mt-2">
@@ -661,7 +656,6 @@ window.viewTicketDetails = async function(id,isClosed) {
     html += `</div>`;
   }
 
-  // Comments thread
   html += `<div class="mt-3"><b>Comments:</b><br>`;
   (t.comments||[]).forEach(c=>{
     const reassBadge = c.reassign ? ` <span class="badge-reassign">Reassigned ${c.reassign.mode==='replace'?'(replace)':'(add)'} → ${(c.reassign.added||[]).join(', ')}</span>` : '';
@@ -675,7 +669,6 @@ window.viewTicketDetails = async function(id,isClosed) {
   });
   html += `</div>`;
 
-  // Add comment (with files) + OPTIONAL REASSIGN VIA COMMENT
   const canCommentReassign = (t.status==="open") && (curUser.role==="admin" || (t.assignedTo||[]).includes(curUser.username.toLowerCase()));
   if(t.status==="open"){
     const users = getUsers();
@@ -695,7 +688,7 @@ window.viewTicketDetails = async function(id,isClosed) {
         <select id="comment-assignees" class="form-select mt-1" multiple ${canCommentReassign?'':'disabled'}>
           ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
         </select>
-        <div class="small-note mt-1">${canCommentReassign? 'Leave empty to keep current assignees. Toggle switch = Replace; otherwise we Add.':'Only current assignees or admins can change assignees.'}</div>
+        <div class="small-note mt-1">${canCommentReassign? 'Leave empty to keep current assignees. Toggle = Replace; otherwise Add.':'Only current assignees or admins can change assignees.'}</div>
       </div>
 
       <button class="btn btn-agora mt-2" onclick="addComment('${t.id}')">Add Comment</button>
@@ -707,7 +700,6 @@ window.viewTicketDetails = async function(id,isClosed) {
     },0);
   }
 
-  // History & close info
   html += `<div class="mt-3"><b>Ticket History:</b><br>`;
   (t.history||[]).forEach(h=>{
     html += `<div class="history-box">${h.action} by ${h.user} @ ${h.date}${h.details?": "+h.details:""}</div>`;
@@ -756,41 +748,39 @@ window.addComment = async function(id) {
     }
   }
 
-  // Optional reassignment via comment (admins or current assignees only)
   const canReassign = (t.status==="open") && (curUser.role==="admin" || (t.assignedTo||[]).includes(curUser.username.toLowerCase()));
-  let added=[], removed=[], oldNames=[], newNames=[];
   if (canReassign && chosenAssignees.length){
     const old = (t.assignedTo||[]);
     const oldSet = new Set(old);
     const newSet = new Set(replaceMode ? chosenAssignees : [...old, ...chosenAssignees]);
     const oldArr = Array.from(oldSet);
     const newArr = Array.from(newSet);
-    added = newArr.filter(x=>!oldSet.has(x));
-    removed = replaceMode ? oldArr.filter(x=>!newSet.has(x)) : [];
+    const added = newArr.filter(x=>!oldSet.has(x));
+    const removed = replaceMode ? oldArr.filter(x=>!newSet.has(x)) : [];
 
     t.assignedTo = newArr;
     t.assignedNames = newArr.map(u => (users.find(x=>x.username===u)||{}).name || u);
-    oldNames = oldArr.map(u => (users.find(x=>x.username===u)||{}).name || u);
-    newNames = t.assignedNames.slice();
 
-    c.reassign = { mode: replaceMode ? "replace" : "add", old: oldNames, added: added.map(u => (users.find(x=>x.username===u)||{}).name || u), removed: removed.map(u => (users.find(x=>x.username===u)||{}).name || u) };
+    c.reassign = {
+      mode: replaceMode ? "replace" : "add",
+      old: oldArr.map(u => (users.find(x=>x.username===u)||{}).name || u),
+      added: added.map(u => (users.find(x=>x.username===u)||{}).name || u),
+      removed: removed.map(u => (users.find(x=>x.username===u)||{}).name || u)
+    };
 
-    // Notify only newly added
     for (const uname of added) {
       const toUser = users.find(u=>u.username===uname);
       if (toUser) sendTicketEmailNotification(t, toUser.username);
     }
 
-    // History entry
     t.history.push({
       action: "ReassignedViaComment",
       user: curUser.name,
       date: (new Date()).toISOString(),
-      details: `${(oldNames||[]).join(', ')} → ${(newNames||[]).join(', ')}`
+      details: `${c.reassign.old.join(', ')} → ${t.assignedNames.join(', ')}`
     });
   }
 
-  // Add the comment + history for comment/files
   t.comments = t.comments||[];
   t.comments.push(c);
   const fileNames = c.files.map(f=>f.name).join(', ');
@@ -819,7 +809,6 @@ window.saveAssignees = async function(id){
   t.history.push({action:"Reassigned", user:curUser.name, date:(new Date()).toISOString(), details:`${old} → ${newNames.join(', ')}`});
 
   await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
-  // notify each assignee (we won’t diff here—admin edit is explicit)
   for (const uname of newUsernames) {
     const toUser = users.find(u=>u.username===uname);
     if (toUser) sendTicketEmailNotification(t, toUser.username);
@@ -948,8 +937,7 @@ async function exportToCSV() {
     rows.push(row.map(quote).join(","));
   });
 
-  // UTF-8 BOM for Excel
-  const csv = "\uFEFF" + rows.join("\r\n");
+  const csv = "\uFEFF" + rows.join("\r\n"); // BOM for Excel
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -960,7 +948,6 @@ async function exportToCSV() {
 async function exportToXLSX(){
   const tickets = await loadAllTickets();
 
-  // Sheet: Tickets
   const tRows = tickets.map(t=>({
     ID: t.id,
     DairyNumber: t.dairyNumber,
@@ -983,7 +970,6 @@ async function exportToXLSX(){
     ReassignedCount: (t.history||[]).filter(h=>h.action&&h.action.toLowerCase().includes("reassign")).length
   }));
 
-  // Sheet: Comments
   const cRows = [];
   tickets.forEach(t=>{
     (t.comments||[]).forEach(c=>{
@@ -1002,7 +988,6 @@ async function exportToXLSX(){
     });
   });
 
-  // Sheet: Files
   const fRows = [];
   tickets.forEach(t=>{
     (t.files||[]).forEach(f=>fRows.push({TicketID:t.id, Scope:"Issue", Name:f.name, Type:f.type, URL:f.url}));
@@ -1013,12 +998,9 @@ async function exportToXLSX(){
   });
 
   const wb = XLSX.utils.book_new();
-  const ws1 = XLSX.utils.json_to_sheet(tRows);
-  const ws2 = XLSX.utils.json_to_sheet(cRows);
-  const ws3 = XLSX.utils.json_to_sheet(fRows);
-  XLSX.utils.book_append_sheet(wb, ws1, "Tickets");
-  XLSX.utils.book_append_sheet(wb, ws2, "Comments");
-  XLSX.utils.book_append_sheet(wb, ws3, "Files");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(tRows), "Tickets");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cRows), "Comments");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(fRows), "Files");
   XLSX.writeFile(wb, "tickets_export.xlsx");
 }
 
