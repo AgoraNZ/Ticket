@@ -41,6 +41,7 @@
     .csv-btn { font-size:0.9em; }
     .table, .table * { font-size: var(--table-font) !important; }
     .table thead th { position: sticky; top: 0; background: #fff; z-index: 1; }
+    .table td, .table th { white-space: normal; word-break: break-word; }
     .th-sort { cursor:pointer; }
     .chip { display:inline-block; padding:4px 8px; border:1px solid #ddd; border-radius:14px; margin-right:6px; cursor:pointer; user-select:none; }
     .chip.active { border-color: var(--accent); color: var(--accent); font-weight:600; }
@@ -54,6 +55,8 @@
     .modal-card { width: min(600px, 94vw); background:#fff; border-radius:12px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,0.2); }
     .modal-header { font-weight:700; margin-bottom:8px; color: var(--primary); }
     .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:12px; }
+    /* Responsive table wrapper for mobile */
+    .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
     footer { text-align:center; color:#999; font-size:0.85em; margin-top:18px; }
     @media (max-width:600px) { .container-main { padding:9px 2vw; } h1{ font-size:1.3rem; } .logo-header{ max-width:120px; } }
   </style>
@@ -194,7 +197,7 @@
     <div id="ticket-view-modal" style="display:none;" class="mt-3"></div>
   </div>
 
-  <footer>Agora Ticketing v1.3 (2025-08-11)</footer>
+  <footer>Agora Ticketing v1.3.1 (2025-08-11)</footer>
 </div>
 
 <!-- Close Modal -->
@@ -252,7 +255,6 @@ const EMAILJS_SERVICE_ID = "service_228tpco";
 const EMAILJS_TEMPLATE_ID = "template_9s0ckye";
 const EMAILJS_PUBLIC_KEY = "8uQgECrkNStKV41S-";
 const TICKET_URL_ROOT = "https://agoranz.github.io/Ticket/";
-
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
 // State
@@ -354,14 +356,23 @@ function renderFilePreview(fileList, container) {
       const img = document.createElement('img');
       img.className = 'photo-thumb';
       img.src = URL.createObjectURL(f);
+      img.loading = "lazy";
       container.appendChild(img);
     } else {
       const span = document.createElement('span');
       span.className = 'file-chip';
-      span.textContent = f.name;
+      span.textContent = f.name || 'file';
       container.appendChild(span);
     }
   });
+}
+
+/* =================== IMAGE CHECK =================== */
+function looksLikeImage(obj){
+  const typeOk = obj && obj.type && obj.type.startsWith('image/');
+  const name = (obj && (obj.name || obj.url) || '').toLowerCase();
+  const extOk = /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/i.test(name);
+  return !!(typeOk || extOk);
 }
 
 /* =================== STORAGE HELPERS =================== */
@@ -561,7 +572,7 @@ function renderTicketTable(tickets,isClosed) {
     priority: t.priority, assigned: (t.assignedNames||[]).join(', '),
     openedBy: t.openedBy, createdDate: t.createdDate||"", status: t.status, id: t.id
   }));
-  let html = `<table class="table table-bordered table-sm"><thead><tr>
+  let html = `<div class="table-wrap"><table class="table table-bordered table-sm"><thead><tr>
     <th class="th-sort" onclick="renderSorted('dairyNumber', ${isClosed})">Dairy #</th>
     <th class="th-sort" onclick="renderSorted('farmName', ${isClosed})">Farm</th>
     <th class="th-sort" onclick="renderSorted('alert', ${isClosed})">Alert Type</th>
@@ -587,7 +598,7 @@ function renderTicketTable(tickets,isClosed) {
       <td>${!isClosed && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="showCloseModal('${r.id}')">Close</button>` : ""}</td>
     </tr>`;
   });
-  html += "</tbody></table>";
+  html += "</tbody></table></div>";
   document.getElementById('ticket-list-table').innerHTML = html;
   window.renderSorted = async function(key, isClosedFlag){
     let tickets2 = (await loadAllTickets()).filter(t=>t.status=== (isClosedFlag?"closed":"open"));
@@ -650,8 +661,8 @@ window.viewTicketDetails = async function(id,isClosed) {
   if(t.files && t.files.length){
     html += `<div class="mt-2"><b>Files:</b> `;
     t.files.forEach(f=>{
-      if(f.type && f.type.startsWith('image/')) html += `<a href="${f.url}" target="_blank"><img src="${f.url}" class="photo-thumb"></a> `;
-      else html += `<a class="file-chip" href="${f.url}" target="_blank">${f.name}</a> `;
+      if(looksLikeImage(f)) html += `<a href="${f.url}" target="_blank"><img src="${f.url}" class="photo-thumb" loading="lazy"></a> `;
+      else html += `<a class="file-chip" href="${f.url}" target="_blank">${f.name || 'file'}</a> `;
     });
     html += `</div>`;
   }
@@ -663,7 +674,10 @@ window.viewTicketDetails = async function(id,isClosed) {
       <div class="comment-meta">${c.user} @ ${c.date}${reassBadge}</div>
       <div>${c.text||''}</div>
       ${(c.files&&c.files.length)?`<div class="mt-1">`+
-        c.files.map(ff=>ff.type?.startsWith('image/')?`<a href="${ff.url}" target="_blank"><img src="${ff.url}" class="photo-thumb"></a>`:`<a class="file-chip" href="${ff.url}" target="_blank">${ff.name}</a>`).join(' ')
+        c.files.map(ff=> looksLikeImage(ff)
+          ? `<a href="${ff.url}" target="_blank"><img src="${ff.url}" class="photo-thumb" loading="lazy"></a>`
+          : `<a class="file-chip" href="${ff.url}" target="_blank">${ff.name || 'file'}</a>`
+        ).join(' ')
       +`</div>`:''}
     </div>`;
   });
@@ -700,9 +714,17 @@ window.viewTicketDetails = async function(id,isClosed) {
     },0);
   }
 
+  // HISTORY with thumbnails
   html += `<div class="mt-3"><b>Ticket History:</b><br>`;
   (t.history||[]).forEach(h=>{
-    html += `<div class="history-box">${h.action} by ${h.user} @ ${h.date}${h.details?": "+h.details:""}</div>`;
+    html += `<div class="history-box">
+      <div>${h.action} by ${h.user} @ ${h.date}${h.details?": "+h.details:""}</div>
+      ${(h.files && h.files.length) ? `<div class="mt-1">` +
+        h.files.map(ff => looksLikeImage(ff)
+          ? `<a href="${ff.url}" target="_blank"><img src="${ff.url}" class="photo-thumb" loading="lazy"></a>`
+          : `<a class="file-chip" href="${ff.url}" target="_blank">${ff.name || 'file'}</a>`
+        ).join(' ') + `</div>` : ``}
+    </div>`;
   });
   html += `</div>`;
 
@@ -710,7 +732,10 @@ window.viewTicketDetails = async function(id,isClosed) {
     html+=`<b>Closed by:</b> ${t.close.by}<br><b>Date Closed:</b> ${t.close.date||""}<br><b>Resolution:</b> ${t.close.note||""}<br>`;
     if (t.close.files?.length){
       html += `<div class="mt-1"><b>Resolution Files:</b> `+
-      t.close.files.map(ff=>ff.type?.startsWith('image/')?`<a href="${ff.url}" target="_blank"><img src="${ff.url}" class="photo-thumb"></a>`:`<a class="file-chip" href="${ff.url}" target="_blank">${ff.name}</a>`).join(' ')
+      t.close.files.map(ff=> looksLikeImage(ff)
+        ? `<a href="${ff.url}" target="_blank"><img src="${ff.url}" class="photo-thumb" loading="lazy"></a>`
+        : `<a class="file-chip" href="${ff.url}" target="_blank">${ff.name || 'file'}</a>`
+      ).join(' ')
       +`</div>`;
     }
   }
@@ -783,9 +808,16 @@ window.addComment = async function(id) {
 
   t.comments = t.comments||[];
   t.comments.push(c);
-  const fileNames = c.files.map(f=>f.name).join(', ');
+
+  // History entry with files preserved (for thumbnails)
   t.history = t.history||[];
-  t.history.push({action: files.length?"CommentWithFiles":"Comment", user:curUser.name, date:(new Date()).toISOString(), details: (commentText||'') + (fileNames?` [${fileNames}]`:'') });
+  t.history.push({
+    action: files.length ? "CommentWithFiles" : "Comment",
+    user: curUser.name,
+    date: (new Date()).toISOString(),
+    details: commentText || '',
+    files: (c.files || [])
+  });
 
   await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
   viewTicketDetails(id, t.status==="closed");
@@ -848,8 +880,13 @@ async function doCloseFromModal(){
   t.status = "closed";
   t.close = close;
   t.history = t.history||[];
-  const fNames = close.files.map(ff=>ff.name).join(', ');
-  t.history.push({action:"ClosedWithFiles", user:curUser.name, date:(new Date()).toISOString(), details:(note||'') + (fNames?` [${fNames}]`:'')});
+  t.history.push({
+    action:"ClosedWithFiles",
+    user:curUser.name,
+    date:(new Date()).toISOString(),
+    details:(note||''),
+    files:(close.files||[])
+  });
 
   await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
 
@@ -880,7 +917,7 @@ async function showSummary() {
   renderSummary(sorted, group);
 }
 function renderSummary(sorted, group) {
-  let html = `<table class="table table-bordered table-sm"><thead><tr>
+  let html = `<div class="table-wrap"><table class="table table-bordered table-sm"><thead><tr>
     <th>Dairy #</th><th>Num Tickets</th></tr></thead><tbody>`;
   sorted.forEach(dn=>{
     html += `<tr>
@@ -888,7 +925,7 @@ function renderSummary(sorted, group) {
       <td>${group[dn].length}</td>
       </tr>`;
   });
-  html += "</tbody></table>";
+  html += "</tbody></table></div>";
   document.getElementById('ticket-list-table').innerHTML = html;
   document.getElementById('ticket-view-modal').innerHTML = '';
   document.getElementById('ticket-view-modal').style.display = "none";
