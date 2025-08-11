@@ -4,47 +4,62 @@
   <meta charset="UTF-8">
   <title>Agora Ticketing Advanced</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Bootstrap -->
+  <!-- Bootstrap CSS (for base styles only) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
   <style>
     :root {
       --main-bg: #f8faff; --primary: #001F3F; --accent: #FF851B;
       --danger: #FF4136; --success: #2ECC40; --font-main: 'Segoe UI', Arial, sans-serif;
       --logo-width: 210px; --max-width: 980px; --heading-size: 2rem;
+      --table-font: 0.95rem;
     }
-    body { background: var(--main-bg); color: var(--primary); font-family: var(--font-main);}
-    .container-main { background: #fff; border-radius: 18px; max-width: var(--max-width); margin: 32px auto 0 auto; padding: 32px 20px 34px 20px; box-shadow: 0 2px 32px #001F3F11;}
-    .logo-header { max-width: var(--logo-width); display:block; margin:0 auto 18px auto;}
-    h1 { color: var(--accent); font-size: var(--heading-size); text-align:center;}
-    .form-label { color: var(--primary); font-size: 1.08rem; font-weight:500;}
-    .form-control, .form-select { border-radius: 8px;}
-    .btn-agora { background: var(--accent); color:#fff; border:none; border-radius:5px; font-weight:500;}
-    .btn-agora:hover { background: var(--danger);}
-    .btn-admin { background: var(--primary); color:#fff; border:none; border-radius:5px;}
-    .btn-admin:hover { background: #193a5e;}
-    .btn-outline { background: #fff; color: var(--primary); border:1px solid var(--accent);}
-    .btn-outline:hover { background: var(--accent); color:#fff;}
-    .nav-btns { display:flex; gap:10px; justify-content:center; margin:16px 0 6px 0;}
-    .ticket-link { cursor:pointer; text-decoration:underline; color:var(--primary);}
-    .ticket-link:hover { color: var(--accent);}
-    .ticket-status-open { color: var(--success); font-weight:600;}
-    .ticket-status-closed { color: var(--danger);}
-    .search-box { max-width: 210px; margin: 0 0 10px 0;}
-    .logout-link { float:right; color:#a00; text-decoration:underline; cursor:pointer; font-size:0.97em;}
-    .comment-box { background: #f6f6f8; border-radius: 7px; margin-bottom: 12px; padding: 10px;}
-    .comment-meta { font-size:0.97em; color:#555;}
-    .history-box { background: #fcfcfc; border-left: 3px solid var(--accent); margin-bottom: 14px; padding: 7px 12px;}
-    .photo-thumb { max-width:80px; max-height:80px; display:inline-block; margin-right:5px;}
-    .mt-2x { margin-top:2.2rem;}
+    body { background: var(--main-bg); color: var(--primary); font-family: var(--font-main); }
+    .container-main { background: #fff; border-radius: 18px; max-width: var(--max-width); margin: 32px auto 0 auto; padding: 32px 20px 34px 20px; box-shadow: 0 2px 32px #001F3F11; }
+    .logo-header { max-width: var(--logo-width); display:block; margin:0 auto 18px auto; }
+    h1 { color: var(--accent); font-size: var(--heading-size); text-align:center; }
+    .form-label { color: var(--primary); font-size: 1.08rem; font-weight:500; }
+    .form-control, .form-select { border-radius: 8px; }
+    .btn-agora { background: var(--accent); color:#fff; border:none; border-radius:5px; font-weight:500; }
+    .btn-agora:hover { background: var(--danger); }
+    .btn-admin { background: var(--primary); color:#fff; border:none; border-radius:5px; }
+    .btn-admin:hover { background: #193a5e; }
+    .btn-outline { background: #fff; color: var(--primary); border:1px solid var(--accent); }
+    .btn-outline:hover { background: var(--accent); color:#fff; }
+    .nav-btns { display:flex; gap:10px; justify-content:center; margin:16px 0 6px 0; }
+    .ticket-link { cursor:pointer; text-decoration:underline; color:var(--primary); }
+    .ticket-link:hover { color: var(--accent); }
+    .ticket-status-open { color: var(--success); font-weight:600; }
+    .ticket-status-closed { color: var(--danger); }
+    .search-box { max-width: 210px; margin: 0 0 10px 0; }
+    .logout-link { float:right; color:#a00; text-decoration:underline; cursor:pointer; font-size:0.97em; }
+    .comment-box { background: #f6f6f8; border-radius: 7px; margin-bottom: 12px; padding: 10px; }
+    .comment-meta { font-size:0.97em; color:#555; }
+    .history-box { background: #fcfcfc; border-left: 3px solid var(--accent); margin-bottom: 14px; padding: 7px 12px; }
+    .photo-thumb { max-width:80px; max-height:80px; display:inline-block; margin:4px 6px 4px 0; border-radius: 6px; border: 1px solid #eee; }
+    .mt-2x { margin-top:2.2rem; }
     .csv-btn { float:right; font-size:0.9em; }
-    @media (max-width:600px) { .container-main {padding:9px 2vw;} h1{font-size:1.3rem;}.logo-header{max-width:120px;}}
+    .table, .table * { font-size: var(--table-font) !important; } /* normalize table font size */
+    .chip { display:inline-block; padding:4px 8px; border:1px solid #ddd; border-radius:14px; margin-right:6px; cursor:pointer; user-select:none; }
+    .chip.active { border-color: var(--accent); color: var(--accent); font-weight:600; }
+    .file-chip { display:inline-block; padding:3px 6px; border:1px solid #eee; border-radius:6px; margin:3px 6px 3px 0; font-size:0.9em; }
+    .progress-mini { height:6px; background:#eee; border-radius:8px; overflow:hidden; width:180px; display:inline-block; vertical-align:middle; margin-left:8px; }
+    .progress-mini > div { height:100%; background: var(--accent); width:0%; transition: width 0.2s; }
+    .small-note { font-size: 0.9em; color: #666; }
+    /* Simple modal */
+    .modal-mask { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:1000; }
+    .modal-card { width: min(600px, 94vw); background:#fff; border-radius:12px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,0.2); }
+    .modal-header { font-weight:700; margin-bottom:8px; color: var(--primary); }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:12px; }
+    @media (max-width:600px) { .container-main { padding:9px 2vw; } h1{ font-size:1.3rem; } .logo-header{ max-width:120px; } }
   </style>
+
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
 <div class="container-main" id="main-box">
   <img id="logo-img" class="logo-header" style="display:none;">
   <h1>Agora Dairy Ticketing</h1>
+
   <!-- LOGIN/SIGNUP SECTION -->
   <div id="login-section">
     <div id="login-box" class="mb-3">
@@ -57,6 +72,7 @@
         <span style="font-size:0.98em;">No account? <a href="#" onclick="showSignup()">Sign Up</a></span>
       </div>
     </div>
+
     <div id="signup-box" class="mb-3" style="display:none;">
       <label class="form-label">Full Name</label>
       <input type="text" id="signup-name" class="form-control" required>
@@ -71,27 +87,33 @@
     </div>
     <div id="login-msg" class="text-danger mt-2" style="min-height:20px;"></div>
   </div>
+
   <!-- MAIN TICKET PAGE -->
   <div id="ticket-section" style="display:none;">
     <span class="logout-link" onclick="logout()">Logout</span>
     <div class="mb-2 text-center"><b id="user-position"></b></div>
+
     <form id="ticket-form" autocomplete="off" enctype="multipart/form-data">
       <div class="mb-2">
         <label class="form-label">Service Person</label>
         <input type="text" id="service-person" class="form-control" readonly>
       </div>
+
       <div class="mb-2">
         <label class="form-label">Date</label>
         <input type="date" id="ticket-date" class="form-control" required>
       </div>
+
       <div class="mb-2">
         <label class="form-label">Dairy Number</label>
         <input type="text" id="dairy-number" class="form-control" required>
       </div>
+
       <div class="mb-2">
         <label class="form-label">Farm Name</label>
         <input type="text" id="farm-name" class="form-control" required>
       </div>
+
       <div class="mb-2">
         <label class="form-label">Alert Type</label>
         <select id="alert-type" class="form-select" onchange="toggleOtherAlert()">
@@ -104,10 +126,12 @@
           <option value="Other">Other</option>
         </select>
       </div>
+
       <div class="mb-2" id="other-alert-div" style="display:none;">
         <label class="form-label">Other Alert Type</label>
         <input type="text" id="alert-other" class="form-control">
       </div>
+
       <div class="mb-2">
         <label class="form-label">Priority</label>
         <select id="priority" class="form-select">
@@ -117,21 +141,28 @@
           <option value="Urgent">Urgent</option>
         </select>
       </div>
+
       <div class="mb-2">
-        <label class="form-label">Assign To</label>
-        <select id="assign-to" class="form-select"></select>
+        <label class="form-label">Assign To (hold Ctrl/Cmd to select multiple)</label>
+        <select id="assign-to" class="form-select" multiple></select>
+        <div class="small-note mt-1">Admins can edit assignees later in the ticket view.</div>
       </div>
+
       <div class="mb-2">
         <label class="form-label">Description of Issue</label>
         <textarea id="issue-desc" class="form-control" rows="2" required></textarea>
       </div>
+
       <div class="mb-2">
         <label class="form-label">Attach Photo/File</label>
-        <input type="file" id="ticket-file" class="form-control" accept="image/*,.pdf,.doc,.docx,.txt" multiple>
+        <input type="file" id="ticket-file" class="form-control"
+               accept="image/*,.pdf,.doc,.docx,.txt" multiple capture="environment">
         <div id="ticket-file-preview"></div>
       </div>
+
       <button type="button" class="btn btn-agora mt-2" onclick="submitTicket()">Create Ticket</button>
     </form>
+
     <div class="nav-btns mt-2x">
       <button class="btn btn-outline" onclick="showOpenTickets()">Open Tickets <span id="num-open-tix" class="badge bg-success"></span></button>
       <button class="btn btn-outline" id="btn-closed-tickets" onclick="showClosedTickets()" style="display:none;">Closed Tickets</button>
@@ -140,9 +171,10 @@
     </div>
     <div id="ticket-msg" class="mt-2" style="min-height:22px;"></div>
   </div>
-  <!-- TICKET VIEWS -->
+
+  <!-- LIST / DETAILS -->
   <div id="ticket-list-section" style="display:none;">
-    <div class="mb-2">
+    <div class="mb-2 d-flex justify-content-between align-items-center">
       <button class="btn btn-outline" onclick="backToMain()">Back</button>
       <button class="btn btn-admin csv-btn" id="btn-csv" style="display:none;" onclick="exportToCSV()">Export All to CSV</button>
     </div>
@@ -151,12 +183,33 @@
     <div id="ticket-view-modal" style="display:none;" class="mt-3"></div>
   </div>
 </div>
-<!-- Firebase for Storage Only -->
+
+<!-- Simple Close Modal -->
+<div class="modal-mask" id="close-modal">
+  <div class="modal-card">
+    <div class="modal-header">Close Ticket</div>
+    <div class="mb-2">
+      <label class="form-label">Resolution / Action Taken</label>
+      <textarea id="close-note" class="form-control" rows="3" placeholder="Describe the fix"></textarea>
+    </div>
+    <div class="mb-2">
+      <label class="form-label">Attach Photo(s) / File(s)</label>
+      <input type="file" id="close-files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.txt" capture="environment">
+      <div id="close-files-preview" class="mt-1"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="hideCloseModal()">Cancel</button>
+      <button class="btn btn-agora" onclick="doCloseFromModal()">Close Ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase (Storage only) -->
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
 <script>
-// --- START OF SCRIPT SECTION ---
+/* =================== CONFIG / INIT =================== */
 const initialUsers = [
   { username: "regan.beaver@agora.co.nz", name: "Regan Beaver", password: "Moometrics24", role: "admin" },
   { username: "ahren.lomas@agora.co.nz", name: "Ahren Lomas", password: "Moometrics24", role: "admin" },
@@ -168,8 +221,9 @@ if(!localStorage.getItem("users")) {
   const saveUsers = initialUsers.map(u => ({...u, username: u.username.toLowerCase()}));
   localStorage.setItem("users", JSON.stringify(saveUsers));
 }
+
 const firebaseConfig = {
-  apiKey: "AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI", // <--- YOUR KEY HERE
+  apiKey: "AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
   authDomain: "dairy-farm-record-system.firebaseapp.com",
   projectId: "dairy-farm-record-system",
   storageBucket: "dairy-farm-record-system.appspot.com",
@@ -188,16 +242,11 @@ const TICKET_URL_ROOT = "https://agoranz.github.io/Ticket/";
 
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
-(async function(){
-  try {
-    const logoRef = storage.ref("Agora Logo/2F6-1YdaEP.jpeg");
-    const logoUrl = await logoRef.getDownloadURL();
-    document.getElementById("logo-img").src = logoUrl;
-    document.getElementById("logo-img").style.display = "block";
-  } catch {}
-})();
-/* ========== DEMO AUTH ========== */
+// State
 let curUser = null;
+let closeTicketId = null;
+
+/* =================== AUTH =================== */
 function showLogin() {
   document.getElementById('login-box').style.display = '';
   document.getElementById('signup-box').style.display = 'none';
@@ -215,7 +264,7 @@ function showMain() {
   updateNavButtons();
   autoFillTicketForm();
   loadOpenTicketCount();
-  checkHashForTicket(); // deep-link support
+  checkHashForTicket();
 }
 function logout() { curUser = null; location.reload(); }
 function getUsers() { return JSON.parse(localStorage.getItem("users")||"[]"); }
@@ -226,8 +275,7 @@ function doLogin() {
   let password = document.getElementById('login-pass').value;
   let user = findUser(username);
   if(user && user.password === password) {
-    curUser = user;
-    showMain();
+    curUser = user; showMain();
   } else {
     document.getElementById('login-msg').textContent = "Login failed: Wrong username or password.";
   }
@@ -241,28 +289,41 @@ function doSignup() {
   let users = getUsers();
   let user = {username, name, password, role:"service"};
   users.push(user); setUsers(users);
-  curUser = user;
-  showMain();
+  curUser = user; showMain();
 }
 function updateNavButtons() {
   document.getElementById('user-position').textContent = `Position: Agora Service | ${curUser.name} (${curUser.role})`;
-  document.getElementById('btn-closed-tickets').style.display = curUser.role==="admin" ? "" : "none";
-  document.getElementById('btn-summary').style.display = curUser.role==="admin" ? "" : "none";
-  document.getElementById('btn-admin').style.display = curUser.role==="admin" ? "" : "none";
+  const isAdmin = curUser.role==="admin";
+  document.getElementById('btn-closed-tickets').style.display = isAdmin ? "" : "none";
+  document.getElementById('btn-summary').style.display = isAdmin ? "" : "none";
+  document.getElementById('btn-admin').style.display = isAdmin ? "" : "none";
 }
 
-/* ========== Ticket Form Logic ========== */
+/* =================== FORM HELPERS =================== */
+(async function(){
+  try {
+    const logoRef = storage.ref("Agora Logo/2F6-1YdaEP.jpeg");
+    const logoUrl = await logoRef.getDownloadURL();
+    document.getElementById("logo-img").src = logoUrl;
+    document.getElementById("logo-img").style.display = "block";
+  } catch {}
+})();
 function autoFillTicketForm() {
   document.getElementById('service-person').value = curUser.name;
   document.getElementById('ticket-date').value = (new Date()).toISOString().substr(0,10);
-  // Populate assign-to dropdown
-  let users = getUsers().filter(u=>u.role!=="admin"||curUser.role==="admin");
+
+  // Populate assign-to (multi)
+  let users = getUsers();
   let assignSel = document.getElementById('assign-to');
   assignSel.innerHTML = '';
   users.forEach(u=>{
-    assignSel.innerHTML += `<option value="${u.username.toLowerCase()}">${u.name}</option>`;
+    const opt = document.createElement('option');
+    opt.value = u.username.toLowerCase();
+    opt.textContent = u.name;
+    assignSel.appendChild(opt);
   });
-  if(users.length && !assignSel.value) assignSel.value = users[0].username.toLowerCase();
+
+  // reset files preview
   document.getElementById('ticket-file').value = '';
   document.getElementById('ticket-file-preview').innerHTML = '';
 }
@@ -271,27 +332,65 @@ function toggleOtherAlert() {
   document.getElementById('other-alert-div').style.display = v==="Other"?"":"none";
 }
 document.getElementById('ticket-file').addEventListener('change', function(){
-  let files = Array.from(this.files);
-  let div = document.getElementById('ticket-file-preview');
-  div.innerHTML = '';
+  renderFilePreview(this.files, document.getElementById('ticket-file-preview'));
+});
+function renderFilePreview(fileList, container) {
+  const files = Array.from(fileList||[]);
+  container.innerHTML = '';
   files.forEach(f=>{
-    if(f.type.startsWith('image/')){
-      let img = document.createElement('img');
+    if(f.type && f.type.startsWith('image/')){
+      const img = document.createElement('img');
       img.className = 'photo-thumb';
       img.src = URL.createObjectURL(f);
-      div.appendChild(img);
+      container.appendChild(img);
     } else {
-      let p = document.createElement('span');
-      p.textContent = f.name;
-      div.appendChild(p);
+      const span = document.createElement('span');
+      span.className = 'file-chip';
+      span.textContent = f.name;
+      container.appendChild(span);
     }
   });
-});
+}
+
+/* =================== STORAGE HELPERS =================== */
+const MAX_FILE_MB = 20;
+const ALLOWED_TYPES = [
+  'image/jpeg','image/png','image/gif','image/webp','application/pdf',
+  'application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'
+];
+function validateFiles(files) {
+  const errs = [];
+  for (let f of files) {
+    if (f.size > MAX_FILE_MB*1024*1024) errs.push(`${f.name}: > ${MAX_FILE_MB}MB`);
+    if (!ALLOWED_TYPES.includes(f.type) && !f.type.startsWith('image/')) errs.push(`${f.name}: unsupported type`);
+  }
+  return errs;
+}
+async function uploadFileBlob(file, pathPrefix, progressEl) {
+  const ref = storage.ref(`${ticketsFolder}/${pathPrefix}_${file.name}`);
+  const task = ref.put(file);
+  return new Promise((resolve,reject)=>{
+    task.on('state_changed', snap=>{
+      if(progressEl){
+        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+        progressEl.style.width = pct + '%';
+      }
+    }, reject, async ()=>{
+      const url = await ref.getDownloadURL();
+      resolve(url);
+    });
+  });
+}
+
+/* =================== CREATE TICKET =================== */
 async function submitTicket() {
-  let assignedToValue = document.getElementById('assign-to').value.toLowerCase();
-  let users = getUsers();
-  let assignedUserObj = users.find(u=>u.username.toLowerCase()===assignedToValue);
-  let data = {
+  const assignedUsernames = Array.from(document.getElementById('assign-to').selectedOptions).map(o=>o.value.toLowerCase());
+  if(assignedUsernames.length === 0) return (document.getElementById('ticket-msg').textContent="Select at least one assignee.");
+
+  const users = getUsers();
+  const assignedNames = assignedUsernames.map(u => (users.find(x=>x.username===u)||{}).name || u);
+
+  const data = {
     id: uuidv4(),
     createdDate: document.getElementById('ticket-date').value,
     dairyNumber: document.getElementById('dairy-number').value.trim(),
@@ -300,8 +399,8 @@ async function submitTicket() {
     alertOther: document.getElementById('alert-other').value.trim(),
     issueDesc: document.getElementById('issue-desc').value.trim(),
     priority: document.getElementById('priority').value,
-    assignedTo: assignedToValue,
-    assignedName: assignedUserObj ? assignedUserObj.name : "",
+    assignedTo: assignedUsernames,             // ARRAY
+    assignedNames: assignedNames,              // ARRAY
     status: "open",
     openedBy: curUser.name,
     openedByUser: curUser.username,
@@ -309,40 +408,54 @@ async function submitTicket() {
     comments: [],
     history: [{ action: "Created", user: curUser.name, date: (new Date()).toISOString(), details: "" }],
     files: [],
-    closedBy: "", closeComment: "", closedDate: null
+    close: null                                // { note, by, date, files:[] }
   };
+
+  // validate fields
   if(!data.dairyNumber||!data.farmName||!data.alertType||!data.issueDesc)
     return (document.getElementById('ticket-msg').textContent="All required fields must be filled out.");
   if(data.alertType==="Other" && !data.alertOther)
     return (document.getElementById('ticket-msg').textContent="Specify the 'Other' alert type.");
-  // Handle files
-  let fileInput = document.getElementById('ticket-file');
-  let files = Array.from(fileInput.files||[]);
+
+  // initial attachments
+  const fileInput = document.getElementById('ticket-file');
+  const files = Array.from(fileInput.files||[]);
+  const errs = validateFiles(files);
+  if (errs.length) return alert("Upload errors:\n" + errs.join("\n"));
+
   if(files.length){
-    for(let f of files){
-      let url = await uploadFileBlob(f, data.id);
+    // quick inline progress
+    const pv = document.getElementById('ticket-file-preview');
+    files.forEach(()=> {
+      const bar = document.createElement('div'); bar.className='progress-mini'; bar.innerHTML='<div></div>'; pv.appendChild(bar);
+    });
+    for(let i=0;i<files.length;i++){
+      const f = files[i];
+      const barFill = pv.querySelectorAll('.progress-mini > div')[i];
+      const url = await uploadFileBlob(f, `attachments/${data.id}`, barFill);
       data.files.push({ name: f.name, type: f.type, url });
     }
   }
+
   await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
   document.getElementById('ticket-msg').textContent = "Ticket created.";
   document.getElementById('ticket-form').reset();
   autoFillTicketForm();
   loadOpenTicketCount();
-  sendTicketEmailNotification(data);
+
+  // emails to all assignees
+  for (const uname of assignedUsernames) {
+    const toUser = users.find(u=>u.username===uname);
+    if (toUser) sendTicketEmailNotification(data, toUser.username);
+  }
 }
-async function uploadFileBlob(file, ticketId) {
-  let ref = storage.ref(`${ticketsFolder}/attachments/${ticketId}_${file.name}`);
-  await ref.put(file);
-  return await ref.getDownloadURL();
-}
+
+/* =================== LOAD / COUNTS =================== */
 async function loadOpenTicketCount() {
   let tickets = await loadAllTickets();
   let n = tickets.filter(t=>t.status==="open").length;
   document.getElementById('num-open-tix').textContent = n;
 }
-
-/* ========== TICKET LOAD/VIEW ========= */
 async function loadAllTickets() {
   try {
     let folderRef = storage.ref(ticketsFolder);
@@ -352,12 +465,19 @@ async function loadAllTickets() {
       if(fileRef.name.endsWith('.json') && !fileRef.name.startsWith('attachments/')){
         let url = await fileRef.getDownloadURL();
         let data = await fetch(url).then(r=>r.json());
+        // Back-compat: upgrade schema in-memory
+        if (!Array.isArray(data.assignedTo)) data.assignedTo = data.assignedTo ? [data.assignedTo] : [];
+        if (!Array.isArray(data.assignedNames)) data.assignedNames = data.assignedName ? [data.assignedName] : (data.assignedTo||[]);
+        if (!data.comments) data.comments = [];
+        if (!data.history) data.history = [];
         arr.push(data);
       }
     }
     return arr;
   } catch { return []; }
 }
+
+/* =================== NAV =================== */
 function backToMain() {
   showMain();
   document.getElementById('ticket-list-table').innerHTML = "";
@@ -365,8 +485,6 @@ function backToMain() {
   document.getElementById('ticket-view-modal').style.display = "none";
   document.getElementById('btn-csv').style.display = "none";
 }
-
-/* ========== Open/Closed/Summary ========= */
 async function showOpenTickets() {
   document.getElementById('ticket-section').style.display="none";
   document.getElementById('ticket-list-section').style.display="";
@@ -380,144 +498,277 @@ async function showClosedTickets() {
   document.getElementById('btn-csv').style.display = "";
   ticketFilterUI('closed');
 }
+
+/* =================== FILTERS / TABLE =================== */
 function ticketFilterUI(status) {
-  let users = getUsers();
-  let ctrl = `<input type="text" class="form-control search-box d-inline" id="filter-search" placeholder="Keyword">
-  <select id="filter-assignee" class="form-select search-box"><option value="">All Users</option>${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`)}</select>
-  <select id="filter-priority" class="form-select search-box"><option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option></select>
-  <input type="date" id="filter-date" class="form-control search-box">
-  <button class="btn btn-outline" onclick="filterTickets('${status}')">Filter</button>`;
+  const users = getUsers();
+  const ctrl = `
+    <input type="text" class="form-control search-box d-inline" id="filter-search" placeholder="Keyword">
+    <select id="filter-assignee" class="form-select search-box">
+      <option value="">All Users</option>
+      ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
+    </select>
+    <select id="filter-priority" class="form-select search-box">
+      <option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option>
+    </select>
+    <input type="date" id="filter-date" class="form-control search-box">
+    <span class="chip" id="chip-hasimg" onclick="toggleChip(this)">Has Images</span>
+    <button class="btn btn-outline" onclick="filterTickets('${status}')">Filter</button>`;
   document.getElementById('ticket-list-controls').innerHTML = ctrl;
   document.getElementById('filter-search').onkeydown = function(e){ if(e.key=="Enter")filterTickets(status); };
   filterTickets(status);
 }
+function toggleChip(el){ el.classList.toggle('active'); }
 async function filterTickets(status) {
   let tickets = (await loadAllTickets()).filter(t=>t.status===status);
-  let search = (document.getElementById('filter-search')||{}).value||"";
-  let assignee = (document.getElementById('filter-assignee')||{}).value||"";
-  let priority = (document.getElementById('filter-priority')||{}).value||"";
-  let date = (document.getElementById('filter-date')||{}).value||"";
+  const search = (document.getElementById('filter-search')||{}).value||"";
+  const assignee = (document.getElementById('filter-assignee')||{}).value||"";
+  const priority = (document.getElementById('filter-priority')||{}).value||"";
+  const date = (document.getElementById('filter-date')||{}).value||"";
+  const hasImg = document.getElementById('chip-hasimg')?.classList.contains('active');
+
   tickets = tickets.filter(t=>
     (!search || JSON.stringify(t).toLowerCase().includes(search.toLowerCase())) &&
-    (!assignee || t.assignedTo && t.assignedTo.toLowerCase()===assignee.toLowerCase()) &&
+    (!assignee || (Array.isArray(t.assignedTo) && t.assignedTo.map(x=>x.toLowerCase()).includes(assignee.toLowerCase()))) &&
     (!priority || t.priority===priority) &&
-    (!date || (t.createdDate||"").startsWith(date))
+    (!date || (t.createdDate||"").startsWith(date)) &&
+    (!hasImg || (t.files?.length || 0) > 0)
   );
+
   renderTicketTable(tickets,status==="closed");
 }
 function renderTicketTable(tickets,isClosed) {
   if(!tickets.length) {
     document.getElementById('ticket-list-table').innerHTML = "<i>No tickets found.</i>"; return;
   }
-  let group = {};
+  const group = {};
   tickets.forEach(t=>{ if(!group[t.dairyNumber]) group[t.dairyNumber]=[]; group[t.dairyNumber].push(t); });
+
   let html = `<table class="table table-bordered table-sm"><thead><tr>
     <th>Dairy #</th><th>Farm</th><th>Alert Type</th><th>Priority</th><th>Assigned</th><th>Opened By</th><th>Date</th><th>Status</th><th></th>
     </tr></thead><tbody>`;
-  for(let dairyNum in group) {
+
+  for (let dairyNum in group) {
     group[dairyNum].forEach(t=>{
+      const daysOpen = t.status==="open" ? Math.max(0, Math.ceil((Date.now()-Date.parse(t.createdDate||new Date()))/86400000)) : 0;
+      const aging = t.status==="open" && daysOpen>0 ? ` <span class="badge bg-warning text-dark">${daysOpen}d</span>` : '';
       html += `<tr>
         <td><span class="ticket-link" onclick="viewTicketDetails('${t.id}','${isClosed}')">${t.dairyNumber}</span></td>
         <td>${t.farmName}</td>
         <td>${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}</td>
         <td>${t.priority}</td>
-        <td>${t.assignedName||""}</td>
+        <td>${(t.assignedNames||[]).join(', ')}</td>
         <td>${t.openedBy}</td>
-        <td>${t.createdDate||""}</td>
+        <td>${t.createdDate||""}${aging}</td>
         <td><span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span></td>
-        <td>${!isClosed && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="closeTicketPrompt('${t.id}')">Close</button>` : ""}</td>
-        </tr>`;
+        <td>${!isClosed && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="showCloseModal('${t.id}')">Close</button>` : ""}</td>
+      </tr>`;
     });
   }
   html += "</tbody></table>";
   document.getElementById('ticket-list-table').innerHTML = html;
 }
+
+/* =================== VIEW / COMMENT / ASSIGN =================== */
 window.viewTicketDetails = async function(id,isClosed) {
   let tickets = await loadAllTickets();
   let t = tickets.find(t=>t.id===id);
   if(!t) return;
+
   let html = `<h5>Ticket for #${t.dairyNumber}</h5>
     <b>Farm Name:</b> ${t.farmName}<br>
     <b>Alert Type:</b> ${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}<br>
     <b>Priority:</b> ${t.priority}<br>
-    <b>Assigned To:</b> ${t.assignedName||""}<br>
-    <b>Status:</b> <span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span><br>
+    <b>Assigned To:</b> ${(t.assignedNames||[]).join(', ')}<br>`;
+
+  // Admin reassign (multi)
+  if (curUser.role==="admin" && t.status==="open") {
+    const users = getUsers();
+    html += `<div class="mt-2">
+      <label class="form-label">Edit Assignees</label>
+      <select id="edit-assignees" class="form-select" multiple>
+        ${users.map(u=>`<option value="${u.username.toLowerCase()}" ${t.assignedTo?.includes(u.username.toLowerCase())?'selected':''}>${u.name}</option>`).join('')}
+      </select>
+      <button class="btn btn-admin mt-1" onclick="saveAssignees('${t.id}')">Save Assignees</button>
+    </div>`;
+  }
+
+  html += `<b>Status:</b> <span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span><br>
     <b>Issue:</b> ${t.issueDesc}<br>
     <b>Opened by:</b> ${t.openedBy} (${t.position})<br>
     <b>Date Opened:</b> ${t.createdDate||""}<br>
     <b>Ticket ID:</b> ${t.id}<br>`;
+
   // Attached files/photos
   if(t.files && t.files.length){
     html += `<div class="mt-2"><b>Files:</b> `;
     t.files.forEach(f=>{
       if(f.type && f.type.startsWith('image/')) html += `<a href="${f.url}" target="_blank"><img src="${f.url}" class="photo-thumb"></a> `;
-      else html += `<a href="${f.url}" target="_blank">${f.name}</a> `;
+      else html += `<a class="file-chip" href="${f.url}" target="_blank">${f.name}</a> `;
     });
     html += `</div>`;
   }
+
   // Comments thread
-  html += `<div class="mt-2"><b>Comments:</b><br>`;
+  html += `<div class="mt-3"><b>Comments:</b><br>`;
   (t.comments||[]).forEach(c=>{
-    html += `<div class="comment-box"><div class="comment-meta">${c.user} @ ${c.date}</div>${c.text}</div>`;
+    html += `<div class="comment-box">
+      <div class="comment-meta">${c.user} @ ${c.date}</div>
+      <div>${c.text||''}</div>
+      ${(c.files&&c.files.length)?`<div class="mt-1">`+
+        c.files.map(ff=>ff.type?.startsWith('image/')?`<a href="${ff.url}" target="_blank"><img src="${ff.url}" class="photo-thumb"></a>`:`<a class="file-chip" href="${ff.url}" target="_blank">${ff.name}</a>`).join(' ')
+      +`</div>`:''}
+    </div>`;
   });
   html += `</div>`;
-  // Add comment box
+
+  // Add comment (with files)
   if(t.status==="open"){
     html += `<div class="mt-2">
       <textarea id="new-comment" class="form-control" rows="2" placeholder="Add internal note..."></textarea>
+      <input type="file" id="comment-files" class="form-control mt-1" multiple accept="image/*,.pdf,.doc,.docx,.txt" capture="environment">
+      <div id="comment-files-preview" class="mt-1"></div>
       <button class="btn btn-agora mt-1" onclick="addComment('${t.id}')">Add Comment</button>
     </div>`;
+    setTimeout(()=>{
+      const inp = document.getElementById('comment-files');
+      const pv = document.getElementById('comment-files-preview');
+      inp?.addEventListener('change',()=>renderFilePreview(inp.files,pv));
+    },0);
   }
-  // Ticket history
-  html += `<div class="mt-2"><b>Ticket History:</b><br>`;
+
+  // Ticket history & close info
+  html += `<div class="mt-3"><b>Ticket History:</b><br>`;
   (t.history||[]).forEach(h=>{
     html += `<div class="history-box">${h.action} by ${h.user} @ ${h.date}${h.details?": "+h.details:""}</div>`;
   });
   html += `</div>`;
-  if(t.status==="closed") html+=`<b>Closed by:</b> ${t.closedBy}<br><b>Date Closed:</b> ${t.closedDate||""}<br><b>Resolution:</b> ${t.closeComment||""}<br>`;
+
+  if(t.status==="closed" && t.close){
+    html+=`<b>Closed by:</b> ${t.close.by}<br><b>Date Closed:</b> ${t.close.date||""}<br><b>Resolution:</b> ${t.close.note||""}<br>`;
+    if (t.close.files?.length){
+      html += `<div class="mt-1"><b>Resolution Files:</b> `+
+      t.close.files.map(ff=>ff.type?.startsWith('image/')?`<a href="${ff.url}" target="_blank"><img src="${ff.url}" class="photo-thumb"></a>`:`<a class="file-chip" href="${ff.url}" target="_blank">${ff.name}</a>`).join(' ')
+      +`</div>`;
+    }
+  }
+
   document.getElementById('ticket-view-modal').innerHTML = html;
   document.getElementById('ticket-view-modal').style.display="";
 };
+
 window.addComment = async function(id) {
-  let comment = document.getElementById('new-comment').value.trim();
-  if(!comment) return;
+  let commentText = document.getElementById('new-comment').value.trim();
+  const files = Array.from((document.getElementById('comment-files')||{files:[]}).files);
+  if(!commentText && files.length===0) return;
+
+  const errs = validateFiles(files);
+  if (errs.length) return alert("Upload errors:\n" + errs.join("\n"));
+
   let tickets = await loadAllTickets();
   let t = tickets.find(t=>t.id===id);
   if(!t) return;
+
+  const c = { id: uuidv4(), text: commentText, user: curUser.name, date: (new Date()).toLocaleString(), files: [] };
+
+  // progress renders
+  const pv = document.getElementById('comment-files-preview');
+  files.forEach(()=>{ const bar=document.createElement('div'); bar.className='progress-mini'; bar.innerHTML='<div></div>'; pv.appendChild(bar); });
+
+  for (let i=0;i<files.length;i++){
+    const f = files[i];
+    const barFill = pv.querySelectorAll('.progress-mini > div')[i];
+    const url = await uploadFileBlob(f, `comments/${id}_${c.id}`, barFill);
+    c.files.push({ name: f.name, type: f.type, url });
+  }
+
   t.comments = t.comments||[];
-  t.comments.push({text: comment, user: curUser.name, date: (new Date()).toLocaleString()});
+  t.comments.push(c);
   t.history = t.history||[];
-  t.history.push({action:"Comment", user:curUser.name, date:(new Date()).toISOString(), details:comment});
+  const fileNames = c.files.map(f=>f.name).join(', ');
+  t.history.push({action:"CommentWithFiles", user:curUser.name, date:(new Date()).toISOString(), details: (commentText||'') + (fileNames?` [${fileNames}]`:'') });
+
   await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
   viewTicketDetails(id, t.status==="closed");
 };
-window.closeTicketPrompt = function(id) {
-  let comment = prompt("Describe the fix / action taken:");
-  if(!comment) return;
-  closeTicket(id, comment);
-};
-async function closeTicket(id, closeComment) {
+
+window.saveAssignees = async function(id){
+  if(curUser.role!=="admin") return;
+  const sel = document.getElementById('edit-assignees');
+  const newUsernames = Array.from(sel.selectedOptions).map(o=>o.value.toLowerCase());
+  const users = getUsers();
+  const newNames = newUsernames.map(u=>(users.find(x=>x.username===u)||{}).name||u);
+
   let tickets = await loadAllTickets();
   let t = tickets.find(t=>t.id===id);
   if(!t) return;
-  t.status = "closed";
-  t.closeComment = closeComment;
-  t.closedBy = curUser.name;
-  t.closedDate = (new Date()).toISOString().substr(0,10);
+
+  const old = (t.assignedNames||[]).join(', ');
+  t.assignedTo = newUsernames;
+  t.assignedNames = newNames;
   t.history = t.history||[];
-  t.history.push({action:"Closed", user:curUser.name, date:(new Date()).toISOString(), details:closeComment});
+  t.history.push({action:"Reassigned", user:curUser.name, date:(new Date()).toISOString(), details:`${old} → ${newNames.join(', ')}`});
+
   await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
+
+  // notify each new assignee
+  for (const uname of newUsernames) {
+    const toUser = users.find(u=>u.username===uname);
+    if (toUser) sendTicketEmailNotification(t, toUser.username);
+  }
+  viewTicketDetails(id,false);
+};
+
+/* =================== CLOSE TICKET (MODAL) =================== */
+function showCloseModal(id){ closeTicketId = id; document.getElementById('close-note').value=''; document.getElementById('close-files').value=''; document.getElementById('close-files-preview').innerHTML=''; document.getElementById('close-modal').style.display='flex'; }
+function hideCloseModal(){ document.getElementById('close-modal').style.display='none'; closeTicketId=null; }
+document.getElementById('close-files').addEventListener('change', function(){
+  renderFilePreview(this.files, document.getElementById('close-files-preview'));
+});
+async function doCloseFromModal(){
+  if(!closeTicketId) return;
+  const note = document.getElementById('close-note').value.trim();
+  const files = Array.from((document.getElementById('close-files')||{files:[]}).files);
+  const errs = validateFiles(files);
+  if (errs.length) return alert("Upload errors:\n" + errs.join("\n"));
+
+  let tickets = await loadAllTickets();
+  let t = tickets.find(t=>t.id===closeTicketId);
+  if(!t) return;
+
+  const close = { note, by: curUser.name, date: (new Date()).toISOString().substr(0,10), files: [] };
+
+  const pv = document.getElementById('close-files-preview');
+  files.forEach(()=>{ const bar=document.createElement('div'); bar.className='progress-mini'; bar.innerHTML='<div></div>'; pv.appendChild(bar); });
+
+  for (let i=0;i<files.length;i++){
+    const f = files[i];
+    const barFill = pv.querySelectorAll('.progress-mini > div')[i];
+    const url = await uploadFileBlob(f, `close/${t.id}`, barFill);
+    close.files.push({ name: f.name, type: f.type, url });
+  }
+
+  t.status = "closed";
+  t.close = close;
+  t.history = t.history||[];
+  const fNames = close.files.map(ff=>ff.name).join(', ');
+  t.history.push({action:"ClosedWithFiles", user:curUser.name, date:(new Date()).toISOString(), details:(note||'') + (fNames?` [${fNames}]`:'')});
+
+  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
+
+  hideCloseModal();
   alert("Ticket closed.");
   showOpenTickets();
 }
 
-/* ========== SUMMARY/EXPORT ========== */
+/* =================== SUMMARY / CSV =================== */
 async function showSummary() {
   if(curUser.role!=="admin") return alert("Admins only.");
   document.getElementById('ticket-section').style.display="none";
   document.getElementById('ticket-list-section').style.display="";
   document.getElementById('btn-csv').style.display = "";
   let tickets = await loadAllTickets();
+
   let group = {}; tickets.forEach(t=>{if(!group[t.dairyNumber])group[t.dairyNumber]=[];group[t.dairyNumber].push(t);});
   let sorted = Object.keys(group).sort((a,b)=>group[b].length-group[a].length);
   let alertCounts = {};
@@ -545,9 +796,7 @@ function renderSummary(sorted, group) {
   document.getElementById('ticket-view-modal').innerHTML = '';
   document.getElementById('ticket-view-modal').style.display = "none";
 }
-window.expandDairy = function(dn) {
-  expandDairyTickets(dn);
-};
+window.expandDairy = function(dn) { expandDairyTickets(dn); };
 async function expandDairyTickets(dn) {
   let tickets = await loadAllTickets();
   let arr = tickets.filter(t=>t.dairyNumber===dn);
@@ -567,29 +816,37 @@ async function expandDairyTickets(dn) {
 async function exportToCSV() {
   let tickets = await loadAllTickets();
   let header = [
-    "ID","DairyNumber","FarmName","AlertType","Priority","AssignedTo","Status",
-    "CreatedDate","ClosedDate","OpenedBy","ClosedBy",
-    "IssueDescription","CloseDescription","CommentsCount","HistoryCount"
+    "ID","DairyNumber","FarmName","AlertType","Priority",
+    "AssignedTo","Status","CreatedDate","ClosedDate","OpenedBy","ClosedBy",
+    "IssueDescription","CloseDescription","IssueFiles","CommentFilesCount","ResolvedFiles","CommentsCount","HistoryCount"
   ];
   let rows = [header.join(",")];
+
+  function quote(x){ return '"'+String(x||"").replace(/"/g,'""')+'"'; }
+
   tickets.forEach(t=>{
-    let row = [
-      t.id, t.dairyNumber, t.farmName, t.alertType, t.priority, t.assignedName||"", t.status,
-      t.createdDate, t.closedDate||"", t.openedBy, t.closedBy||"",
-      t.issueDesc||"", t.closeComment||"", (t.comments||[]).length, (t.history||[]).length
+    const issueFiles = (t.files||[]).map(f=>f.url).join(" ; ");
+    const commentFilesCount = (t.comments||[]).reduce((a,c)=>a+(c.files?.length||0),0);
+    const resolvedFiles = (t.close?.files||[]).map(f=>f.url).join(" ; ");
+    const assigned = (t.assignedNames||[]).join("; ");
+
+    const row = [
+      t.id, t.dairyNumber, t.farmName, t.alertType, t.priority,
+      assigned, t.status, t.createdDate, (t.close?.date||""), t.openedBy, (t.close?.by||""),
+      t.issueDesc||"", (t.close?.note||""), issueFiles, commentFilesCount, resolvedFiles, (t.comments||[]).length, (t.history||[]).length
     ];
-    rows.push(row.map(x=>'"'+String(x||"").replace(/"/g,'""')+'"').join(","));
+    rows.push(row.map(quote).join(","));
   });
-  let csv = rows.join("\r\n");
-  let blob = new Blob([csv], {type:"text/csv"});
-  let url = URL.createObjectURL(blob);
-  let a = document.createElement('a');
+  const csv = rows.join("\r\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.href = url; a.download = "tickets_export.csv";
   document.body.appendChild(a);
   a.click(); setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},1000);
 }
 
-/* ========== ADMIN PANEL ========== */
+/* =================== ADMIN PANEL =================== */
 function adminPanel() {
   if(curUser.role!=="admin") return alert("Admins only.");
   let html = `<h5>Admin: User Permissions</h5>
@@ -607,33 +864,29 @@ function promoteUser() {
   let users = getUsers();
   let user = users.find(u=>u.username.toLowerCase() === username);
   if(!user) return document.getElementById('promote-msg').textContent = "User not found.";
-  user.role = "admin";
-  setUsers(users);
+  user.role = "admin"; setUsers(users);
   document.getElementById('promote-msg').textContent = "Promoted to admin.";
 }
 
-// ----------- EMAILJS SEND NOTIFICATION FUNCTION (WITH ALERT) -----------
-function sendTicketEmailNotification(ticket) {
+/* =================== EMAIL =================== */
+function sendTicketEmailNotification(ticket, toEmail) {
   const users = getUsers();
-  // Always match by .toLowerCase()
-  const assignUser = users.find(u=>u.username.toLowerCase() === (ticket.assignedTo||"").toLowerCase());
   const openedUser = users.find(u=>u.username.toLowerCase() === (ticket.openedByUser||"").toLowerCase());
-  let email_to = assignUser ? assignUser.username : "";
-  let email_cc = (assignUser && openedUser && assignUser.username !== openedUser.username) ? openedUser.username : "";
-  let ticketLink = TICKET_URL_ROOT + "#ticket=" + ticket.id;
+  const email_to = toEmail || "";
+  const email_cc = openedUser ? openedUser.username : "";
 
   if(!email_to){
-    alert("Error sending ticket notification email. The recipient's address is empty");
+    alert("Error sending ticket email: no recipient.");
     return;
   }
-
-  let emailVars = {
+  const ticketLink = TICKET_URL_ROOT + "#ticket=" + ticket.id;
+  const emailVars = {
     ticket_id: ticket.id,
     dairy_number: ticket.dairyNumber,
     farm_name: ticket.farmName,
     alert_type: ticket.alertType === "Other" ? (ticket.alertType + ": " + (ticket.alertOther||"")) : ticket.alertType,
     priority: ticket.priority,
-    assigned_to: assignUser ? assignUser.name : "",
+    assigned_to: (ticket.assignedNames||[]).join(', '),
     opened_by: ticket.openedBy,
     created_date: ticket.createdDate,
     issue_desc: ticket.issueDesc,
@@ -643,29 +896,20 @@ function sendTicketEmailNotification(ticket) {
   };
 
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
-    .then(function(response) {
-      alert("Ticket notification email sent successfully!");
-    }, function(error) {
-      alert("Error sending ticket notification email. " + (error.text||""));
-      console.error("EmailJS send error", error);
-    });
+    .then(()=>{}, (error)=>{ console.error("EmailJS send error", error); });
 }
 
-/* ========== SUPPORT: URL Deep Linking ========== */
+/* =================== DEEP LINK =================== */
 window.addEventListener("hashchange", checkHashForTicket);
 function checkHashForTicket() {
-  // If hash is #ticket=xxxx
   let hash = location.hash||"";
   if(hash.startsWith("#ticket=")) {
     let ticketId = hash.replace("#ticket=","");
-    // Show ticket section if not visible
     if(document.getElementById('ticket-section').style.display==="none")
       showMain();
-    setTimeout(()=>{viewTicketDetails(ticketId,false);}, 100); // wait for DOM
-    // Optionally: highlight
+    setTimeout(()=>{viewTicketDetails(ticketId,false);}, 100);
   }
 }
-// --- END SCRIPT SECTION ---
 </script>
 </body>
 </html>
