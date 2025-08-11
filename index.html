@@ -207,7 +207,7 @@
     <div id="ticket-view-modal" class="mt-3 hidden"></div>
   </div>
 
-  <footer>Agora Ticketing v1.5 (2025-08-11)</footer>
+  <footer>Agora Ticketing v1.6 (2025-08-11)</footer>
 </div>
 
 <!-- Close Modal -->
@@ -395,7 +395,6 @@ async function submitTicket(){
   await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
   byId('ticket-msg').textContent="Ticket created."; byId('ticket-form').reset(); autoFillTicketForm(); loadOpenTicketCount();
 
-  // notify each assignee
   assigned.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(data,to.username)});
 }
 
@@ -750,24 +749,47 @@ byId('close-files').addEventListener('change',()=>renderFilePreview(byId('close-
 
 async function doCloseFromModal(){
   if(!closeTicketId) return;
-  const note=val('close-note').trim();
-  const files=Array.from(byId('close-files').files||[]); const errs=validateFiles(files); if(errs.length) return alert("Upload errors:\n"+errs.join("\n"));
+  const note = (byId('close-note').value || '').trim();
+  const files = Array.from((byId('close-files').files || []));
+  const errs = validateFiles(files);
+  if (errs.length) return alert("Upload errors:\n" + errs.join("\n"));
 
-  const ts=await loadAllTickets(); const t=ts.find(x=>x.id===closeTicketId); if(!t) return;
-  const close={note, by:curUser.name, date:(new Date()).toISOString().slice(0,10), files:[]};
+  const tickets = await loadAllTickets();
+  const t = tickets.find(x => x.id === closeTicketId);
+  if (!t) return;
 
-  const pv=byId('close-files-preview');
-  files.forEach(()=>{const bar=document.createElement('div');bar.className='progress-mini';bar.innerHTML='<div></div>';pv.appendChild(bar)});
-  for(let i=0;i<files.length;i++){
-    const f=files[i]; const bar=pv.querySelectorAll('.progress-mini>div')[i];
-    const url=await uploadFileBlob(f,`close/${t.id}`,bar);
-    close.files.push({name:f.name,type:f.type,url});
+  const close = { note, by: curUser.name, date: (new Date()).toISOString().slice(0,10), files: [] };
+
+  const pv = byId('close-files-preview');
+  files.forEach(()=>{ const bar=document.createElement('div'); bar.className='progress-mini'; bar.innerHTML='<div></div>'; pv.appendChild(bar); });
+  for (let i=0;i<files.length;i++){
+    const f = files[i];
+    const barFill = pv.querySelectorAll('.progress-mini > div')[i];
+    const url = await uploadFileBlob(f, `close/${t.id}`, barFill);
+    close.files.push({ name:f.name, type:f.type, url });
   }
 
-  t.status="closed";
-  t.close=close;
-  t.history.push({action:"ClosedWithFiles", user:curUser.name, date:(new Date()).toISOString(), details:(note||''), files:(close.files||[])});
-  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
+  // Unified shape
+  t.status = "closed";
+  t.close = close;
+
+  // ALSO write legacy fields for compatibility
+  t.closedBy = close.by;
+  t.closedDate = close.date;
+  t.closeComment = close.note;
+  t.closeFiles = close.files;
+
+  t.history = t.history || [];
+  t.history.push({
+    action: "ClosedWithFiles",
+    user: curUser.name,
+    date: (new Date()).toISOString(),
+    details: (note || ''),
+    files: (close.files || [])
+  });
+
+  await storage.ref(`${ticketsFolder}/${t.id}.json`)
+    .put(new Blob([JSON.stringify(t)], { type: "application/json" }));
 
   hideCloseModal();
   alert("Ticket closed.");
@@ -810,13 +832,23 @@ window.expandDairy=async function(dn){
 
 /* =================== DATA MAPPER (for exports) =================== */
 function normalizeTicket(t){
-  const closedBy   = (t.close && t.close.by)   || t.closedBy   || "";
-  const closedDate = (t.close && t.close.date) || t.closedDate || "";
-  const closeNote  = (t.close && t.close.note) || t.closeComment || t.resolution || "";
+  // Prefer unified shape, fall back to legacy, finally infer from history
+  let closedBy   = (t.close && t.close.by)   || t.closedBy   || "";
+  let closedDate = (t.close && t.close.date) || t.closedDate || "";
+  let closeNote  = (t.close && t.close.note) || t.closeComment || t.resolution || "";
+
+  if ((!closedBy || !closedDate || !closeNote) && Array.isArray(t.history)) {
+    const closeEvt = [...t.history].reverse().find(h => ((h.action||"").toLowerCase().includes("closed")));
+    if (closeEvt) {
+      closedBy   = closedBy   || closeEvt.user || "";
+      closedDate = closedDate || (closeEvt.date ? closeEvt.date.slice(0,10) : "");
+      closeNote  = closeNote  || (closeEvt.details || "");
+    }
+  }
 
   const issueFiles    = (t.files || []).map(f => f.url).join(" ; ");
   const commentFiles  = (t.comments || []).flatMap(c => (c.files || []).map(f => f.url)).join(" ; ");
-  const resolvedFiles = ((t.close && t.close.files) || []).map(f => f.url).join(" ; ");
+  const resolvedFiles = ((t.close && t.close.files) || t.closeFiles || []).map(f => f.url).join(" ; ");
 
   const reassignedCount = (t.history || []).filter(h => (h.action || "").toLowerCase().includes("reassign")).length;
   const lastUpdated = ((t.history || []).map(h => h.date).sort().pop()) || t.createdDate || "";
@@ -867,7 +899,6 @@ async function exportToCSV(){
   document.body.appendChild(a); a.click();
   setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
 
-  // iOS/Android convenience (best effort)
   try{ await navigator.clipboard.writeText(csv); }catch{}
 }
 
@@ -935,9 +966,6 @@ function checkHashForTicket(){
     setTimeout(()=>{viewTicketDetails(ticketId,false);},100);
   }
 }
-
-/* =================== UTIL =================== */
-
 </script>
 </body>
 </html>
