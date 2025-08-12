@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>Agora Ticketing Advanced</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <!-- Bootstrap -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
@@ -13,98 +13,108 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 <style>
-  :root{
-    --bg:#f8faff; --primary:#001F3F; --accent:#FF851B;
-    --danger:#FF4136; --success:#2ECC40; --monitor:#1E88E5;
-    --font:'Segoe UI',Arial,sans-serif;
-    --maxw:980px; --logo:210px; --h1:2rem; --table-font:.95rem;
-  }
-  body{background:var(--bg);color:var(--primary);font-family:var(--font)}
-  .container-main{background:#fff;border-radius:18px;max-width:var(--maxw);margin:32px auto 48px;padding:24px 18px 28px;box-shadow:0 2px 32px #001F3F11}
-  .logo-header{max-width:var(--logo);display:block;margin:0 auto 12px}
-  h1{color:var(--accent);font-size:var(--h1);text-align:center;margin-bottom:10px}
-  .form-label{color:var(--primary);font-weight:600}
-  .form-control,.form-select{border-radius:8px}
-  .btn-agora{background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:600}
-  .btn-agora:hover{background:#ff6d00}
-  .btn-admin{background:var(--primary);color:#fff;border:none;border-radius:6px}
-  .btn-admin:hover{background:#173559}
-  .btn-outline{background:#fff;color:var(--primary);border:1px solid var(--accent)}
-  .btn-outline:hover{background:var(--accent);color:#fff}
-  .nav-btns{display:flex;gap:10px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
-  .logout-link{float:right;color:#a00;text-decoration:underline;cursor:pointer;font-size:.97em}
+:root{
+  --bg:#f8faff; --primary:#001F3F; --accent:#FF851B;
+  --danger:#FF4136; --success:#2ECC40; --monitor:#1E88E5;
+  --font:'Segoe UI',Arial,sans-serif;
+  --maxw:980px; --logo:210px; --h1:2rem; --table-font:.95rem;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--primary);font-family:var(--font)}
+.container-main{background:#fff;border-radius:18px;max-width:var(--maxw);margin:32px auto 48px;padding:24px 18px 28px;box-shadow:0 2px 32px #001F3F11}
+.logo-header{max-width:var(--logo);display:block;margin:0 auto 12px}
+h1{color:var(--accent);font-size:var(--h1);text-align:center;margin-bottom:10px}
+.form-label{color:var(--primary);font-weight:600}
+.form-control,.form-select{border-radius:8px}
+.btn-agora{background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:600}
+.btn-agora:hover{background:#ff6d00}
+.btn-admin{background:var(--primary);color:#fff;border:none;border-radius:6px}
+.btn-admin:hover{background:#173559}
+.btn-outline{background:#fff;color:var(--primary);border:1px solid var(--accent)}
+.btn-outline:hover{background:var(--accent);color:#fff}
+.nav-btns{display:flex;gap:10px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
+.logout-link{float:right;color:#a00;text-decoration:underline;cursor:pointer;font-size:.97em}
+.ticket-status-open{color:var(--success);font-weight:700}
+.ticket-status-closed{color:var(--danger);font-weight:700}
+.ticket-status-monitoring{color:var(--monitor);font-weight:700}
+.ticket-link{cursor:pointer;text-decoration:underline;color:var(--primary)}
+.ticket-link:hover{color:var(--accent)}
+.comment-box{background:#f6f6f8;border-radius:7px;margin-bottom:12px;padding:10px}
+.history-box{background:#fcfcfc;border-left:3px solid var(--accent);margin-bottom:14px;padding:7px 12px}
+.photo-thumb{max-width:80px;max-height:80px;display:inline-block;margin:4px 6px 4px 0;border-radius:6px;border:1px solid #eee}
+.file-chip{display:inline-block;padding:3px 6px;border:1px solid #eee;border-radius:6px;margin:3px 6px 3px 0;font-size:.9em}
+.small-note{font-size:.9em;color:#666}
+.badge-reassign{background:#fff3cd;color:#8a6d3b;border:1px solid #ffe49c;padding:2px 6px;border-radius:10px;font-size:.8em}
+.progress-mini{height:6px;background:#eee;border-radius:8px;overflow:hidden;width:180px;display:inline-block;vertical-align:middle;margin-left:8px}
+.progress-mini>div{height:100%;background:var(--accent);width:0%;transition:width .2s}
+.hidden{display:none!important}
+footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
 
-  .ticket-status-open{color:var(--success);font-weight:700}
-  .ticket-status-closed{color:var(--danger);font-weight:700}
-  .ticket-status-monitoring{color:var(--monitor);font-weight:700}
-  .ticket-link{cursor:pointer;text-decoration:underline;color:var(--primary)}
-  .ticket-link:hover{color:var(--accent)}
-  .comment-box{background:#f6f6f8;border-radius:7px;margin-bottom:12px;padding:10px}
-  .history-box{background:#fcfcfc;border-left:3px solid var(--accent);margin-bottom:14px;padding:7px 12px}
-  .photo-thumb{max-width:80px;max-height:80px;display:inline-block;margin:4px 6px 4px 0;border-radius:6px;border:1px solid #eee}
-  .file-chip{display:inline-block;padding:3px 6px;border:1px solid #eee;border-radius:6px;margin:3px 6px 3px 0;font-size:.9em}
-  .small-note{font-size:.9em;color:#666}
-  .badge-reassign{background:#fff3cd;color:#8a6d3b;border:1px solid #ffe49c;padding:2px 6px;border-radius:10px;font-size:.8em}
-  .progress-mini{height:6px;background:#eee;border-radius:8px;overflow:hidden;width:180px;display:inline-block;vertical-align:middle;margin-left:8px}
-  .progress-mini>div{height:100%;background:var(--accent);width:0%;transition:width .2s}
-  .hidden{display:none!important}
-  footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
+/* Desktop table */
+.table-area{display:block}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table,.table *{font-size:var(--table-font)!important}
+.table thead th{position:sticky;top:0;background:#fff;z-index:1}
+.table td,.table th{white-space:normal;word-break:break-word}
+.th-sort{cursor:pointer}
 
-  /* Desktop table */
-  .table-area{display:block}
-  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .table,.table *{font-size:var(--table-font)!important}
-  .table thead th{position:sticky;top:0;background:#fff;z-index:1}
-  .table td,.table th{white-space:normal;word-break:break-word}
-  .th-sort{cursor:pointer}
+/* Mobile card list */
+.ticket-cards{display:none}
+.tcard{border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 8px #0000000a}
+.tcard-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.t-id{font-weight:700}
+.t-badges{display:flex;gap:6px;flex-wrap:wrap}
+.b-status{font-weight:700;text-transform:capitalize}
+.b-age{background:#ffe082;color:#5d4100;border-radius:8px;padding:2px 6px}
+.b-priority{border-radius:8px;padding:2px 6px;border:1px solid #ddd}
+.b-media{border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ddd;font-size:.8em}
+.b-sla{background:#ffebee;color:#b71c1c;border-radius:8px;padding:2px 6px;font-weight:700}
+.tcard-body{margin-top:6px}
+.tcard-actions{display:flex;gap:8px;margin-top:8px}
+.t-more{font-size:.92em}
+@media (max-width:800px){
+  .table-area{display:none}
+  .ticket-cards{display:block}
+  .container-main{padding:16px}
+}
+@media (max-width:600px){
+  .container-main{padding:9px 2vw}
+  h1{font-size:1.3rem}
+  .logo-header{max-width:120px}
+}
 
-  /* Mobile card list */
-  .ticket-cards{display:none}
-  .tcard{border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 8px #0000000a}
-  .tcard-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
-  .t-id{font-weight:700}
-  .t-badges{display:flex;gap:6px;flex-wrap:wrap}
-  .b-status{font-weight:700;text-transform:capitalize}
-  .b-age{background:#ffe082;color:#5d4100;border-radius:8px;padding:2px 6px}
-  .b-priority{border-radius:8px;padding:2px 6px;border:1px solid #ddd}
-  .b-media{border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ddd;font-size:.8em}
-  .b-sla{background:#ffebee;color:#b71c1c;border-radius:8px;padding:2px 6px;font-weight:700}
-  .tcard-body{margin-top:6px}
-  .tcard-actions{display:flex;gap:8px;margin-top:8px}
-  .t-more{font-size:.92em}
-  @media (max-width:800px){
-    .table-area{display:none}
-    .ticket-cards{display:block}
-    .container-main{padding:16px}
-  }
-  @media (max-width:600px){
-    .container-main{padding:9px 2vw}
-    h1{font-size:1.3rem}
-    .logo-header{max-width:120px}
-  }
+/* Summary Dashboard */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi{border:1px solid #eee;border-radius:12px;padding:14px;text-align:center;background:#fff;min-height:84px}
+.kpi .num{font-size:1.6rem;font-weight:800}
+.kpi .label{font-size:1rem;color:#4b5563}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sum-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
+.sum-title{font-weight:800;margin-bottom:6px;font-size:1.1rem}
+.chip{display:inline-block;padding:6px 10px;border:1px solid #ddd;border-radius:18px;margin-right:6px;cursor:pointer;user-select:none}
+.chip.active{border-color:var(--accent);color:var(--accent);font-weight:600}
+@media (max-width:900px){ .kpi-grid{grid-template-columns:1fr} .sum-grid{grid-template-columns:1fr} }
 
-  /* Summary */
-  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  .kpi{border:1px solid #eee;border-radius:12px;padding:10px;text-align:center;background:#fff}
-  .kpi .num{font-size:1.4rem;font-weight:800}
-  .kpi .label{font-size:.9rem;color:#666}
-  .sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .sum-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
-  .sum-title{font-weight:700;margin-bottom:6px}
-  .chip{display:inline-block;padding:6px 10px;border:1px solid #ddd;border-radius:16px;margin-right:6px;cursor:pointer;user-select:none}
-  .chip.active{border-color:var(--accent);color:var(--accent);font-weight:600}
-  @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} .sum-grid{grid-template-columns:1fr} }
+/* Admin list / profile */
+.user-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:8px}
+.user-item{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:12px;padding:10px 12px;background:#fff}
+.user-name{font-weight:700}
+.role-pill{background:#e9f0ff;color:#173559;border-radius:999px;padding:2px 10px;font-size:.85rem}
+.user-item button{white-space:nowrap}
 
-  /* Modal (close + album) */
-  .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
-  .modal-card{background:#fff;border-radius:12px;max-width:720px;width:100%;padding:14px}
-  .modal-header{font-weight:800;margin-bottom:10px}
+/* Modal (profile + album + close) */
+.modal-mask{position:fixed;left:0;top:0;right:0;bottom:0;background:#0006;display:none;align-items:center;justify-content:center;z-index:9999}
+.modal-card{width:min(720px,94vw);background:#fff;border-radius:14px;padding:16px}
+.modal-header{font-weight:800;margin-bottom:6px}
 
-  /* Admin */
-  .admin-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
-  .admin-grid{display:grid;grid-template-columns:1fr;gap:14px}
-  .table-compact .table td,.table-compact .table th{padding:.45rem}
-  .badge-role{background:#e9f3ff;color:#084f94;border-radius:10px;padding:2px 8px;font-size:.8em}
+/* Inline loader */
+.loader{display:flex;gap:8px;align-items:center}
+.loader .bar{height:8px;background:#eee;border-radius:999px;overflow:hidden;flex:1}
+.loader .bar > div{height:100%;background:var(--accent);width:0%}
+
+/* Album grid */
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(120px,1fr));gap:8px}
+.album-grid img{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid #eee}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
@@ -266,7 +276,6 @@
     <div class="sum-card mt-3" id="recurring-box">
       <div class="sum-title">Recurring Problems (all time)</div>
       <div id="recurring-list"></div>
-      <div id="recurring-loader" class="hidden small-note mt-2">Loading… <span id="rec-pct">0%</span></div>
       <div id="recurring-results" class="mt-2"></div>
     </div>
 
@@ -279,7 +288,7 @@
   <footer>Agora Ticketing v2.3 (2025-08-12)</footer>
 </div>
 
-<!-- Close Modal -->
+<!-- Modals: Close / Profile / Album -->
 <div class="modal-mask" id="close-modal">
   <div class="modal-card">
     <div class="modal-header">Close Ticket</div>
@@ -292,19 +301,28 @@
       <input type="file" id="close-files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.txt">
       <div id="close-files-preview" class="mt-1"></div>
     </div>
-    <div class="modal-actions">
+    <div class="modal-actions d-flex gap-2">
       <button class="btn btn-outline" onclick="hideCloseModal()">Cancel</button>
       <button class="btn btn-agora" onclick="doCloseFromModal()">Close Ticket</button>
     </div>
   </div>
 </div>
 
-<!-- Album Modal -->
+<div class="modal-mask" id="profile-modal">
+  <div class="modal-card">
+    <div class="modal-header">User Profile</div>
+    <div id="profile-body"></div>
+    <div class="mt-3 d-flex gap-2 justify-content-end">
+      <button class="btn btn-outline" onclick="hideProfile()">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-mask" id="album-modal">
   <div class="modal-card">
-    <div class="modal-header">Album</div>
-    <div id="album-body"></div>
-    <div class="mt-2"><button class="btn btn-outline" onclick="hideAlbum()">Close</button></div>
+    <div class="modal-header" id="album-title">Album</div>
+    <div id="album-grid" class="album-grid"></div>
+    <div class="mt-3 d-flex justify-content-end"><button class="btn btn-outline" onclick="hideAlbum()">Close</button></div>
   </div>
 </div>
 
@@ -345,13 +363,10 @@ const EMAILJS_PUBLIC_KEY = "8uQgECrkNStKV41S-";
 const TICKET_URL_ROOT = "https://agoranz.github.io/Ticket/";
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
-// SLA rules
-const SLA_MINUTES = {
-  firstResponse: 24*60,           // must comment within 24h from createdAt
-  monitoringMax: 7*24*60,         // monitoring no longer than 1 week
-  temperatureOpen: 24*60,         // optional per-alert for badges
-  defaultOpen: 72*60
-};
+// SLA mins (breach: first response >24h; monitoring >1 week for actives)
+const SLA = { Temperature: 24*60, DEFAULT: 72*60 };
+const FIRST_RESPONSE_SLA_MIN = 24*60;
+const MONITORING_MAX_MIN = 7*24*60;
 
 // State
 let curUser=null, closeTicketId=null, currentSort={key:null,dir:1};
@@ -429,8 +444,8 @@ function looksLikeImage(obj){
   return t || /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/.test(n);
 }
 function minutesBetween(aIso,bIso){ const A=new Date(aIso).getTime(); const B=new Date(bIso).getTime(); if(!isFinite(A)||!isFinite(B))return 0; return Math.max(0, Math.round((B-A)/60000)); }
-function fmtHours(mins){
-  const h = Math.round(mins/60);
+function fmtHoursFromMin(m){
+  const h = Math.round((m||0)/60);
   return `${h}h`;
 }
 
@@ -528,7 +543,7 @@ async function loadAllTickets(){
           t.createdAt = createdEvt?.date || (t.createdDate ? (t.createdDate + "T00:00:00.000Z") : new Date().toISOString());
         }
 
-        // unified close
+        // unify close (legacy)
         const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution;
         if (!t.close && hasLegacyClose) {
           t.close = {
@@ -586,18 +601,18 @@ async function showClosedTickets(){
 function ticketFilterUI(scope){
   const users=getUsers();
   byId('ticket-list-controls').innerHTML = `
-    <input class="form-control search-box d-inline" id="filter-search" placeholder="Keyword">
-    <select id="filter-assignee" class="form-select search-box">
+    <input class="form-control search-box d-inline" id="filter-search" placeholder="Keyword" style="max-width:220px">
+    <select id="filter-assignee" class="form-select search-box" style="max-width:200px">
       <option value="">All Users</option>
       ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
     </select>
-    <select id="filter-priority" class="form-select search-box">
+    <select id="filter-priority" class="form-select search-box" style="max-width:150px">
       <option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option>
     </select>
-    <select id="filter-alert" class="form-select search-box">
+    <select id="filter-alert" class="form-select search-box" style="max-width:200px">
       <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
     </select>
-    <input type="date" id="filter-date" class="form-control search-box">
+    <input type="date" id="filter-date" class="form-control search-box" style="max-width:170px">
     <span class="btn btn-sm btn-outline" id="chip-hasimg">Has Images</span>
     <button class="btn btn-agora btn-sm" onclick="filterTickets('${scope}')">Filter</button>`;
   byId('filter-search').onkeydown=(e)=>{if(e.key==='Enter')filterTickets(scope)};
@@ -630,14 +645,14 @@ async function filterTickets(scope){
 }
 
 /* =================== DESKTOP TABLE =================== */
-function slaForOpen(t){ return (t.alertType==="Temperature") ? SLA_MINUTES.temperatureOpen : SLA_MINUTES.defaultOpen; }
+function slaFor(t){ return (t.alertType==="Temperature") ? SLA.Temperature : SLA.DEFAULT; }
 function shortRow(t){
   const nowISO=new Date().toISOString();
   const minsOpen = (t.status==="open") ? minutesBetween(t.createdAt,nowISO) :
                    (t.status==="monitoring" ? minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO) : 0);
   const ageStr = (t.status==="closed" && t.close?.date)
-      ? `resolved ${fmtHours(minutesBetween(t.createdAt, t.close.date))}`
-      : (t.status==="monitoring" ? `monitoring ${fmtHours(minsOpen)}` : `open ${fmtHours(minsOpen)}`);
+      ? `resolved ${fmtHoursFromMin(minutesBetween(t.createdAt, t.close.date))}`
+      : (t.status==="monitoring" ? `monitoring ${fmtHoursFromMin(minsOpen)}` : `open ${fmtHoursFromMin(minsOpen)}`);
   return {
     id:t.id,
     dairy:t.dairyNumber, farm:t.farmName,
@@ -655,7 +670,7 @@ function sortBy(key, rows){
 }
 function renderTicketTable(tickets,isClosed){
   const rows=tickets.map(shortRow);
-  let html=`<div class="table-compact"><table class="table table-bordered table-sm"><thead><tr>
+  let html=`<table class="table table-bordered table-sm"><thead><tr>
     <th class="th-sort" onclick="renderSorted('dairy', ${isClosed})">Dairy #</th>
     <th class="th-sort" onclick="renderSorted('farm', ${isClosed})">Farm</th>
     <th class="th-sort" onclick="renderSorted('alert', ${isClosed})">Alert</th>
@@ -667,22 +682,19 @@ function renderTicketTable(tickets,isClosed){
     <th>Status</th><th></th></tr></thead><tbody id="ticket-tbody">`;
   rows.forEach(r=>{
     const t=tickets.find(x=>x.id===r.id);
-    const slaMins = slaForOpen(t);
+    const slaMins = slaFor(t);
     const isActive = t.status!=='closed';
     const currMins = isActive ? (t.status==='monitoring' ? minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString())
                                                          : minutesBetween(t.createdAt, new Date().toISOString())) : 0;
-    const slaBreachOpen = (t.status==='open' && currMins>slaMins);
-    const breach24hNoResponse = (t.status==='open' && !t.firstResponseAt && currMins>SLA_MINUTES.firstResponse);
-    const monitoringTooLong = (t.status==='monitoring' && minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString())>SLA_MINUTES.monitoringMax);
-    const showBreach = isActive && (slaBreachOpen || breach24hNoResponse || monitoringTooLong);
+    const slaBreach = isActive && currMins>slaMins ? `<span class="badge bg-danger">SLA</span>` : '';
     html+=`<tr>
       <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosed})">${r.dairy}</span></td>
       <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
-      <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${showBreach?`<span class="badge bg-danger">SLA</span>`:''}</td>
+      <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${slaBreach}</td>
       <td><span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span></td>
       <td>${!isClosed && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="showCloseModal('${r.id}')">Close</button>`:''}</td></tr>`;
   });
-  html+=`</tbody></table></div>`;
+  html+=`</tbody></table>`;
   byId('ticket-table-wrap').innerHTML=html;
 
   window.renderSorted=async function(key,isClosedFlag){
@@ -691,18 +703,15 @@ function renderTicketTable(tickets,isClosed){
     const tb=byId('ticket-tbody');
     tb.innerHTML=r2.map(r=>{
       const t=t2.find(x=>x.id===r.id);
-      const slaMins = slaForOpen(t);
+      const slaMins = slaFor(t);
       const isActive = t.status!=='closed';
       const currMins = isActive ? (t.status==='monitoring' ? minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString())
                                                            : minutesBetween(t.createdAt, new Date().toISOString())) : 0;
-      const slaBreachOpen = (t.status==='open' && currMins>slaMins);
-      const breach24hNoResponse = (t.status==='open' && !t.firstResponseAt && currMins>SLA_MINUTES.firstResponse);
-      const monitoringTooLong = (t.status==='monitoring' && minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString())>SLA_MINUTES.monitoringMax);
-      const showBreach = isActive && (slaBreachOpen || breach24hNoResponse || monitoringTooLong);
+      const slaBreach = isActive && currMins>slaMins ? `<span class="badge bg-danger">SLA</span>` : '';
       return `<tr>
         <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosedFlag})">${r.dairy}</span></td>
         <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
-        <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${showBreach?`<span class="badge bg-danger">SLA</span>`:''}</td>
+        <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${slaBreach}</td>
         <td><span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span></td>
         <td>${!isClosedFlag && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="showCloseModal('${r.id}')">Close</button>`:''}</td></tr>`;
     }).join('');
@@ -723,14 +732,8 @@ function renderTicketCards(tickets,isClosed){
     const statusMinutes = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO)
                         : (t.status==='open') ? minutesBetween(t.createdAt, nowISO) : 0;
     const mCount=mediaCount(t);
-
-    // SLA flags for badges
-    const slaOpen = slaForOpen(t);
-    const flagOpen = (t.status==='open' && statusMinutes>slaOpen);
-    const flagNoResp24 = (t.status==='open' && !t.firstResponseAt && statusMinutes>SLA_MINUTES.firstResponse);
-    const flagMonTooLong = (t.status==='monitoring' && minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO) > SLA_MINUTES.monitoringMax);
-    const slaBadge = (t.status!=='closed' && (flagOpen || flagNoResp24 || flagMonTooLong)) ? `<span class="b-sla">SLA</span>` : '';
-
+    const slaMins = slaFor(t);
+    const slaBadge = (t.status!=='closed' && statusMinutes>slaMins) ? `<span class="b-sla">SLA</span>` : '';
     const card=document.createElement('div'); card.className='tcard'; card.id=`card-${t.id}`;
     card.innerHTML=`
       <div class="tcard-head">
@@ -741,7 +744,7 @@ function renderTicketCards(tickets,isClosed){
         <div class="t-badges">
           <span class="b-priority">${t.priority}</span>
           <span class="b-status ${t.status==='open'?'text-success':(t.status==='monitoring'?'text-primary':'text-danger')}">${t.status}</span>
-          <span class="b-age">${fmtHours(statusMinutes)}</span>
+          <span class="b-age">${fmtHoursFromMin(statusMinutes)}</span>
           ${mCount?`<span class="b-media">${mCount}</span>`:''}
           ${slaBadge}
         </div>
@@ -836,7 +839,7 @@ window.viewTicketDetails=async function(id,isClosed){
   // Closed details
   if(t.status==="closed" && t.close){
     const resMins = minutesBetween(t.createdAt, t.close.date);
-    html+=`<b>Closed by:</b> ${t.close.by}<br><b>Date Closed:</b> ${t.close.date||""}<br><b>Resolution:</b> ${t.close.note||""}<br><b>Resolution Time:</b> ${fmtHours(resMins)}<br>`;
+    html+=`<b>Closed by:</b> ${t.close.by}<br><b>Date Closed:</b> ${t.close.date||""}<br><b>Resolution:</b> ${t.close.note||""}<br><b>Resolution Time:</b> ${fmtHoursFromMin(resMins)}<br>`;
     if(t.close.files?.length){
       html+=`<div class="mt-1"><b>Resolution Files:</b> `+t.close.files.map(ff=>looksLikeImage(ff)?`<a href="${ff.url}" target="_blank"><img class="photo-thumb" src="${ff.url}" loading="lazy"></a>`:`<a class="file-chip" href="${ff.url}" target="_blank">${ff.name||'file'}</a>`).join(' ')+`</div>`;
     }
@@ -952,7 +955,7 @@ async function doCloseFromModal(){
   t.status = "closed";
   t.close = close;
 
-  // Legacy mirrors
+  // Legacy fields for old exports
   t.closedBy = close.by;
   t.closedDate = close.date.slice(0,10);
   t.closeComment = close.note;
@@ -985,13 +988,13 @@ async function showSummary(){
   // Filters
   byId('summary-filters').innerHTML = `
     <div class="d-flex flex-wrap gap-2 align-items-center">
-      <span class="chip active" data-range="all" onclick="setSummaryRange(this)">All</span>
+      <span class="chip active" data-days="all" onclick="setSummaryRange(this)">All</span>
       <span class="chip" data-days="7" onclick="setSummaryRange(this)">7d</span>
       <span class="chip" data-days="30" onclick="setSummaryRange(this)">30d</span>
       <span class="chip" data-days="90" onclick="setSummaryRange(this)">90d</span>
-      <span class="chip" data-range="custom" onclick="setSummaryRange(this)">Custom</span>
-      <input type="date" id="sum-from" class="form-control" style="width:150px;display:none">
-      <input type="date" id="sum-to" class="form-control" style="width:150px;display:none">
+      <span class="chip" data-days="custom" onclick="setSummaryRange(this)">Custom</span>
+      <input type="date" id="sum-start" class="form-control" style="width:160px;display:none">
+      <input type="date" id="sum-end" class="form-control" style="width:160px;display:none">
       <select id="sum-alert" class="form-select" style="width:180px">
         <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
       </select>
@@ -1007,91 +1010,86 @@ async function showSummary(){
 function setSummaryRange(el){
   document.querySelectorAll('#summary-filters .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  const isCustom = el.dataset.range==="custom";
-  byId('sum-from').style.display = isCustom ? 'block' : 'none';
-  byId('sum-to').style.display   = isCustom ? 'block' : 'none';
+  const isCustom = el.dataset.days==='custom';
+  byId('sum-start').style.display = isCustom ? '' : 'none';
+  byId('sum-end').style.display   = isCustom ? '' : 'none';
 }
-function withinRange(d, range){
-  const now=new Date();
-  if(range.mode==='all') return true;
-  if(range.mode==='days') return (now - d) <= range.days*86400000;
-  if(range.mode==='custom') return d>=range.from && d<=range.to;
-  return true;
+function onlyNewFormat(t){
+  // Count averages from tickets that have proper createdAt / firstResponseAt / close.date in ISO (new schema)
+  return !!t.createdAt && (t.firstResponseAt || (t.status==='closed' && t.close?.date));
 }
-function getRangeFromUI(){
-  const chip = document.querySelector('#summary-filters .chip.active');
-  if(chip?.dataset.range==="all") return {mode:'all'};
-  if(chip?.dataset.range==="custom"){
-    const from = new Date(byId('sum-from').value||'1970-01-01');
-    const to   = new Date((byId('sum-to').value||'2999-12-31')+'T23:59:59');
-    return {mode:'custom', from, to};
-  }
-  const days = parseInt(chip?.dataset.days||'7',10);
-  return {mode:'days', days};
-}
-
 async function renderSummary(){
   const tickets = await loadAllTickets();
-  const range = getRangeFromUI();
+  const daysSel = (document.querySelector('#summary-filters .chip.active')?.dataset.days)||'all';
   const alertSel = (byId('sum-alert')||{}).value||'';
   const statusSel = (byId('sum-status')||{}).value||'active';
   const now = new Date();
 
-  const activeTickets = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
+  // Timeframe filter (for charts OTHER than donut)
+  const start = daysSel==='all' ? null :
+                daysSel==='custom' ? new Date((byId('sum-start').value||'1970-01-01')) :
+                new Date(now - parseInt(daysSel,10)*86400000);
+  const end   = daysSel==='custom' ? new Date((byId('sum-end').value||now.toISOString())) : now;
 
-  // ---- KPIs ----
-  const closedAllTime = tickets.filter(t=>t.status==='closed').length;
+  const inTime = (dt)=>!start || (new Date(dt) >= start && new Date(dt) <= end);
 
-  // Open category counts (only show if >0)
-  const openByTypeMap = {};
-  ['Temperature','Concentration','Plant Pressure','Milking Vacuum','Teat Spray','Other'].forEach(k=>openByTypeMap[k]=0);
-  activeTickets.forEach(t=>{ openByTypeMap[t.alertType] = (openByTypeMap[t.alertType]||0) + 1 });
+  let filtered = tickets.filter(t=>{
+    const created = new Date(t.createdAt||t.createdDate||now);
+    const timeOK = inTime(created);
+    const alertOk = !alertSel || t.alertType===alertSel;
+    const statusOk = !statusSel ? true : (statusSel==='closed'? t.status==='closed' : (t.status==='open'||t.status==='monitoring'));
+    return timeOK && alertOk && statusOk;
+  });
 
-  // First response (only tickets with firstResponseAt & createdAt from new format onwards)
-  const resp = tickets.filter(t=>t.firstResponseAt && t.createdAt);
-  const avgFirstResponseM = resp.length ? Math.round(resp.reduce((a,t)=>a+minutesBetween(t.createdAt, t.firstResponseAt),0)/resp.length) : 0;
+  // KPIs
+  const active = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
+  const closedAll = tickets.filter(t=>t.status==='closed').length;
 
-  // Resolution average **new-format only** (must have close.date + createdAt)
-  const closedNew = tickets.filter(t=>t.status==='closed' && t.close?.date && t.createdAt);
-  const avgResolutionM = closedNew.length ? Math.round(closedNew.reduce((a,t)=>a+minutesBetween(t.createdAt, t.close.date),0)/closedNew.length) : 0;
+  // Build dynamic open category KPIs
+  const openByAlert = {};
+  active.forEach(t=>{ openByAlert[t.alertType] = (openByAlert[t.alertType]||0)+1; });
+
+  // First response / resolution (ONLY from new-format onward)
+  const newFormat = tickets.filter(onlyNewFormat);
+  const responses = newFormat.filter(t=>t.firstResponseAt);
+  const avgFirstResponseMin = responses.length ? Math.round(responses.reduce((a,t)=>a+minutesBetween(t.createdAt, t.firstResponseAt),0)/responses.length) : 0;
+
+  const closedNew = newFormat.filter(t=>t.status==='closed' && t.close?.date);
+  const avgResolutionMin = closedNew.length ? Math.round(closedNew.reduce((a,t)=>a+minutesBetween(t.createdAt, t.close.date),0)/closedNew.length) : 0;
 
   // SLA breaches (active)
-  const activeBreaches = activeTickets.filter(t=>{
-    const minsOpen = minutesBetween(t.createdAt, now.toISOString());
-    const openTooLong = (t.status==='open' && minsOpen>slaForOpen(t));
-    const noResp24 = (t.status==='open' && !t.firstResponseAt && minsOpen>SLA_MINUTES.firstResponse);
-    const monTooLong = (t.status==='monitoring' && minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString())>SLA_MINUTES.monitoringMax);
-    return openTooLong || noResp24 || monTooLong;
+  const activeBreach = active.filter(t=>{
+    const minutesOpen = (t.status==='monitoring')
+      ? minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString())
+      : minutesBetween(t.createdAt, now.toISOString());
+    return minutesOpen > slaFor(t);
   }).length;
 
-  // KPI grid build
-  const kpiHTML = [];
-  kpiHTML.push(kpiCard(activeTickets.length,'Active Tickets'));
-  kpiHTML.push(kpiCard(closedAllTime,'Closed Tickets (all time)'));
-  // Open-by-type cards rendered only if >0
-  Object.entries(openByTypeMap).forEach(([k,v])=>{
-    if(v>0) kpiHTML.push(kpiCard(v,`Open ${k}`));
-  });
-  kpiHTML.push(kpiCard(avgFirstResponseM?fmtHours(avgFirstResponseM):'0h','Avg First Response (new)'));
-  kpiHTML.push(kpiCard(avgResolutionM?fmtHours(avgResolutionM):'0h','Avg Resolution (new)'));
-  kpiHTML.push(kpiCard(activeBreaches,'Active SLA Breaches'));
-  byId('kpi-grid').innerHTML = kpiHTML.join('');
+  // KPI render
+  const kpi = [];
+  kpi.push(kpiItem(active.length, "Active Tickets"));
+  kpi.push(kpiItem(closedAll, "Closed Tickets (all time)"));
+  Object.entries(openByAlert).forEach(([k,v])=>{ if(v>0) kpi.push(kpiItem(v, `Open ${k}`)); });
+  kpi.push(kpiItem(avgFirstResponseMin?fmtHoursFromMin(avgFirstResponseMin):'0h', "Avg First Response (new)"));
+  kpi.push(kpiItem(avgResolutionMin?fmtHoursFromMin(avgResolutionMin):'0h', "Avg Resolution (new)"));
+  kpi.push(kpiItem(activeBreach, "Active SLA Breaches"));
+  byId('kpi-grid').innerHTML = kpi.join('');
+  function kpiItem(num,label){return `<div class="kpi"><div class="num">${(typeof num==='number')?num:num}</div><div class="label">${label}</div></div>`}
 
-  // ---- Charts ----
+  // Charts
   destroyCharts();
 
-  // 1) Donut: ALL tickets ever (open + closed, regardless of range) + optional alert filter to focus
-  const donutTickets = tickets.filter(t=>!alertSel || t.alertType===alertSel);
-  const donutCounts = countBy(donutTickets, x=>x.alertType||'Unknown');
+  // 1) Alert type distribution (ALL tickets ever)
+  const alertCountsAll = countBy(tickets, x=>x.alertType||'Unknown');
   charts.alertType = new Chart(byId('chartAlertType').getContext('2d'), {
     type:'doughnut',
-    data:{ labels:Object.keys(donutCounts), datasets:[{ data:Object.values(donutCounts) }] },
+    data:{ labels:Object.keys(alertCountsAll), datasets:[{ data:Object.values(alertCountsAll) }] },
     options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
   });
 
-  // 2) Open age buckets (active only, not filtered by date)
+  // 2) Open age buckets (current active)
   const ageBuckets = { '0-24h':0, '1-3d':0, '4-7d':0, '8d+':0 };
-  activeTickets.forEach(t=>{
+  active.forEach(t=>{
     const mins = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString())
                                            : minutesBetween(t.createdAt, now.toISOString());
     const days = mins/1440;
@@ -1101,132 +1099,151 @@ async function renderSummary(){
     else ageBuckets['8d+']++;
   });
   charts.age = new Chart(byId('chartAge').getContext('2d'), {
-    type:'bar', data:{ labels:Object.keys(ageBuckets), datasets:[{ label:'Active', data:Object.values(ageBuckets) }] },
+    type:'bar', data:{ labels:Object.keys(ageBuckets), datasets:[{ label:'', data:Object.values(ageBuckets) }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
   });
 
-  // 3) Avg times (hours)
+  // 3) Average times (hours, new-format only)
   charts.times = new Chart(byId('chartTimes').getContext('2d'), {
     type:'bar',
-    data:{ labels:['First Response (from metrics start)','Resolution (all closed, new-format)'], datasets:[{ data:[Math.round(avgFirstResponseM/60), Math.round(avgResolutionM/60)] }] },
+    data:{ labels:['First Response','Resolution'], datasets:[{ data:[Math.round(avgFirstResponseMin/60), Math.round(avgResolutionMin/60)] }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, title:{display:true,text:'hours'}}} }
   });
 
-  // 4) Reassignments & SLA
-  const reassignedCount = tickets.filter(t=>(t.history||[]).some(h=>(h.action||'').toLowerCase().includes('reassign'))).length;
+  // 4) Reassignments & SLA (counts over filter selection for reassign; SLA = active)
+  const reassignedCount = filtered.filter(t=>(t.history||[]).some(h=>(h.action||'').toLowerCase().includes('reassign'))).length;
   charts.reassignSLA = new Chart(byId('chartReassignSLA').getContext('2d'), {
-    type:'bar', data:{ labels:['Reassigned','SLA Breaches (active)'], datasets:[{ data:[reassignedCount, activeBreaches] }] },
+    type:'bar', data:{ labels:['Reassigned','SLA Breaches'], datasets:[{ data:[reassignedCount, activeBreach] }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
   });
 
-  // ---- Recurring Problems (all time) ----
-  const key = t => `${t.dairyNumber} | ${t.alertType}`;
-  const grouped = groupBy(tickets, key);
-  const recur = Object.entries(grouped).filter(([k,arr])=>arr.length>=3)
-               .sort((a,b)=>b[1].length - a[1].length)
-               .slice(0,10);
-  byId('recurring-results').innerHTML='';
-  if(recur.length){
-    byId('recurring-list').innerHTML = `<ul class="mb-0">${recur.map(([k,arr],i)=>{
-      const [dairy, alert] = k.split(' | ');
-      return `<li><a href="#" onclick="drillRecurring('${dairy}','${alert}')">${dairy} | ${alert}</a> — <b>${arr.length}</b> tickets</li>`;
-    }).join('')}</ul>`;
-  }else{
-    byId('recurring-list').innerHTML = `<i>No recurring clusters detected.</i>`;
-  }
+  // Recurring problems (all time)
+  renderRecurring(tickets);
 
-  // ---- Latest Photos by Dairy (album) ----
-  const dairyImages = {}; // dairy -> array of {url, date}
-  tickets.forEach(t=>{
-    const pushImg = (file, dt) => { if(!looksLikeImage(file)) return; (dairyImages[t.dairyNumber]||(dairyImages[t.dairyNumber]=[])).push({url:file.url,date:new Date(dt||t.createdAt||new Date())}); };
-    (t.files||[]).forEach(f=>pushImg(f,t.createdAt));
-    (t.comments||[]).forEach(c=>(c.files||[]).forEach(f=>pushImg(f,c.date)));
-    (t.close?.files||[]).forEach(f=>pushImg(f,t.close.date));
-  });
-  const albums = Object.entries(dairyImages).map(([d,arr])=>[d, arr.sort((a,b)=>b.date-a.date)]);
-  albums.sort((a,b)=>b[1].length-a[1].length);
-  byId('latest-photos').innerHTML = albums.length ? (
-    `<div class="row g-3">`+
-    albums.slice(0,8).map(([d,arr])=>{
-      const thumbs = arr.slice(0,4).map(x=>`<img class="photo-thumb" src="${x.url}" loading="lazy">`).join('');
-      return `<div class="col-12 col-md-6"><div class="tcard">
-        <div class="tcard-head"><div class="t-id">Dairy #${d}</div></div>
-        <div class="tcard-body">
-          <div class="mb-2">${thumbs||'<i>No photos</i>'}</div>
-          <button class="btn btn-outline btn-sm" onclick="openAlbum('${d}')">Open Album (${arr.length})</button>
-        </div></div></div>`;
-    }).join('') + `</div>`
-  ) : `<i>No images yet.</i>`;
-
-  // Save for album use
-  window._albumsMap = Object.fromEntries(albums);
+  // Latest photos grouped by dairy
+  renderPhotosByDairy(tickets);
 }
-function kpiCard(number,label){ return `<div class="kpi"><div class="num">${number}</div><div class="label">${label}</div></div>`; }
 function destroyCharts(){ Object.values(charts).forEach(ch=>{ try{ch.destroy()}catch{} }); charts = {}; }
 function countBy(arr, fn){ const o={}; arr.forEach(x=>{const k=fn(x); o[k]=(o[k]||0)+1}); return o; }
 function groupBy(arr, fn){ const o={}; arr.forEach(x=>{const k=(typeof fn==='function')?fn(x):x[fn]; (o[k]||(o[k]=[])).push(x)}); return o; }
 
-// Recurring drill
-async function drillRecurring(dairy, alert){
-  byId('recurring-loader').classList.remove('hidden');
-  byId('recurring-results').innerHTML='';
-  const tix = await loadAllTickets();
-  const hit = tix.filter(t=> String(t.dairyNumber)===String(dairy) && String(t.alertType)===String(alert));
-  // fake progressive loader
-  for(let i=0;i<=100;i+=15){ await new Promise(r=>setTimeout(r,60)); byId('rec-pct').textContent=i+'%'; }
-  byId('recurring-loader').classList.add('hidden');
+function renderRecurring(allTickets){
+  const key = t => `${t.dairyNumber} | ${t.alertType}`;
+  const map = groupBy(allTickets, key);
+  const recur = Object.entries(map).filter(([k,arr])=>arr.length>=3)
+               .sort((a,b)=>b[1].length - a[1].length);
 
-  // Render as cards (like open tickets)
-  const wrap=document.createElement('div');
-  wrap.className='mt-2';
-  wrap.innerHTML = `<div class="small-note mb-2">Tickets for <b>${dairy}</b> | <b>${alert}</b> (all time)</div>`;
-  hit.forEach(t=>{
-    const statusMinutes = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString())
-                        : (t.status==='open') ? minutesBetween(t.createdAt, new Date().toISOString())
-                        : minutesBetween(t.createdAt, t.close?.date||new Date().toISOString());
-    const closeShort = (t.status==='closed' && t.close?.date) ? ` • Closed ${t.close.date.slice(0,10)}` : '';
-    const card=document.createElement('div'); card.className='tcard';
-    card.innerHTML = `
+  const list = byId('recurring-list');
+  if(!recur.length){ list.innerHTML = `<i>No recurring clusters yet.</i>`; byId('recurring-results').innerHTML=''; return; }
+
+  list.innerHTML = `<ul class="mb-2">${recur.map(([k,arr])=>{
+    const [dairy, alert] = k.split('|').map(s=>s.trim());
+    return `<li><a href="#" data-k="${dairy}||${alert}" class="rec-link">${dairy} | ${alert}</a> — <b>${arr.length}</b> tickets</li>`;
+  }).join('')}</ul>`;
+
+  // click handler: inline loader + cards, no jump
+  list.querySelectorAll('.rec-link').forEach(a=>{
+    a.onclick=(e)=>{
+      e.preventDefault();
+      const [dairy, alert] = (a.dataset.k||'||').split('||');
+      showRecurringCards(allTickets, dairy, alert);
+    };
+  });
+}
+function showRecurringCards(allTickets, dairy, alert){
+  const box = byId('recurring-results');
+  box.innerHTML = `
+    <div class="loader"><div>Loading tickets for <b>${dairy} | ${alert}</b>…</div>
+      <div class="bar"><div id="rec-bar"></div></div><span id="rec-pct">0%</span></div>`;
+  const rec = allTickets.filter(t=>String(t.dairyNumber)===String(dairy) && t.alertType===alert);
+  // Simulate progressive build with % indicator
+  const out = [];
+  let i=0;
+  function step(){
+    const chunk = Math.min(5, rec.length - i);
+    for(let j=0;j<chunk;j++){
+      const t = rec[i+j];
+      out.push(tcardHTML(t));
+    }
+    i += chunk;
+    const pct = rec.length? Math.round((i/rec.length)*100) : 100;
+    byId('rec-bar').style.width = pct + '%';
+    byId('rec-pct').textContent = pct + '%';
+    if(i<rec.length){ setTimeout(step, 40); }
+    else{
+      box.innerHTML = `<div class="mt-2"><div class="small-note mb-1">Tickets for <b>${dairy} | ${alert}</b> (all time)</div>${out.join('')}</div>`;
+    }
+  }
+  step();
+
+  function tcardHTML(t){
+    const isClosed=t.status==='closed';
+    const nowISO=new Date().toISOString();
+    const statusMinutes = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO)
+                          : (t.status==='open') ? minutesBetween(t.createdAt, nowISO)
+                          : minutesBetween(t.createdAt, t.close?.date||nowISO);
+    const mCount=mediaCount(t);
+    const slaMins=slaFor(t);
+    const slaBadge = (t.status!=='closed' && statusMinutes>slaMins) ? `<span class="b-sla">SLA</span>` : '';
+    return `<div class="tcard">
       <div class="tcard-head">
         <div>
           <div class="t-id">#${t.dairyNumber} • ${t.farmName}</div>
-          <div class="text-muted t-more">${t.alertType}</div>
+          <div class="text-muted t-more">${t.alertType}${t.alertType==='Other'?': '+(t.alertOther||''):''}</div>
         </div>
         <div class="t-badges">
+          <span class="b-priority">${t.priority}</span>
           <span class="b-status ${t.status==='open'?'text-success':(t.status==='monitoring'?'text-primary':'text-danger')}">${t.status}</span>
-          <span class="b-age">${fmtHours(statusMinutes)}</span>
+          <span class="b-age">${fmtHoursFromMin(statusMinutes)}</span>
+          ${mCount?`<span class="b-media">${mCount}</span>`:''}
+          ${slaBadge}
         </div>
       </div>
       <div class="tcard-body">
-        <div><b>Opened:</b> ${t.createdDate||''}${closeShort}</div>
-        <div class="mt-1"><b>Issue:</b> ${t.issueDesc||''}</div>
-        <div class="tcard-actions"><a class="btn btn-outline btn-sm" href="#ticket=${t.id}" onclick="viewTicketDetails('${t.id}', ${t.status==='closed'})">Open</a></div>
-      </div>`;
-    wrap.appendChild(card);
-  });
-  byId('recurring-results').innerHTML='';
-  byId('recurring-results').appendChild(wrap);
+        <div><b>Opened:</b> ${t.createdDate||''}${isClosed?` • <b>Closed:</b> ${(t.close?.date||'').slice(0,10)}`:''}</div>
+        <div class="tcard-actions mt-2">
+          <button class="btn btn-outline btn-sm" onclick="viewTicketDetails('${t.id}', ${isClosed})">Open</button>
+        </div>
+      </div>
+    </div>`;
+  }
 }
 
-// Album
+function renderPhotosByDairy(tickets){
+  // gather images with dairy key
+  const imgsByDairy = {};
+  tickets.forEach(t=>{
+    const add=(arr)=> (arr||[]).forEach(f=>{ if(looksLikeImage(f)) (imgsByDairy[t.dairyNumber]||(imgsByDairy[t.dairyNumber]=[])).push({url:f.url, farm:t.farmName}) });
+    add(t.files);
+    (t.comments||[]).forEach(c=>add(c.files));
+    add(t.close?.files);
+  });
+
+  const wrap = byId('latest-photos'); wrap.innerHTML='';
+  const entries = Object.entries(imgsByDairy);
+  if(!entries.length){ wrap.innerHTML = `<i>No photos yet.</i>`; return; }
+  const frag = document.createDocumentFragment();
+  entries.forEach(([dairy, arr])=>{
+    const few = arr.slice(-5); // last few
+    const div = document.createElement('div');
+    div.className = 'mb-2';
+    div.innerHTML = `<div class="mb-1"><b>Dairy ${dairy}</b> — ${arr.length} photos</div>` + 
+      few.map(x=>`<img class="photo-thumb" src="${x.url}" loading="lazy">`).join(' ') + 
+      ` <button class="btn btn-sm btn-outline" onclick="openAlbum('${dairy}')">Open album</button>`;
+    frag.appendChild(div);
+  });
+  wrap.appendChild(frag);
+
+  // store for album view
+  window.__albumPhotos = imgsByDairy;
+}
 function openAlbum(dairy){
-  const arr = (window._albumsMap||{})[dairy]||[];
-  const body = byId('album-body');
-  body.innerHTML = arr.length ? arr.map(x=>`<a href="${x.url}" target="_blank"><img class="photo-thumb" src="${x.url}" loading="lazy"></a>`).join('') : '<i>No photos.</i>';
+  const items = (window.__albumPhotos||{})[dairy]||[];
+  byId('album-title').textContent = `Album — Dairy ${dairy}`;
+  const grid = byId('album-grid'); grid.innerHTML = items.map(x=>`<a href="${x.url}" target="_blank"><img src="${x.url}" loading="lazy"></a>`).join('');
   byId('album-modal').style.display='flex';
 }
 function hideAlbum(){ byId('album-modal').style.display='none'; }
-
-function exportSummary(){
-  const rows=[["Metric","Value"]];
-  document.querySelectorAll('#kpi-grid .kpi').forEach(card=>{
-    const label=card.querySelector('.label').textContent.trim();
-    const num=card.querySelector('.num').textContent.trim();
-    rows.push([label,num]);
-  });
-  const wb=XLSX.utils.book_new(); const ws=XLSX.utils.aoa_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, "Summary KPIs"); XLSX.writeFile(wb,"summary_export.xlsx");
-}
 
 /* =================== EXPORTS =================== */
 function normalizeTicket(t){
@@ -1291,6 +1308,7 @@ function normalizeTicket(t){
 async function exportToCSV(){
   const tickets=await loadAllTickets();
   const flat=tickets.map(normalizeTicket);
+
   const headers = Object.keys(flat[0] || {ID:"",DairyNumber:""});
   const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   const rows=[headers.join(',')].concat(flat.map(r=>headers.map(h=>quote(r[h])).join(',')));
@@ -1301,6 +1319,7 @@ async function exportToCSV(){
   document.body.appendChild(a); a.click();
   setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
 }
+
 async function exportToXLSX(){
   const tickets=await loadAllTickets();
   const flat=tickets.map(normalizeTicket);
@@ -1308,6 +1327,7 @@ async function exportToXLSX(){
   const ws=XLSX.utils.json_to_sheet(flat);
   XLSX.utils.book_append_sheet(wb, ws, "Tickets");
 
+  // Optional sheets
   const comments=[];
   tickets.forEach(t=>{
     (t.comments||[]).forEach(c=>{
@@ -1323,6 +1343,7 @@ async function exportToXLSX(){
     });
   });
   if(comments.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(comments), "Comments");
+
   XLSX.writeFile(wb, "tickets_export.xlsx");
 }
 
@@ -1333,102 +1354,100 @@ function adminPanel(){
   byId('summary-section').classList.add('hidden');
   byId('ticket-list-section').classList.remove('hidden');
 
-  const users = getUsers();
-  const rolesList = users.map(u=>`<li>${u.name} — ${u.username} ${u.role==='admin'?'<span class="badge-role ms-1">admin</span>':''}</li>`).join('');
+  const users=getUsers();
 
   byId('ticket-list-controls').innerHTML = `
-    <div class="admin-grid">
-      <div class="admin-card">
-        <h5 class="mb-2">User Management</h5>
-        <div class="row g-2">
-          <div class="col-md-4"><input id="adm-name" class="form-control" placeholder="Full name"></div>
-          <div class="col-md-4"><input id="adm-email" class="form-control" placeholder="Email (username)"></div>
-          <div class="col-md-3"><input id="adm-pass" class="form-control" placeholder="Password"></div>
-          <div class="col-md-1">
-            <select id="adm-role" class="form-select"><option value="service">Service</option><option value="admin">Admin</option></select>
-          </div>
-        </div>
-        <button class="btn btn-admin mt-2" onclick="adminCreateUser()">Create User (Auth + Directory)</button>
-        <hr>
-        <h6>Existing Users</h6>
-        <ul class="mb-0">${rolesList}</ul>
+    <h4 class="mb-2">Admin Panel</h4>
+    <div class="sum-card mb-3">
+      <div class="sum-title">User Management</div>
+      <div class="row g-2">
+        <div class="col-12 col-md-4"><input type="text" id="new-name" class="form-control" placeholder="Full name"></div>
+        <div class="col-12 col-md-4"><input type="email" id="new-email" class="form-control" placeholder="Email (username)"></div>
+        <div class="col-12 col-md-3"><input type="text" id="new-pass" class="form-control" placeholder="Password"></div>
+        <div class="col-12 col-md-1 d-grid"><button class="btn btn-admin" onclick="createUser()">Create</button></div>
       </div>
+    </div>
 
-      <div class="admin-card table-compact">
-        <h5 class="mb-2">User Ticket History</h5>
-        <div class="d-flex gap-2 align-items-center mb-2">
-          <select id="adm-user-filter" class="form-select" style="max-width:240px">
-            <option value="">All users</option>
-            ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
-          </select>
-          <button class="btn btn-agora btn-sm" onclick="renderAdminHistory()">Apply</button>
-        </div>
-        <div id="adm-history-wrap"></div>
-      </div>
+    <div class="sum-card mb-3">
+      <div class="sum-title">Existing Users</div>
+      <ul class="user-list" id="user-list"></ul>
+    </div>
 
-      <div class="admin-card">
-        <h5>Email Test</h5>
-        <select id="adm-email-multi" class="form-select" multiple>
-          ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name} — ${u.username}</option>`).join('')}
+    <div class="sum-card">
+      <div class="sum-title">User Ticket History</div>
+      <div class="d-flex gap-2 align-items-center mb-2">
+        <select id="hist-user" class="form-select" style="max-width:240px">
+          <option value="">All users</option>
+          ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
         </select>
-        <div class="small-note mt-1">Hold Ctrl/Cmd to select multiple.</div>
-        <button class="btn btn-admin mt-2" onclick="sendTestEmail()">Send Test</button>
+        <button class="btn btn-agora" onclick="renderUserHistory()">Apply</button>
       </div>
-    </div>`;
+      <div id="user-history-table"></div>
+    </div>
+  `;
 
   byId('ticket-table-wrap').innerHTML=''; byId('ticket-cards').innerHTML='';
   byId('ticket-view-modal').classList.add('hidden');
-  renderAdminHistory();
-}
-function adminCreateUser(){
-  const name=(val('adm-name')||'').trim();
-  const username=(val('adm-email')||'').trim().toLowerCase();
-  const password=(val('adm-pass')||'').trim();
-  const role=val('adm-role')||'service';
-  if(!name||!username||!password) return alert('All fields are required.');
-  const users=getUsers();
-  if(users.some(u=>u.username===username)) return alert('User already exists.');
-  users.push({name,username,password,role});
-  setUsers(users);
-  alert('User created.');
-  adminPanel();
-}
-async function renderAdminHistory(){
-  const username=(byId('adm-user-filter')||{}).value||'';
-  const tickets=await loadAllTickets();
-  // aggregate counts by canonical username
-  const map={}; const uMap = Object.fromEntries(getUsers().map(u=>[u.username.toLowerCase(),u.name]));
-  tickets.forEach(t=>{
-    const opener=(t.openedByUser||'').toLowerCase();
-    const closer=(t.close?.by||t.closedBy||'').toLowerCase();
-    const commenters=(t.comments||[]).map(c=>(c.user||'').toLowerCase());
-    const reassigned=(t.history||[]).filter(h=>(h.action||'').toLowerCase().includes('reassign')).map(h=>(h.user||'').toLowerCase());
 
-    const inc=(user,key)=>{ if(!user) return; const k=user.toLowerCase(); if(username && k!==username) return;
-      (map[k]||(map[k]={user:uMap[k]||k,created:0,reassigned:0,closed:0,comments:0}));
-      map[k][key]++; };
-
-    inc(opener,'created');
-    inc(closer,'closed');
-    commenters.forEach(u=>inc(u,'comments'));
-    reassigned.forEach(u=>inc(u,'reassigned'));
+  renderUserList();
+  renderUserHistory();
+}
+function renderUserList(){
+  const list=byId('user-list'); list.innerHTML='';
+  getUsers().forEach(u=>{
+    const li=document.createElement('li'); li.className='user-item';
+    li.innerHTML=`
+      <div><span class="user-name">${u.name}</span> <span class="role-pill">${u.role}</span></div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline btn-sm" onclick="openProfile('${u.username}')">View</button>
+      </div>`;
+    list.appendChild(li);
   });
-  const rows=Object.values(map).sort((a,b)=>a.user.localeCompare(b.user));
-  const html = `<div class="table-wrap"><table class="table table-bordered table-sm">
-    <thead><tr><th>User</th><th>Created</th><th>Reassigned</th><th>Closed</th><th>Comments</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr><td>${r.user}</td><td>${r.created||0}</td><td>${r.reassigned||0}</td><td>${r.closed||0}</td><td>${r.comments||0}</td></tr>`).join('')}</tbody>
-  </table></div>`;
-  byId('adm-history-wrap').innerHTML=html;
 }
-function sendTestEmail(){
-  const sel = Array.from((byId('adm-email-multi')||{selectedOptions:[]}).selectedOptions).map(o=>o.value);
-  if(!sel.length) return alert('Pick at least one recipient.');
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-    ticket_id: 'TEST', dairy_number:'0000', farm_name:'Test', alert_type:'Temperature',
-    priority:'Low', assigned_to:'—', opened_by:curUser?.name||'Admin',
-    created_date:new Date().toISOString().slice(0,10), issue_desc:'Test message',
-    ticket_link: TICKET_URL_ROOT, to_email: sel.join(','), cc_email:''
-  }, EMAILJS_PUBLIC_KEY).then(()=>alert('Sent.')).catch(()=>alert('Failed to send.'));
+function openProfile(username){
+  const u=getUsers().find(x=>x.username===username);
+  if(!u) return;
+  byId('profile-body').innerHTML = `
+    <div><b>Name:</b> ${u.name}</div>
+    <div><b>Email:</b> ${u.username}</div>
+    <div><b>Role:</b> <span class="role-pill">${u.role}</span></div>
+    <div class="mt-2 d-flex gap-2">
+      ${u.role!=='admin'?`<button class="btn btn-admin btn-sm" onclick="promote('${u.username}')">Make admin</button>`:`<button class="btn btn-outline btn-sm" onclick="demote('${u.username}')">Make service</button>`}
+      <button class="btn btn-outline btn-sm" onclick="resetPass('${u.username}')">Reset password</button>
+    </div>`;
+  byId('profile-modal').style.display='flex';
+}
+function hideProfile(){ byId('profile-modal').style.display='none'; }
+function promote(username){ const users=getUsers(); const u=users.find(x=>x.username===username); if(!u)return; u.role='admin'; setUsers(users); renderUserList(); openProfile(username); }
+function demote(username){ const users=getUsers(); const u=users.find(x=>x.username===username); if(!u)return; u.role='service'; setUsers(users); renderUserList(); openProfile(username); }
+function resetPass(username){ const users=getUsers(); const u=users.find(x=>x.username===username); if(!u)return; const p=prompt("New password for "+u.name); if(!p) return; u.password=p; setUsers(users); alert("Password updated."); }
+function createUser(){
+  const name=(val('new-name')||'').trim(); const email=(val('new-email')||'').trim().toLowerCase(); const pass=(val('new-pass')||'').trim();
+  if(!name||!email||!pass) return alert("Fill all fields."); if(findUser(email)) return alert("User exists.");
+  const users=getUsers(); users.push({name,username:email,password:pass,role:'service'}); setUsers(users);
+  renderUserList(); byId('new-name').value=''; byId('new-email').value=''; byId('new-pass').value='';
+}
+async function renderUserHistory(){
+  const tickets=await loadAllTickets();
+  const selected=(byId('hist-user')||{}).value||'';
+  const perUser={};
+  tickets.forEach(t=>{
+    const userKey=(t.openedByUser||'').toLowerCase();
+    if(!userKey) return;
+    if(selected && userKey!==selected) return;
+    const properName=(getUsers().find(u=>u.username===userKey)||{}).name || (t.openedBy||userKey);
+    const key=userKey; if(!perUser[key]) perUser[key]={name:properName, created:0, reassigned:0, closed:0, comments:0};
+    perUser[key].created++;
+    perUser[key].closed += (t.status==='closed')?1:0;
+    perUser[key].reassigned += (t.history||[]).filter(h=>(h.action||'').toLowerCase().includes('reassign')).length;
+    perUser[key].comments += (t.comments||[]).length;
+  });
+  const rows=Object.values(perUser).sort((a,b)=>a.name.localeCompare(b.name));
+  const html = `<table class="table table-bordered table-sm">
+    <thead><tr><th>User</th><th>Created</th><th>Reassigned</th><th>Closed</th><th>Comments</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${r.name}</td><td>${r.created}</td><td>${r.reassigned}</td><td>${r.closed}</td><td>${r.comments}</td></tr>`).join('')}</tbody>
+  </table>`;
+  byId('user-history-table').innerHTML=html;
 }
 
 /* =================== EMAIL =================== */
