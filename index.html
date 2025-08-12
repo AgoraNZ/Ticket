@@ -1,113 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Agora Ticketing v2.1</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- Bootstrap -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-  <!-- SheetJS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- Chart.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <!-- EmailJS -->
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<meta charset="UTF-8" />
+<title>Agora Ticketing Advanced</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<!-- Bootstrap -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+<!-- SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
-  <style>
-    :root{
-      --bg:#f8faff; --primary:#001F3F; --accent:#FF851B;
-      --danger:#FF4136; --success:#2ECC40; --monitor:#1E88E5;
-      --font:'Segoe UI',Arial,sans-serif;
-      --maxw:980px; --logo:210px; --h1:2rem; --table-font:.95rem;
-    }
-    body{background:var(--bg);color:var(--primary);font-family:var(--font)}
-    .container-main{background:#fff;border-radius:18px;max-width:var(--maxw);margin:32px auto 48px;padding:24px 18px 28px;box-shadow:0 2px 32px #001F3F11}
-    .logo-header{max-width:var(--logo);display:block;margin:0 auto 12px}
-    h1{color:var(--accent);font-size:var(--h1);text-align:center;margin-bottom:10px}
-    .form-label{color:var(--primary);font-weight:600}
-    .form-control,.form-select{border-radius:8px}
-    .btn-agora{background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:600}
-    .btn-agora:hover{background:#ff6d00}
-    .btn-admin{background:var(--primary);color:#fff;border:none;border-radius:6px}
-    .btn-admin:hover{background:#173559}
-    .btn-outline{background:#fff;color:var(--primary);border:1px solid var(--accent)}
-    .btn-outline:hover{background:var(--accent);color:#fff}
-    .nav-btns{display:flex;gap:10px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
-    .logout-link{float:right;color:#a00;text-decoration:underline;cursor:pointer;font-size:.97em}
-    .ticket-status-open{color:var(--success);font-weight:700}
-    .ticket-status-closed{color:var(--danger);font-weight:700}
-    .ticket-status-monitoring{color:var(--monitor);font-weight:700}
-    .ticket-link{cursor:pointer;text-decoration:underline;color:var(--primary)}
-    .ticket-link:hover{color:var(--accent)}
-    .comment-box{background:#f6f6f8;border-radius:7px;margin-bottom:12px;padding:10px}
-    .history-box{background:#fcfcfc;border-left:3px solid var(--accent);margin-bottom:14px;padding:7px 12px}
-    .photo-thumb{max-width:80px;max-height:80px;display:inline-block;margin:4px 6px 4px 0;border-radius:6px;border:1px solid #eee}
-    .file-chip{display:inline-block;padding:3px 6px;border:1px solid #eee;border-radius:6px;margin:3px 6px 3px 0;font-size:.9em}
-    .small-note{font-size:.9em;color:#666}
-    .badge-reassign{background:#fff3cd;color:#8a6d3b;border:1px solid #ffe49c;padding:2px 6px;border-radius:10px;font-size:.8em}
-    .progress-mini{height:6px;background:#eee;border-radius:8px;overflow:hidden;width:180px;display:inline-block;vertical-align:middle;margin-left:8px}
-    .progress-mini>div{height:100%;background:var(--accent);width:0%;transition:width .2s}
-    .hidden{display:none!important}
-    footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
+<style>
+  :root{
+    --bg:#f8faff; --primary:#001F3F; --accent:#FF851B;
+    --danger:#FF4136; --success:#2ECC40; --monitor:#1E88E5;
+    --font:'Segoe UI',Arial,sans-serif;
+    --maxw:980px; --logo:210px; --h1:2rem; --table-font:.95rem;
+  }
+  body{background:var(--bg);color:var(--primary);font-family:var(--font)}
+  .container-main{background:#fff;border-radius:18px;max-width:var(--maxw);margin:32px auto 48px;padding:24px 18px 28px;box-shadow:0 2px 32px #001F3F11}
+  .logo-header{max-width:var(--logo);display:block;margin:0 auto 12px}
+  h1{color:var(--accent);font-size:var(--h1);text-align:center;margin-bottom:10px}
+  .form-label{color:var(--primary);font-weight:600}
+  .form-control,.form-select{border-radius:8px}
+  .btn-agora{background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:600}
+  .btn-agora:hover{background:#ff6d00}
+  .btn-admin{background:var(--primary);color:#fff;border:none;border-radius:6px}
+  .btn-admin:hover{background:#173559}
+  .btn-outline{background:#fff;color:var(--primary);border:1px solid var(--accent)}
+  .btn-outline:hover{background:var(--accent);color:#fff}
+  .nav-btns{display:flex;gap:10px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
+  .logout-link{float:right;color:#a00;text-decoration:underline;cursor:pointer;font-size:.97em}
+  .ticket-status-open{color:var(--success);font-weight:700}
+  .ticket-status-closed{color:var(--danger);font-weight:700}
+  .ticket-status-monitoring{color:var(--monitor);font-weight:700}
+  .ticket-link{cursor:pointer;text-decoration:underline;color:var(--primary)}
+  .ticket-link:hover{color:var(--accent)}
+  .comment-box{background:#f6f6f8;border-radius:7px;margin-bottom:12px;padding:10px}
+  .history-box{background:#fcfcfc;border-left:3px solid var(--accent);margin-bottom:14px;padding:7px 12px}
+  .photo-thumb{max-width:80px;max-height:80px;display:inline-block;margin:4px 6px 4px 0;border-radius:6px;border:1px solid #eee}
+  .file-chip{display:inline-block;padding:3px 6px;border:1px solid #eee;border-radius:6px;margin:3px 6px 3px 0;font-size:.9em}
+  .small-note{font-size:.9em;color:#666}
+  .badge-reassign{background:#fff3cd;color:#8a6d3b;border:1px solid #ffe49c;padding:2px 6px;border-radius:10px;font-size:.8em}
+  .progress-mini{height:6px;background:#eee;border-radius:8px;overflow:hidden;width:180px;display:inline-block;vertical-align:middle;margin-left:8px}
+  .progress-mini>div{height:100%;background:var(--accent);width:0%;transition:width .2s}
+  .hidden{display:none!important}
+  footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
 
-    /* Desktop table */
-    .table-area{display:block}
-    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .table,.table *{font-size:var(--table-font)!important}
-    .table thead th{position:sticky;top:0;background:#fff;z-index:1}
-    .table td,.table th{white-space:normal;word-break:break-word}
-    .th-sort{cursor:pointer}
+  /* Desktop table */
+  .table-area{display:block}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .table,.table *{font-size:var(--table-font)!important}
+  .table thead th{position:sticky;top:0;background:#fff;z-index:1}
+  .table td,.table th{white-space:normal;word-break:break-word}
+  .th-sort{cursor:pointer}
 
-    /* Mobile card list */
-    .ticket-cards{display:none}
-    .tcard{border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 8px #0000000a}
-    .tcard-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
-    .t-id{font-weight:700}
-    .t-badges{display:flex;gap:6px;flex-wrap:wrap}
-    .b-status{font-weight:700;text-transform:capitalize}
-    .b-age{background:#ffe082;color:#5d4100;border-radius:8px;padding:2px 6px}
-    .b-priority{border-radius:8px;padding:2px 6px;border:1px solid #ddd}
-    .b-media{border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ddd;font-size:.8em}
-    .b-sla{background:#ffebee;color:#b71c1c;border-radius:8px;padding:2px 6px;font-weight:700}
-    .tcard-body{margin-top:6px}
-    .tcard-actions{display:flex;gap:8px;margin-top:8px}
-    .t-more{font-size:.92em}
-    @media (max-width:800px){
-      .table-area{display:none}
-      .ticket-cards{display:block}
-      .container-main{padding:16px}
-    }
-    @media (max-width:600px){
-      .container-main{padding:9px 2vw}
-      h1{font-size:1.3rem}
-      .logo-header{max-width:120px}
-    }
+  /* Mobile cards */
+  .ticket-cards{display:none}
+  .tcard{border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 8px #0000000a}
+  .tcard-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .t-id{font-weight:700}
+  .t-badges{display:flex;gap:6px;flex-wrap:wrap}
+  .b-status{font-weight:700;text-transform:capitalize}
+  .b-age{background:#ffe082;color:#5d4100;border-radius:8px;padding:2px 6px}
+  .b-priority{border-radius:8px;padding:2px 6px;border:1px solid #ddd}
+  .b-media{border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ddd;font-size:.8em}
+  .b-sla{background:#ffebee;color:#b71c1c;border-radius:8px;padding:2px 6px;font-weight:700}
+  .tcard-body{margin-top:6px}
+  .tcard-actions{display:flex;gap:8px;margin-top:8px}
+  .t-more{font-size:.92em}
+  @media (max-width:800px){
+    .table-area{display:none}
+    .ticket-cards{display:block}
+    .container-main{padding:16px}
+  }
+  @media (max-width:600px){
+    .container-main{padding:9px 2vw}
+    h1{font-size:1.3rem}
+    .logo-header{max-width:120px}
+  }
 
-    /* Summary Dashboard */
-    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .kpi{border:1px solid #eee;border-radius:12px;padding:10px;text-align:center;background:#fff}
-    .kpi .num{font-size:1.4rem;font-weight:800}
-    .kpi .label{font-size:.9rem;color:#666}
-    .sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .sum-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
-    .sum-title{font-weight:700;margin-bottom:6px}
-    .chip{display:inline-block;padding:4px 10px;border:1px solid #ddd;border-radius:14px;margin-right:6px;cursor:pointer;user-select:none}
-    .chip.active{border-color:var(--accent);color:var(--accent);font-weight:600}
-    .custom-range{display:none;gap:6px}
-    @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} .sum-grid{grid-template-columns:1fr} }
+  /* Summary Dashboard */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .kpi{border:1px solid #eee;border-radius:12px;padding:10px;text-align:center;background:#fff}
+  .kpi .num{font-size:1.4rem;font-weight:800}
+  .kpi .label{font-size:.9rem;color:#666}
+  .sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sum-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
+  .sum-title{font-weight:700;margin-bottom:6px}
+  .chip{display:inline-block;padding:4px 8px;border:1px solid #ddd;border-radius:14px;margin-right:6px;cursor:pointer;user-select:none}
+  .chip.active{border-color:var(--accent);color:var(--accent);font-weight:600}
+  @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} .sum-grid{grid-template-columns:1fr} }
 
-    /* Admin polish */
-    .admin-section .form-label{font-size:.95rem}
-    .admin-section h5{font-size:1.05rem;margin-bottom:.6rem}
-    .admin-badge{background:#0d6efd1a;color:#0d6efd;border-radius:8px;padding:2px 8px;font-size:.78rem}
-    .admin-list li{margin-bottom:.35rem;line-height:1.2}
-    .admin-small{font-size:.9rem;color:#666}
-    .tight{row-gap:.4rem}
-    /* Close modal */
-    .modal-mask{position:fixed;inset:0;background:#0005;display:none;align-items:center;justify-content:center;z-index:5000}
-    .modal-card{background:#fff;border-radius:12px;max-width:560px;width:92vw;padding:16px}
-    .modal-header{font-weight:700;margin-bottom:8px}
-  </style>
+  /* Modal (close ticket) */
+  .modal-mask{position:fixed;inset:0;background:#0006;display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}
+  .modal-card{max-width:560px;width:100%;background:#fff;border-radius:12px;padding:16px}
+  .modal-header{font-weight:700;margin-bottom:8px}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+  /* Admin polish */
+  .admin-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff;margin-bottom:12px}
+  .admin-title{font-weight:700;margin-bottom:6px}
+  .table-compact.table td,.table-compact.table th{padding:.45rem .6rem;}
+  .table-compact thead th{position:sticky;top:0;background:#fff;z-index:2}
+  .table-compact td.num,.table-compact th.num{text-align:right;width:1%;white-space:nowrap}
+  .table-compact tbody tr:nth-child(even){background:#fafafa}
+  #user-stats .cards{display:none}
+  @media (max-width:680px){
+    #user-stats .table-wrap{display:none}
+    #user-stats .cards{display:block}
+    .ustat-card{border:1px solid #eee;border-radius:10px;padding:.6rem .8rem;margin:.5rem 0}
+    .ustat-card .name{font-weight:600}
+    .ustat-card .row{display:flex;justify-content:space-between;margin:.15rem 0}
+  }
+</style>
 </head>
 <body>
 <div class="container-main" id="main-box">
@@ -266,6 +275,7 @@
     <div class="sum-card mt-3" id="recurring-box">
       <div class="sum-title">Recurring Problems (all time)</div>
       <div id="recurring-list"></div>
+      <div id="recurring-drill" class="mt-2"></div>
     </div>
 
     <div class="sum-card mt-3" id="photo-box">
@@ -274,10 +284,10 @@
     </div>
   </div>
 
-  <footer>Agora Ticketing v2.1 (2025-08-12)</footer>
+  <footer>Agora Ticketing v2.2 (2025-08-12)</footer>
 </div>
 
-<!-- Close Modal -->
+<!-- Close Modal (hidden by default; no static close section anywhere) -->
 <div class="modal-mask" id="close-modal">
   <div class="modal-card">
     <div class="modal-header">Close Ticket</div>
@@ -290,21 +300,10 @@
       <input type="file" id="close-files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.txt">
       <div id="close-files-preview" class="mt-1"></div>
     </div>
-    <div class="modal-actions d-flex gap-2">
+    <div class="modal-actions">
       <button class="btn btn-outline" onclick="hideCloseModal()">Cancel</button>
       <button class="btn btn-agora" onclick="doCloseFromModal()">Close Ticket</button>
     </div>
-  </div>
-</div>
-
-<!-- Recurring list modal -->
-<div class="modal-mask" id="recurring-modal">
-  <div class="modal-card">
-    <div class="modal-header d-flex justify-content-between">
-      <span id="recurring-title">Tickets</span>
-      <button class="btn btn-sm btn-outline" onclick="hideRecurring()">Close</button>
-    </div>
-    <div id="recurring-body" style="max-height:60vh;overflow:auto"></div>
   </div>
 </div>
 
@@ -314,7 +313,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
 
 <script>
-/* =================== CONFIG / INIT =================== */
+/* ============== CONFIG / INIT ============== */
 const initialUsers = [
   { username:"regan.beaver@agora.co.nz", name:"Regan Beaver", password:"Moometrics24", role:"admin" },
   { username:"ahren.lomas@agora.co.nz", name:"Ahren Lomas", password:"Moometrics24", role:"admin" },
@@ -325,11 +324,6 @@ const initialUsers = [
 if(!localStorage.getItem("users")){
   localStorage.setItem("users", JSON.stringify(initialUsers.map(u=>({...u,username:u.username.toLowerCase()}))));
 }
-
-// Admin-configurable metrics start (only tickets >= this date are used for averages)
-const DEFAULT_METRICS_START = "2025-08-11T00:00:00.000Z";
-function getMetricsStart(){ return localStorage.getItem("metricsStartISO") || DEFAULT_METRICS_START; }
-function setMetricsStart(iso){ localStorage.setItem("metricsStartISO", iso); }
 
 const firebaseConfig = {
   apiKey:"AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
@@ -343,23 +337,26 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 const ticketsFolder = "Agora V1 Tickets";
 
-// EmailJS config
+/* EmailJS */
 const EMAILJS_SERVICE_ID = "service_228tpco";
 const EMAILJS_TEMPLATE_ID = "template_9s0ckye";
 const EMAILJS_PUBLIC_KEY = "8uQgECrkNStKV41S-";
 const TICKET_URL_ROOT = "https://agoranz.github.io/Ticket/";
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
-// SLA rules (in hours)
-const SLA_HOURS = { FirstResponse: 24, MonitoringMax: 24*7 };
-const SLA = { Temperature: 24*60, DEFAULT: 72*60 }; // keep for compatibility where needed
+/* SLA + Metrics cutover */
+const SLA = { Temperature: 24*60, DEFAULT: 72*60 };
+const SLA_FIRST_RESPONSE_MIN = 24*60;  // 24h
+const SLA_MONITORING_MAX_MIN = 7*24*60; // 7d
 
-// State
+// >>> Set the date/time when the “new format” became authoritative
+const METRICS_START = "2025-08-12T00:00:00.000Z";
+
+/* State */
 let curUser=null, closeTicketId=null, currentSort={key:null,dir:1};
 let charts = {}; // chart instances
-let cacheTickets = null;
 
-/* =================== AUTH =================== */
+/* ============== AUTH ============== */
 const byId=(id)=>document.getElementById(id);
 const val=(id)=>byId(id).value||'';
 
@@ -396,7 +393,7 @@ function updateNavButtons(){
   ['btn-closed-tickets','btn-summary','btn-admin','btn-csv-top','btn-xlsx-top'].forEach(id=>byId(id).style.display=isAdmin?'':'none');
 }
 
-/* =================== HELPERS / DATES =================== */
+/* ============== HELPERS / DATES ============== */
 (async function(){
   try{
     const logoRef=storage.ref("Agora Logo/2F6-1YdaEP.jpeg");
@@ -431,14 +428,9 @@ function looksLikeImage(obj){
   return t || /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/.test(n);
 }
 function minutesBetween(aIso,bIso){ const A=new Date(aIso).getTime(); const B=new Date(bIso).getTime(); if(!isFinite(A)||!isFinite(B))return 0; return Math.max(0, Math.round((B-A)/60000)); }
-function hoursBetween(aIso,bIso){ return Math.round(minutesBetween(aIso,bIso)/60); }
-function fmtHours(h){
-  if(h<48) return `${h}h`;
-  const d=Math.floor(h/24), hr=h%24;
-  return `${d}d ${hr}h`;
-}
+function fmtHoursWhole(mins){ const h=Math.round((mins||0)/60); return h+"h"; }
 
-/* =================== STORAGE HELPERS =================== */
+/* ============== STORAGE HELPERS ============== */
 const MAX_FILE_MB=20;
 const ALLOWED_TYPES=['image/jpeg','image/png','image/gif','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'];
 
@@ -458,7 +450,7 @@ async function uploadFileBlob(file, prefix, progressBar){
   });
 }
 
-/* =================== CREATE TICKET =================== */
+/* ============== CREATE TICKET ============== */
 async function submitTicket(){
   const assigned=Array.from(byId('assign-to').selectedOptions).map(o=>o.value.toLowerCase());
   if(!assigned.length) return byId('ticket-msg').textContent="Select at least one assignee.";
@@ -506,12 +498,12 @@ async function submitTicket(){
 
   await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
   byId('ticket-msg').textContent="Ticket created."; byId('ticket-form').reset(); autoFillTicketForm(); loadActiveCount();
+
   assigned.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(data,to.username)});
 }
 
-/* =================== LOAD / NORMALISE =================== */
-async function loadAllTickets(force=false){
-  if(cacheTickets && !force) return cacheTickets;
+/* ============== LOAD / NORMALISE ============== */
+async function loadAllTickets(){
   try{
     const folderRef=storage.ref(ticketsFolder);
     const res=await folderRef.listAll();
@@ -532,18 +524,18 @@ async function loadAllTickets(force=false){
           t.createdAt = createdEvt?.date || (t.createdDate ? (t.createdDate + "T00:00:00.000Z") : new Date().toISOString());
         }
 
-        // unify close (legacy → new)
+        // unify close (backfill legacy)
         const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution;
         if (!t.close && hasLegacyClose) {
           t.close = {
             by:   t.closedBy   || "",
-            date: (t.closedDate && String(t.closedDate).length===10) ? (t.closedDate + "T00:00:00.000Z") : (t.closedDate || ""),
+            date: t.closedDate ? (t.closedDate.length>10? t.closedDate : (t.closedDate+"T12:00:00.000Z")) : "",
             note: t.closeComment || t.resolution || "",
             files: t.closeFiles || []
           };
         } else if (t.close) {
           t.close.by   = t.close.by   || t.closedBy   || "";
-          t.close.date = (t.close.date && String(t.close.date).length===10) ? (t.close.date + "T00:00:00.000Z") : (t.close.date || t.closedDate || "");
+          t.close.date = t.close.date || (t.closedDate ? (t.closedDate.length>10? t.closedDate : (t.closedDate+"T12:00:00.000Z")) : "");
           t.close.note = t.close.note || t.closeComment || t.resolution || "";
           t.close.files = Array.isArray(t.close.files) ? t.close.files : (t.closeFiles || []);
         }
@@ -551,12 +543,8 @@ async function loadAllTickets(force=false){
         arr.push(t);
       }
     }
-    cacheTickets = arr;
     return arr;
-  }catch{
-    cacheTickets = [];
-    return [];
-  }
+  }catch{return[]}
 }
 
 async function loadActiveCount(){
@@ -565,7 +553,7 @@ async function loadActiveCount(){
   byId('num-open-tix').textContent=n;
 }
 
-/* =================== NAV / FILTERS =================== */
+/* ============== NAV / FILTERS ============== */
 function backToMain(){
   showMain();
   byId('ticket-table-wrap').innerHTML='';
@@ -637,14 +625,15 @@ async function filterTickets(scope){
   renderTicketCards(tickets, scope==='closed');
 }
 
-/* =================== DESKTOP TABLE =================== */
+/* ============== DESKTOP TABLE ============== */
+function slaFor(t){ return (t.alertType==="Temperature") ? SLA.Temperature : SLA.DEFAULT; }
 function shortRow(t){
   const nowISO=new Date().toISOString();
-  const hrsOpen = (t.status==="open") ? hoursBetween(t.createdAt,nowISO)
-                   : (t.status==="monitoring" ? hoursBetween(t.monitoringStartedAt||t.createdAt, nowISO) : 0);
+  const minsOpen = (t.status==="open") ? minutesBetween(t.createdAt,nowISO) :
+                   (t.status==="monitoring" ? minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO) : 0);
   const ageStr = (t.status==="closed" && t.close?.date)
-      ? `resolved ${fmtHours(hoursBetween(t.createdAt, t.close.date))}`
-      : (t.status==="monitoring" ? `monitoring ${fmtHours(hrsOpen)}` : `open ${fmtHours(hrsOpen)}`);
+      ? `resolved ${fmtHoursWhole(minutesBetween(t.createdAt, t.close.date))}`
+      : (t.status==="monitoring" ? `monitoring ${fmtHoursWhole(minsOpen)}` : `open ${fmtHoursWhole(minsOpen)}`);
   return {
     id:t.id,
     dairy:t.dairyNumber, farm:t.farmName,
@@ -674,8 +663,14 @@ function renderTicketTable(tickets,isClosed){
     <th>Status</th><th></th></tr></thead><tbody id="ticket-tbody">`;
   rows.forEach(r=>{
     const t=tickets.find(x=>x.id===r.id);
+    const slaMins = slaFor(t);
     const isActive = t.status!=='closed';
-    const slaBreach = isActive && isTicketSlaBreached(t) ? `<span class="badge bg-danger">SLA</span>` : '';
+    const currMins = isActive ? (t.status==='monitoring' ? minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString())
+                                                         : minutesBetween(t.createdAt, new Date().toISOString())) : 0;
+    const slaBreach = isActive && ( (t.status==='open' && currMins>SLA_FIRST_RESPONSE_MIN && !t.firstResponseAt) ||
+                                    (t.status==='monitoring' && currMins>SLA_MONITORING_MAX_MIN) ||
+                                    (currMins>slaMins) )
+                      ? `<span class="badge bg-danger">SLA</span>` : '';
     html+=`<tr>
       <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosed})">${r.dairy}</span></td>
       <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
@@ -692,8 +687,14 @@ function renderTicketTable(tickets,isClosed){
     const tb=byId('ticket-tbody');
     tb.innerHTML=r2.map(r=>{
       const t=t2.find(x=>x.id===r.id);
-      const isActive=t.status!=='closed';
-      const slaBreach = isActive && isTicketSlaBreached(t) ? `<span class="badge bg-danger">SLA</span>` : '';
+      const slaMins = slaFor(t);
+      const isActive = t.status!=='closed';
+      const currMins = isActive ? (t.status==='monitoring' ? minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString())
+                                                           : minutesBetween(t.createdAt, new Date().toISOString())) : 0;
+      const slaBreach = isActive && ( (t.status==='open' && currMins>SLA_FIRST_RESPONSE_MIN && !t.firstResponseAt) ||
+                                      (t.status==='monitoring' && currMins>SLA_MONITORING_MAX_MIN) ||
+                                      (currMins>slaMins) )
+                        ? `<span class="badge bg-danger">SLA</span>` : '';
       return `<tr>
         <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosedFlag})">${r.dairy}</span></td>
         <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
@@ -703,16 +704,8 @@ function renderTicketTable(tickets,isClosed){
     }).join('');
   }
 }
-function isTicketSlaBreached(t){
-  const nowISO=new Date().toISOString();
-  // breach if no comment (firstResponseAt) within 24h
-  if(!t.firstResponseAt && hoursBetween(t.createdAt, nowISO) > SLA_HOURS.FirstResponse) return true;
-  // breach if monitoring longer than 7 days
-  if(t.status==='monitoring' && t.monitoringStartedAt && hoursBetween(t.monitoringStartedAt, nowISO) > SLA_HOURS.MonitoringMax) return true;
-  return false;
-}
 
-/* =================== MOBILE CARDS =================== */
+/* ============== MOBILE CARDS ============== */
 function mediaCount(t){
   const issueImgs=(t.files||[]).filter(looksLikeImage).length;
   const commentImgs=(t.comments||[]).reduce((a,c)=>a+(c.files||[]).filter(looksLikeImage).length,0);
@@ -723,10 +716,15 @@ function renderTicketCards(tickets,isClosed){
   const wrap=byId('ticket-cards'); wrap.innerHTML='';
   tickets.forEach(t=>{
     const nowISO=new Date().toISOString();
-    const statusHours = (t.status==='monitoring') ? hoursBetween(t.monitoringStartedAt||t.createdAt, nowISO)
-                        : (t.status==='open') ? hoursBetween(t.createdAt, nowISO) : 0;
+    const statusMinutes = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO)
+                        : (t.status==='open') ? minutesBetween(t.createdAt, nowISO) : 0;
     const mCount=mediaCount(t);
-    const slaBadge = (t.status!=='closed' && isTicketSlaBreached(t)) ? `<span class="b-sla">SLA</span>` : '';
+    const slaMins = slaFor(t);
+    const slaBreach = (t.status!=='closed') &&
+      ( (t.status==='open' && statusMinutes>SLA_FIRST_RESPONSE_MIN && !t.firstResponseAt) ||
+        (t.status==='monitoring' && statusMinutes>SLA_MONITORING_MAX_MIN) ||
+        (statusMinutes>slaMins) );
+    const slaBadge = slaBreach ? `<span class="b-sla">SLA</span>` : '';
     const card=document.createElement('div'); card.className='tcard'; card.id=`card-${t.id}`;
     card.innerHTML=`
       <div class="tcard-head">
@@ -737,7 +735,7 @@ function renderTicketCards(tickets,isClosed){
         <div class="t-badges">
           <span class="b-priority">${t.priority}</span>
           <span class="b-status ${t.status==='open'?'text-success':(t.status==='monitoring'?'text-primary':'text-danger')}">${t.status}</span>
-          <span class="b-age">${fmtHours(statusHours)}</span>
+          <span class="b-age">${fmtHoursWhole(statusMinutes)}</span>
           ${mCount?`<span class="b-media">${mCount}</span>`:''}
           ${slaBadge}
         </div>
@@ -757,7 +755,7 @@ function renderTicketCards(tickets,isClosed){
   });
 }
 
-/* =================== DETAILS / COMMENT / REASSIGN / MONITORING =================== */
+/* ============== DETAILS / COMMENT / REASSIGN / MONITORING ============== */
 window.viewTicketDetails=async function(id,isClosed){
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
   const isMobile=window.matchMedia("(max-width:800px)").matches;
@@ -792,7 +790,7 @@ window.viewTicketDetails=async function(id,isClosed){
   const canCommentReassign=(t.status!=="closed") && (curUser.role==="admin" || (t.assignedTo||[]).includes(curUser.username.toLowerCase()));
   if(t.status!=="closed"){
     const users=getUsers();
-    const allowMonitorToggle = t.status==="open"; // only toggle from open -> monitoring here
+    const allowMonitorToggle = t.status==="open";
     html+=`<div class="mt-2">
       <textarea id="new-comment" class="form-control" rows="2" placeholder="Add internal note..."></textarea>
       <input type="file" id="comment-files" class="form-control mt-1" multiple accept="image/*,.pdf,.doc,.docx,.txt">
@@ -831,8 +829,8 @@ window.viewTicketDetails=async function(id,isClosed){
 
   // Closed details
   if(t.status==="closed" && t.close){
-    const resHrs = hoursBetween(t.createdAt, t.close.date);
-    html+=`<b>Closed by:</b> ${t.close.by}<br><b>Date Closed:</b> ${t.close.date||""}<br><b>Resolution:</b> ${t.close.note||""}<br><b>Resolution Time:</b> ${fmtHours(resHrs)}<br>`;
+    const resMins = minutesBetween(t.createdAt, t.close.date);
+    html+=`<b>Closed by:</b> ${t.close.by}<br><b>Date Closed:</b> ${t.close.date||""}<br><b>Resolution:</b> ${t.close.note||""}<br><b>Resolution Time:</b> ${fmtHoursWhole(resMins)}<br>`;
     if(t.close.files?.length){
       html+=`<div class="mt-1"><b>Resolution Files:</b> `+t.close.files.map(ff=>looksLikeImage(ff)?`<a href="${ff.url}" target="_blank"><img class="photo-thumb" src="${ff.url}" loading="lazy"></a>`:`<a class="file-chip" href="${ff.url}" target="_blank">${ff.name||'file'}</a>`).join(' ')+`</div>`;
     }
@@ -914,7 +912,7 @@ window.addComment=async function(id){
   }
 };
 
-/* =================== CLOSE TICKET (MODAL) =================== */
+/* ============== CLOSE TICKET (MODAL) ============== */
 function showCloseModal(id){
   closeTicketId=id; byId('close-note').value=''; byId('close-files').value=''; byId('close-files-preview').innerHTML=''; byId('close-modal').style.display='flex';
 }
@@ -951,42 +949,46 @@ async function doCloseFromModal(){
   t.closeFiles = close.files;
 
   t.history = t.history || [];
-  t.history.push({ action: "ClosedWithFiles", user: curUser.name, date: (new Date()).toISOString(), details: (note || ''), files: (close.files || []) });
+  t.history.push({
+    action: "ClosedWithFiles",
+    user: curUser.name,
+    date: (new Date()).toISOString(),
+    details: (note || ''),
+    files: (close.files || [])
+  });
 
-  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)], { type: "application/json" }));
+  await storage.ref(`${ticketsFolder}/${t.id}.json`)
+    .put(new Blob([JSON.stringify(t)], { type: "application/json" }));
 
   hideCloseModal();
   alert("Ticket closed.");
-  cacheTickets=null; // refresh cache
   showActiveTickets();
 }
 
-/* =================== SUMMARY DASHBOARD =================== */
+/* ============== SUMMARY DASHBOARD ============== */
 async function showSummary(){
   if(curUser.role!=="admin") return alert("Admins only.");
   byId('ticket-section').classList.add('hidden');
   byId('ticket-list-section').classList.add('hidden');
   byId('summary-section').classList.remove('hidden');
 
-  // Filters (timeframe + alert type + status)
+  // Filters (All default + range chips + custom)
   byId('summary-filters').innerHTML = `
     <div class="d-flex flex-wrap gap-2 align-items-center">
-      <span class="chip active" data-range="all" onclick="setSummaryRange(this)">All</span>
-      <span class="chip" data-range="7" onclick="setSummaryRange(this)">7d</span>
-      <span class="chip" data-range="30" onclick="setSummaryRange(this)">30d</span>
-      <span class="chip" data-range="90" onclick="setSummaryRange(this)">90d</span>
-      <span class="chip" data-range="custom" onclick="setSummaryRange(this)">Custom</span>
-      <div class="custom-range" id="custom-range">
-        <input type="date" id="sum-from" class="form-control">
-        <input type="date" id="sum-to" class="form-control">
-      </div>
+      <span class="chip active" data-days="all" onclick="setSummaryRange(this)">All</span>
+      <span class="chip" data-days="7" onclick="setSummaryRange(this)">7d</span>
+      <span class="chip" data-days="30" onclick="setSummaryRange(this)">30d</span>
+      <span class="chip" data-days="90" onclick="setSummaryRange(this)">90d</span>
+      <span class="chip" data-days="custom" onclick="setSummaryRange(this)">Custom</span>
+      <input type="date" id="sum-from" class="form-control" style="width:160px;display:none">
+      <input type="date" id="sum-to" class="form-control" style="width:160px;display:none">
       <select id="sum-alert" class="form-select" style="width:180px">
         <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
       </select>
       <select id="sum-status" class="form-select" style="width:200px">
-        <option value="">All (Open+Monitoring+Closed)</option>
         <option value="active">Active (Open+Monitoring)</option>
         <option value="closed">Closed</option>
+        <option value="">All</option>
       </select>
       <button class="btn btn-agora btn-sm" onclick="renderSummary()">Apply</button>
     </div>`;
@@ -995,73 +997,89 @@ async function showSummary(){
 function setSummaryRange(el){
   document.querySelectorAll('#summary-filters .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  byId('custom-range').style.display = (el.dataset.range==='custom') ? 'flex' : 'none';
+  const mode=el.dataset.days;
+  const showCustom = mode==='custom';
+  byId('sum-from').style.display = showCustom?'block':'none';
+  byId('sum-to').style.display = showCustom?'block':'none';
 }
 
-function isModern(t){ return new Date(t.createdAt) >= new Date(getMetricsStart()); }
+function isWithinRange(d, mode, from, to){
+  if(mode==='all') return true;
+  if(mode==='custom'){
+    if(from && d<new Date(from)) return false;
+    if(to   && d>new Date(to+'T23:59:59')) return false;
+    return true;
+  }
+  const days=parseInt(mode,10);
+  const now=new Date();
+  return (now - d) <= days*86400000;
+}
 
 async function renderSummary(){
-  const tickets = await loadAllTickets(true);
-  const rangeKey  = (document.querySelector('#summary-filters .chip.active')?.dataset.range)||'all';
-  const alertSel  = (byId('sum-alert')||{}).value||'';
-  const statusSel = (byId('sum-status')||{}).value||'';
+  const tickets = await loadAllTickets();
+  const chip = document.querySelector('#summary-filters .chip.active');
+  const mode = chip ? chip.dataset.days : 'all';
+  const from = byId('sum-from').value || null;
+  const to   = byId('sum-to').value   || null;
+  const alertSel = (byId('sum-alert')||{}).value||'';
+  const statusSel = (byId('sum-status')||{}).value||'active';
+
   const now = new Date();
-
-  let start = null, end = now;
-  if(rangeKey==='7'||rangeKey==='30'||rangeKey==='90'){ start = new Date(now - parseInt(rangeKey,10)*86400000); }
-  else if(rangeKey==='custom'){
-    const f = byId('sum-from').value ? new Date(byId('sum-from').value) : null;
-    const t = byId('sum-to').value   ? new Date(byId('sum-to').value)   : null;
-    start=f; end=t||now;
-  }
-
-  // Filtered set for charts
-  let filtered = tickets.filter(t=>{
-    const created = new Date(t.createdAt||now);
-    const inRange = !start ? true : (created >= start && created <= end);
+  const filtered = tickets.filter(t=>{
+    const created = new Date(t.createdAt||t.createdDate||now);
+    const inRange = isWithinRange(created, mode, from, to);
     const alertOk = !alertSel || t.alertType===alertSel;
     const statusOk = !statusSel ? true : (statusSel==='closed'? t.status==='closed' : (t.status==='open'||t.status==='monitoring'));
     return inRange && alertOk && statusOk;
   });
 
-  // KPIs -------------------------------------------------
-  const active = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
+  const activeAll = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
   const closedAll = tickets.filter(t=>t.status==='closed');
 
-  // Show per-alert open counts but only tiles with >0
-  const openByAlert = countBy(active, x=>x.alertType||'Other');
-  const alertNames = ["Temperature","Concentration","Plant Pressure","Milking Vacuum","Teat Spray","Other"];
+  // Dynamic open category counts
+  const catList = ["Temperature","Concentration","Plant Pressure","Milking Vacuum","Teat Spray","Other"];
+  const openByCat = {};
+  catList.forEach(c=>openByCat[c]=activeAll.filter(t=>t.alertType===c).length);
 
-  // First response avg (modern tickets only)
-  const responses = tickets.filter(t=>isModern(t) && t.firstResponseAt);
-  const avgFirstHrs = responses.length ? Math.round(responses.reduce((a,t)=>a+hoursBetween(t.createdAt, t.firstResponseAt),0)/responses.length) : 0;
+  // Averages — ONLY tickets created after METRICS_START (new format)
+  const newCut = new Date(METRICS_START);
+  const newFirstResp = tickets.filter(t=> t.firstResponseAt && new Date(t.createdAt)>=newCut );
+  const avgFirstResponseMin = newFirstResp.length ? Math.round(newFirstResp.reduce((a,t)=>a+minutesBetween(t.createdAt, t.firstResponseAt),0)/newFirstResp.length) : 0;
 
-  // Resolution avg (modern tickets only & closed)
-  const closedModern = tickets.filter(t=>t.status==='closed' && isModern(t) && t.close?.date);
-  const avgResolHrs = closedModern.length ? Math.round(closedModern.reduce((a,t)=>a+hoursBetween(t.createdAt, t.close.date),0)/closedModern.length) : 0;
+  const newClosed = tickets.filter(t=> t.status==='closed' && t.close?.date && new Date(t.createdAt)>=newCut );
+  const avgResolutionMin = newClosed.length ? Math.round(newClosed.reduce((a,t)=>a+minutesBetween(t.createdAt, t.close.date),0)/newClosed.length) : 0;
 
-  // SLA breaches (active only)
-  const activeBreach = active.filter(isTicketSlaBreached).length;
+  // SLA breaches (active)
+  const activeBreaches = activeAll.filter(t=>{
+    const mOpen = minutesBetween(t.createdAt, new Date().toISOString());
+    if(t.status==='open'){
+      if(!t.firstResponseAt && mOpen>SLA_FIRST_RESPONSE_MIN) return true;
+      if(mOpen>slaFor(t)) return true;
+    }
+    if(t.status==='monitoring'){
+      const mm = minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString());
+      if(mm>SLA_MONITORING_MAX_MIN) return true;
+    }
+    return false;
+  }).length;
 
-  // KPI grid build
+  // KPI build
   const kpi = [];
-  kpi.push(card(`${active.length}`, "Active Tickets"));
-  kpi.push(card(`${closedAll.length}`, "Closed Tickets (all time)"));
-  alertNames.forEach(name=>{
-    const n = openByAlert[name]||0;
-    if(n>0) kpi.push(card(`${n}`, `Open ${name}`));
+  kpi.push(`<div class="kpi"><div class="num">${activeAll.length}</div><div class="label">Active Tickets</div></div>`);
+  // dynamic alert tiles only when >0
+  catList.forEach(c=>{
+    if(openByCat[c]>0) kpi.push(`<div class="kpi"><div class="num">${openByCat[c]}</div><div class="label">Open ${c}</div></div>`);
   });
-  kpi.push(card(`${avgFirstHrs?fmtHours(avgFirstHrs):'-'}`, "Avg First Response (new)"));
-  kpi.push(card(`${avgResolHrs?fmtHours(avgResolHrs):'-'}`, "Avg Resolution (new)"));
-  kpi.push(card(`${activeBreach}`, "Active SLA Breaches"));
+  kpi.push(`<div class="kpi"><div class="num">${fmtHoursWhole(avgFirstResponseMin)}</div><div class="label">Avg First Response (new)</div></div>`);
+  kpi.push(`<div class="kpi"><div class="num">${fmtHoursWhole(avgResolutionMin)}</div><div class="label">Avg Resolution (new)</div></div>`);
+  kpi.push(`<div class="kpi"><div class="num">${closedAll.length}</div><div class="label">Closed Tickets (all time)</div></div>`);
+  kpi.push(`<div class="kpi"><div class="num">${activeBreaches}</div><div class="label">Active SLA Breaches</div></div>`);
   byId('kpi-grid').innerHTML = kpi.join('');
 
-  function card(val,label){ return `<div class="kpi"><div class="num">${val}</div><div class="label">${label}</div></div>`; }
-
-  // Charts ----------------------------------------------
+  // Charts
   destroyCharts();
 
-  // 1) Alert type distribution (respect filter)
+  // Tickets by alert type (filtered selection)
   const alertCounts = countBy(filtered, x=>x.alertType||'Unknown');
   charts.alertType = new Chart(byId('chartAlertType').getContext('2d'), {
     type:'doughnut',
@@ -1069,11 +1087,11 @@ async function renderSummary(){
     options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
   });
 
-  // 2) Open age buckets (always from current open+monitoring, not filtered)
+  // Open age buckets (active only, regardless of filter status selection)
   const ageBuckets = { '0-24h':0, '1-3d':0, '4-7d':0, '8d+':0 };
-  active.forEach(t=>{
-    const mins = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString())
-                                           : minutesBetween(t.createdAt, now.toISOString());
+  activeAll.forEach(t=>{
+    const mins = t.status==='monitoring' ? minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString())
+                                         : minutesBetween(t.createdAt, now.toISOString());
     const days = mins/1440;
     if(days<=1) ageBuckets['0-24h']++;
     else if(days<=3) ageBuckets['1-3d']++;
@@ -1085,44 +1103,63 @@ async function renderSummary(){
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
   });
 
-  // 3) Average times (hours, modern only)
+  // Average times chart (hours)
   charts.times = new Chart(byId('chartTimes').getContext('2d'), {
     type:'bar',
-    data:{ labels:['First Response (from metrics start)','Resolution (from metrics start)'], datasets:[{ data:[avgFirstHrs, avgResolHrs] }] },
+    data:{ labels:['First Response (from metrics start)','Resolution (all closed, from metrics start)'],
+           datasets:[{ data:[Math.round(avgFirstResponseMin/60), Math.round(avgResolutionMin/60)] }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, title:{display:true,text:'hours'}}} }
   });
 
-  // 4) Reassignments & SLA (all-time reassign count; active SLA)
+  // Reassignments & SLA
   const reassignedCount = tickets.filter(t=>(t.history||[]).some(h=>(h.action||'').toLowerCase().includes('reassign'))).length;
   charts.reassignSLA = new Chart(byId('chartReassignSLA').getContext('2d'), {
-    type:'bar', data:{ labels:['Reassigned','SLA Breaches'], datasets:[{ data:[reassignedCount, activeBreach] }] },
+    type:'bar', data:{ labels:['Reassigned','SLA Breaches'], datasets:[{ data:[reassignedCount, activeBreaches] }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
   });
 
-  // Recurring problems (all time). Key: dairy + alert type
-  const key = t => `${t.dairyNumber} | ${t.alertType}`;
-  const map = groupBy(tickets, key);
-  const recur = Object.entries(map).filter(([k,arr])=>arr.length>=3)
-               .sort((a,b)=>b[1].length - a[1].length)
-               .slice(0,12);
-  byId('recurring-list').innerHTML = recur.length
-    ? `<ul class="mb-0">${recur.map(([k,arr])=>`<li><a href="#" onclick="showRecurring('${k.replace(/'/g,"\\'")}')">${k}</a> — <b>${arr.length}</b> tickets</li>`).join('')}</ul>`
+  // Recurring problems (all time, by dairyNumber + alertType), clickable
+  const groupKey = t => `${t.dairyNumber} | ${t.alertType}`;
+  const clusters = Object.entries(groupBy(tickets, groupKey))
+    .filter(([k,arr])=>arr.length>=3)
+    .sort((a,b)=>b[1].length - a[1].length)
+    .slice(0,12);
+  byId('recurring-list').innerHTML = clusters.length
+    ? `<ul class="mb-0">${clusters.map(([k,arr])=>`<li><a href="#" onclick="showCluster('${k.replace(/'/g,"\\'")}')">${k}</a> — <b>${arr.length}</b> tickets</li>`).join('')}</ul>`
     : `<i>No recurring clusters yet.</i>`;
-
-  // Latest photos (last 7d)
-  const weekAgo = new Date(now - 7*86400000);
-  const imgs = [];
-  tickets.forEach(t=>{
-    (t.files||[]).forEach(f=>{ if(looksLikeImage(f) && new Date(t.createdAt)>=weekAgo) imgs.push(f.url); });
-    (t.comments||[]).forEach(c=> (c.files||[]).forEach(f=>{ if(looksLikeImage(f) && new Date(c.date)>=weekAgo) imgs.push(f.url); }));
-    (t.close?.files||[]).forEach(f=>{ if(looksLikeImage(f) && new Date(t.close.date)>=weekAgo) imgs.push(f.url); });
-  });
-  const photosBox = imgs.slice(0,24).map(u=>`<a href="${u}" target="_blank"><img class="photo-thumb" src="${u}" loading="lazy"></a>`).join(' ');
-  byId('latest-photos').innerHTML = photosBox || `<i>No recent photos.</i>`;
+  byId('recurring-drill').innerHTML = '';
 }
 function destroyCharts(){ Object.values(charts).forEach(ch=>{ try{ch.destroy()}catch{} }); charts = {}; }
 function countBy(arr, fn){ const o={}; arr.forEach(x=>{const k=fn(x); o[k]=(o[k]||0)+1}); return o; }
 function groupBy(arr, fn){ const o={}; arr.forEach(x=>{const k=(typeof fn==='function')?fn(x):x[fn]; (o[k]||(o[k]=[])).push(x)}); return o; }
+
+window.showCluster = async function(key){
+  const t=await loadAllTickets();
+  const [dairy, alert] = key.split('|').map(s=>s.trim());
+  const list = t.filter(x=> String(x.dairyNumber)===dairy && String(x.alertType)===alert );
+  if(!list.length){ byId('recurring-drill').innerHTML='<i>No records.</i>'; return; }
+  const rows = list.sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt))
+    .map(x=>`<tr>
+      <td>${x.dairyNumber}</td>
+      <td>${x.farmName}</td>
+      <td>${x.alertType}${x.alertType==='Other'&&x.alertOther? ' — '+x.alertOther:''}</td>
+      <td>${x.status}</td>
+      <td>${x.createdDate||x.createdAt?.slice(0,10)||''}</td>
+      <td>${x.close?.date? x.close.date.slice(0,10):''}</td>
+      <td><a href="#ticket=${x.id}">open</a></td>
+    </tr>`).join('');
+  byId('recurring-drill').innerHTML = `
+    <div class="mt-2">
+      <div class="small-note">Tickets for <b>${key}</b> (all time)</div>
+      <div class="table-wrap">
+        <table class="table table-sm table-bordered">
+          <thead><tr><th>Dairy #</th><th>Farm</th><th>Alert</th><th>Status</th><th>Opened</th><th>Closed</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+};
+
 function exportSummary(){
   const rows=[["Metric","Value"]];
   document.querySelectorAll('#kpi-grid .kpi').forEach(card=>{
@@ -1134,26 +1171,7 @@ function exportSummary(){
   XLSX.utils.book_append_sheet(wb, ws, "Summary KPIs"); XLSX.writeFile(wb,"summary_export.xlsx");
 }
 
-// Recurring modal
-async function showRecurring(key){
-  const tickets=await loadAllTickets();
-  const [dairy, alert] = key.split('|').map(s=>s.trim());
-  const list = tickets.filter(t=> String(t.dairyNumber)===dairy && (t.alertType||'')===alert);
-  byId('recurring-title').textContent = `Tickets for ${key}`;
-  byId('recurring-body').innerHTML = list.map(t=>{
-    const status = t.status==='closed' ? `Closed ${new Date(t.close?.date||'').toLocaleDateString()}` : t.status;
-    return `<div class="mb-2 p-2 border rounded">
-      <div><b>#${t.dairyNumber}</b> • ${t.farmName} • <span class="text-capitalize">${status}</span></div>
-      <div>${t.createdDate||''} — ${t.alertType}${t.alertType==='Other'?': '+(t.alertOther||''):''} — ${t.priority}</div>
-      <div>${t.issueDesc||''}</div>
-      <div><a href="#ticket=${t.id}" onclick="hideRecurring()">Open</a></div>
-    </div>`;
-  }).join('');
-  byId('recurring-modal').style.display='flex';
-}
-function hideRecurring(){ byId('recurring-modal').style.display='none'; }
-
-/* =================== EXPORTS =================== */
+/* ============== EXPORTS (CSV/XLSX) ============== */
 function normalizeTicket(t){
   let closedBy   = (t.close && t.close.by)   || t.closedBy   || "";
   let closedDate = (t.close && t.close.date) || t.closedDate || "";
@@ -1163,7 +1181,7 @@ function normalizeTicket(t){
     const closeEvt = [...t.history].reverse().find(h => ((h.action||"").toLowerCase().includes("closed")));
     if (closeEvt) {
       closedBy   = closedBy   || closeEvt.user || "";
-      closedDate = closedDate || (closeEvt.date || "");
+      closedDate = closedDate || (closeEvt.date ? closeEvt.date.slice(0,10) : "");
       closeNote  = closeNote  || (closeEvt.details || "");
     }
   }
@@ -1173,12 +1191,12 @@ function normalizeTicket(t){
   const resolvedFiles = ((t.close && t.close.files) || t.closeFiles || []).map(f => f.url).join(" ; ");
 
   const firstRespAt = t.firstResponseAt || "";
-  const firstRespHrs = firstRespAt ? hoursBetween(t.createdAt, firstRespAt) : "";
-  const resolutionHrs = (t.status==='closed' && t.close?.date) ? hoursBetween(t.createdAt, t.close.date) : "";
+  const firstRespMin = firstRespAt ? minutesBetween(t.createdAt, firstRespAt) : "";
+  const resolutionMin = (t.status==='closed' && t.close?.date) ? minutesBetween(t.createdAt, t.close.date) : "";
 
   const monitoringAt = t.monitoringStartedAt || "";
-  const monitoringHrsActive = (t.status==='monitoring' && monitoringAt) ? hoursBetween(monitoringAt, new Date().toISOString()) : "";
-  const monitoringHrsTotal = monitoringAt ? (t.status==='closed' ? hoursBetween(monitoringAt, t.close?.date||new Date().toISOString()) : monitoringHrsActive) : "";
+  const monitoringMinActive = (t.status==='monitoring' && monitoringAt) ? minutesBetween(monitoringAt, new Date().toISOString()) : "";
+  const monitoringMinTotal = monitoringAt ? (t.status==='closed' ? minutesBetween(monitoringAt, t.close?.date||new Date().toISOString()) : monitoringMinActive) : "";
 
   const reassignedCount = (t.history || []).filter(h => (h.action || "").toLowerCase().includes("reassign")).length;
   const lastUpdated = ((t.history || []).map(h => h.date).sort().pop()) || t.createdAt || t.createdDate || "";
@@ -1194,13 +1212,13 @@ function normalizeTicket(t){
     CreatedDate: t.createdDate || "",
     CreatedAtISO: t.createdAt || "",
     FirstResponseAt: firstRespAt,
-    FirstResponseHours: firstRespHrs,
+    FirstResponseMinutes: firstRespMin,
     MonitoringStartedAt: monitoringAt,
-    MonitoringHours: monitoringHrsTotal,
-    ClosedDateISO: closedDate,
+    MonitoringMinutes: monitoringMinTotal,
+    ClosedDate: closedDate,
     ClosedBy: closedBy,
     CloseDescription: closeNote,
-    ResolutionHours: resolutionHrs,
+    ResolutionMinutes: resolutionMin,
     OpenedBy: t.openedBy || "",
     IssueDescription: t.issueDesc || "",
     IssueFiles: issueFiles,
@@ -1253,7 +1271,7 @@ async function exportToXLSX(){
   XLSX.writeFile(wb, "tickets_export.xlsx");
 }
 
-/* =================== ADMIN PANEL =================== */
+/* ============== ADMIN PANEL ============== */
 function adminPanel(){
   if(curUser.role!=="admin") return alert("Admins only.");
   byId('ticket-section').classList.add('hidden');
@@ -1261,121 +1279,192 @@ function adminPanel(){
   byId('ticket-list-section').classList.remove('hidden');
 
   const users=getUsers();
-  byId('ticket-list-controls').innerHTML=`
-  <div class="admin-section">
-    <h4 class="mb-2">Admin Panel</h4>
-
-    <div class="p-3 border rounded mb-3 tight">
-      <h5>User Management</h5>
+  byId('ticket-list-controls').innerHTML = `
+    <div class="admin-card">
+      <div class="admin-title">User Management</div>
       <div class="row g-2">
-        <div class="col-md-4"><label class="form-label">Full name</label><input id="adm-name" class="form-control"></div>
-        <div class="col-md-4"><label class="form-label">Email (username)</label><input id="adm-email" class="form-control"></div>
-        <div class="col-md-4"><label class="form-label">Password</label><input id="adm-pass" class="form-control" type="password"></div>
-      </div>
-      <div class="row g-2 align-items-end">
-        <div class="col-md-4">
-          <label class="form-label">Role</label>
+        <div class="col-md-4"><input id="adm-name" class="form-control" placeholder="Full name"></div>
+        <div class="col-md-4"><input id="adm-email" class="form-control" placeholder="Email (username)"></div>
+        <div class="col-md-3"><input id="adm-pass" class="form-control" placeholder="Password"></div>
+        <div class="col-md-1">
           <select id="adm-role" class="form-select"><option value="service">Service</option><option value="admin">Admin</option></select>
         </div>
-        <div class="col-md-8 text-end">
-          <button class="btn btn-admin mt-2" onclick="admCreateUser()">Create User (Directory)</button>
-        </div>
       </div>
-      <div class="mt-3">
-        <b>Existing Users</b>
-        <ul class="admin-list mt-2">
-          ${users.map(u=>`<li>${u.name} — ${u.username} ${u.role==='admin'?'<span class="admin-badge">admin</span>':''}</li>`).join('')}
-        </ul>
-      </div>
+      <button class="btn btn-admin mt-2" onclick="createUser()">Create User (Auth + Directory)</button>
+      <div id="adm-msg" class="mt-1 small-note text-danger"></div>
+      <hr>
+      <div class="admin-title">Existing Users</div>
+      <ul class="mb-2">
+        ${users.map(u=>`<li>${u.name} — ${u.username} ${u.role==='admin'?'<span class="badge bg-primary ms-1">admin</span>':''}</li>`).join('')}
+      </ul>
     </div>
 
-    <div class="p-3 border rounded mb-3">
-      <h5>Metrics Start</h5>
-      <div class="admin-small mb-2">Averages (First Response & Resolution) use tickets created on/after this ISO date/time.</div>
-      <input id="adm-metrics" class="form-control" value="${getMetricsStart()}">
-      <button class="btn btn-agora mt-2" onclick="saveMetricsStart()">Save</button>
-    </div>
-
-    <div class="p-3 border rounded mb-3">
-      <h5>Login History</h5>
-      <div id="login-history" class="admin-small"></div>
-    </div>
-
-    <div class="p-3 border rounded mb-3">
-      <h5>User Ticket History</h5>
-      <div class="row g-2">
+    <div class="admin-card">
+      <div class="admin-title">User Ticket History</div>
+      <div class="row g-2 align-items-end">
         <div class="col-md-6">
           <select id="adm-user-filter" class="form-select">
             <option value="">All users</option>
             ${users.map(u=>`<option value="${u.username}">${u.name}</option>`).join('')}
           </select>
         </div>
-        <div class="col-md-6 text-end"><button class="btn btn-agora" onclick="renderUserStats()">Apply</button></div>
+        <div class="col-md-6 text-end">
+          <button class="btn btn-agora" onclick="renderUserStats()">Apply</button>
+        </div>
       </div>
       <div id="user-stats" class="mt-2"></div>
     </div>
 
-    <div class="p-3 border rounded mb-3">
-      <h5>Email Test</h5>
-      <div class="admin-small mb-1">Hold Ctrl/Cmd to select multiple.</div>
-      <select id="adm-email-list" class="form-select" multiple>
+    <div class="admin-card">
+      <div class="admin-title">Email Test</div>
+      <select id="email-test" class="form-select" multiple>
         ${users.map(u=>`<option value="${u.username}">${u.name} — ${u.username}</option>`).join('')}
       </select>
-      <button class="btn btn-admin mt-2" onclick="sendTest()">Send Test</button>
+      <div class="small-note">Hold Ctrl/Cmd to select multiple.</div>
+      <button class="btn btn-admin mt-2" onclick="sendEmailTest()">Send Test</button>
     </div>
-  </div>`;
+  `;
 
-  byId('ticket-table-wrap').innerHTML='';
-  byId('ticket-cards').innerHTML='';
+  byId('ticket-table-wrap').innerHTML=''; byId('ticket-cards').innerHTML='';
   byId('ticket-view-modal').classList.add('hidden');
+
   renderUserStats();
-  renderLoginHistory();
 }
-function admCreateUser(){
+function createUser(){
   const name=(val('adm-name')||'').trim();
   const email=(val('adm-email')||'').trim().toLowerCase();
   const pass=(val('adm-pass')||'').trim();
-  const role=val('adm-role')||'service';
-  if(!name||!email||!pass) return alert('All fields required.');
+  const role=(val('adm-role')||'service').trim();
+  if(!name||!email||!pass){ byId('adm-msg').textContent='All fields required.'; return; }
   const users=getUsers();
-  if(users.find(u=>u.username===email)) return alert('User already exists.');
-  users.push({name,username:email,password:pass,role});
-  setUsers(users);
-  adminPanel();
+  if(users.find(u=>u.username===email)){ byId('adm-msg').textContent='User already exists.'; return; }
+  users.push({name,username:email,password:pass,role}); setUsers(users);
+  byId('adm-msg').textContent='User created.'; adminPanel();
 }
-function saveMetricsStart(){
-  const iso=(val('adm-metrics')||'').trim();
-  if(!iso || isNaN(new Date(iso))) return alert('Enter a valid ISO datetime, e.g., 2025-08-11T00:00:00Z');
-  setMetricsStart(iso);
-  alert('Saved. Averages will use this from now on.');
-}
-function renderLoginHistory(){
-  const hist = JSON.parse(localStorage.getItem('loginHistory')||'[]');
-  byId('login-history').innerHTML = hist.slice(-20).reverse().map(h=>`${h.user} — ${h.when}`).join('<br>') || '<i>No logins recorded yet.</i>';
-}
-async function renderUserStats(){
-  const who=(val('adm-user-filter')||'').toLowerCase();
-  const t=await loadAllTickets();
-  const rows={}; // user -> stats
-  const users=getUsers();
-  function inc(name,key){ rows[name] = rows[name]||{created:0,reassigned:0,closed:0,comments:0}; rows[name][key]++; }
-  t.forEach(x=>{
-    if(who && x.openedByUser!==who){} else inc((users.find(u=>u.username===x.openedByUser)||{}).name||x.openedBy, 'created');
-    if(x.status==='closed' && (!who || (x.close?.by||'').toLowerCase().includes(who))) inc(x.close?.by||'unknown','closed');
-    (x.comments||[]).forEach(c=>{ if(!who || c.user.toLowerCase().includes(who)) inc(c.user,'comments');
-      if(c.reassign) inc(c.user,'reassigned'); });
-    (x.history||[]).forEach(h=>{ if((h.action||'').toLowerCase().includes('reassign')) inc(h.user||'unknown','reassigned'); });
+function sendEmailTest(){
+  const sels = Array.from((byId('email-test')||{selectedOptions:[]}).selectedOptions).map(o=>o.value);
+  if(!sels.length) return alert('Select at least one recipient.');
+  sels.forEach(to=>{
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      ticket_id:'TEST', dairy_number:'-', farm_name:'-', alert_type:'Test', priority:'-', assigned_to:'-', opened_by:curUser?.name||'-', created_date:new Date().toISOString().slice(0,10), issue_desc:'Test email', ticket_link:TICKET_URL_ROOT, to_email:to, cc_email:''
+    }, EMAILJS_PUBLIC_KEY).catch(()=>{});
   });
-  const list=Object.entries(rows).map(([user,st])=>({user:user.toLowerCase(),...st}));
-  list.sort((a,b)=>a.user.localeCompare(b.user));
-  byId('user-stats').innerHTML = `
-    <div class="table-wrap"><table class="table table-sm table-bordered">
-      <thead><tr><th>User</th><th>Created</th><th>Reassigned</th><th>Closed</th><th>Comments</th></tr></thead>
-      <tbody>${list.map(r=>`<tr><td>${r.user}</td><td>${r.created}</td><td>${r.reassigned}</td><td>${r.closed}</td><td>${r.comments}</td></tr>`).join('')}</tbody>
-    </table></div>`;
+  alert('Sent.');
 }
 
-/* =================== EMAIL =================== */
+/* Admin stats helpers (dedupe + nice table) */
+function normalize(str){ return (str||'').trim().toLowerCase(); }
+function canonicalIdFromName(name, users){
+  const n = normalize(name);
+  const hit = users.find(u => normalize(u.name)===n);
+  return hit ? hit.username : (name||'unknown'); // fall back
+}
+function canonicalIdFromAny(userField, users){
+  if(!userField) return 'unknown';
+  const looksEmail = String(userField).includes('@');
+  if(looksEmail){ return String(userField).toLowerCase(); }
+  return canonicalIdFromName(userField, users);
+}
+function niceName(id, users){
+  const u = users.find(x=>x.username===id);
+  return u ? u.name : id.replace(/@.*/,'');
+}
+async function renderUserStats(){
+  const users = getUsers();
+  const who=(val('adm-user-filter')||'').toLowerCase();
+  const t=await loadAllTickets();
+
+  const stats = {}; // id -> {name, created, reassigned, closed, comments}
+  function ensure(id){ if(!stats[id]) stats[id]={name:niceName(id,users), created:0, reassigned:0, closed:0, comments:0}; return stats[id]; }
+  function add(id,key){ ensure(id)[key]++; }
+
+  t.forEach(x=>{
+    const creatorId = canonicalIdFromAny(x.openedByUser || x.openedBy, users);
+    if(!who || creatorId===who) add(creatorId,'created');
+    if(x.status==='closed'){
+      const closerId = canonicalIdFromAny((x.close&&x.close.by)||x.closedBy, users);
+      if(!who || closerId===who) add(closerId,'closed');
+    }
+    (x.comments||[]).forEach(c=>{
+      const cid = canonicalIdFromAny(c.user, users);
+      if(!who || cid===who) add(cid,'comments');
+      if(c.reassign) add(cid,'reassigned');
+    });
+    (x.history||[]).forEach(h=>{
+      if((h.action||'').toLowerCase().includes('reassign')){
+        const hid = canonicalIdFromAny(h.user, users);
+        if(!who || hid===who) add(hid,'reassigned');
+      }
+    });
+  });
+
+  let rows = Object.entries(stats).map(([id,s])=>({id, ...s})).sort((a,b)=>a.name.localeCompare(b.name));
+  const tot = rows.reduce((a,r)=>({created:a.created+r.created,reassigned:a.reassigned+r.reassigned,closed:a.closed+r.closed,comments:a.comments+r.comments}),{created:0,reassigned:0,closed:0,comments:0});
+
+  const tableHTML = `
+    <div class="d-flex gap-2 align-items-center mb-2">
+      <input id="adm-user-q" class="form-control" placeholder="Search name…" oninput="sortAdminStats('__search__')">
+    </div>
+    <div class="table-wrap">
+      <table class="table table-sm table-bordered table-compact">
+        <thead><tr>
+          <th>User</th>
+          <th class="th-sort num" onclick="sortAdminStats('created')">Created</th>
+          <th class="th-sort num" onclick="sortAdminStats('reassigned')">Reassigned</th>
+          <th class="th-sort num" onclick="sortAdminStats('closed')">Closed</th>
+          <th class="th-sort num" onclick="sortAdminStats('comments')">Comments</th>
+        </tr></thead>
+        <tbody id="adm-stats-body"></tbody>
+      </table>
+    </div>
+    <div class="cards" id="adm-stats-cards"></div>
+  `;
+  byId('user-stats').innerHTML = tableHTML;
+  window.__adm_stats_all = rows;
+  window.__adm_stats_sort = {key:null,dir:1};
+  rebuildAdminStatsBody();
+}
+function rebuildAdminStatsBody(){
+  const q=(byId('adm-user-q')||{value:''}).value.trim().toLowerCase();
+  let rows=(window.__adm_stats_all||[]).filter(r=>!q || r.name.toLowerCase().includes(q));
+  const body = rows.map(r=>`
+    <tr><td>${r.name}</td><td class="num">${r.created}</td><td class="num">${r.reassigned}</td><td class="num">${r.closed}</td><td class="num">${r.comments}</td></tr>
+  `).join('');
+  byId('adm-stats-body').innerHTML = body + totalsRow(rows);
+  const cards = rows.map(r=>`
+    <div class="ustat-card">
+      <div class="name">${r.name}</div>
+      <div class="row"><span>Created</span><span>${r.created}</span></div>
+      <div class="row"><span>Reassigned</span><span>${r.reassigned}</span></div>
+      <div class="row"><span>Closed</span><span>${r.closed}</span></div>
+      <div class="row"><span>Comments</span><span>${r.comments}</span></div>
+    </div>`).join('') + totalsCard(rows);
+  byId('adm-stats-cards').innerHTML = cards;
+}
+function totalsRow(rows){
+  const tot = rows.reduce((a,r)=>({created:a.created+r.created,reassigned:a.reassigned+r.reassigned,closed:a.closed+r.closed,comments:a.comments+r.comments}),{created:0,reassigned:0,closed:0,comments:0});
+  return `<tr class="table-light fw-semibold"><td>Total</td><td class="num">${tot.created}</td><td class="num">${tot.reassigned}</td><td class="num">${tot.closed}</td><td class="num">${tot.comments}</td></tr>`;
+}
+function totalsCard(rows){
+  const tot = rows.reduce((a,r)=>({created:a.created+r.created,reassigned:a.reassigned+r.reassigned,closed:a.closed+r.closed,comments:a.comments+r.comments}),{created:0,reassigned:0,closed:0,comments:0});
+  return `<div class="ustat-card">
+      <div class="name">Total</div>
+      <div class="row"><span>Created</span><span>${tot.created}</span></div>
+      <div class="row"><span>Reassigned</span><span>${tot.reassigned}</span></div>
+      <div class="row"><span>Closed</span><span>${tot.closed}</span></div>
+      <div class="row"><span>Comments</span><span>${tot.comments}</span></div>
+    </div>`;
+}
+window.sortAdminStats = function(key){
+  if(key==='__search__'){ rebuildAdminStatsBody(); return; }
+  const s = window.__adm_stats_sort;
+  if(s.key===key) s.dir*=-1; else { s.key=key; s.dir=1; }
+  const rows = (window.__adm_stats_all||[]).slice().sort((a,b)=> (a[key]-b[key])*s.dir || a.name.localeCompare(b.name));
+  window.__adm_stats_all = rows;
+  rebuildAdminStatsBody();
+};
+
+/* ============== EMAIL ============== */
 function sendTicketEmailNotification(ticket, toEmail){
   const users=getUsers();
   const openedUser=users.find(u=>u.username.toLowerCase()===(ticket.openedByUser||"").toLowerCase());
@@ -1400,15 +1489,8 @@ function sendTicketEmailNotification(ticket, toEmail){
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
     .catch(err=>console.error("EmailJS send error", err));
 }
-function sendTest(){
-  const sel = Array.from(byId('adm-email-list').selectedOptions).map(o=>o.value);
-  if(!sel.length) return alert('Select at least one user.');
-  const dummy={ id:'TEST-'+Math.random().toString(36).slice(2,7), dairyNumber:'DEMO', farmName:'Demo Farm', alertType:'Temperature', alertOther:'', priority:'Medium', assignedNames:['Test'], openedBy:curUser.name, createdDate:new Date().toISOString().slice(0,10), issueDesc:'Email test', openedByUser:curUser.username };
-  sel.forEach(to=>sendTicketEmailNotification(dummy,to));
-  alert('Sent test emails.');
-}
 
-/* =================== DEEP LINK & LOGIN LOG =================== */
+/* ============== DEEP LINK ============== */
 window.addEventListener("hashchange", checkHashForTicket);
 function checkHashForTicket(){
   const hash=location.hash||"";
@@ -1416,27 +1498,6 @@ function checkHashForTicket(){
     const ticketId=hash.replace("#ticket=","");
     if(byId('ticket-section').classList.contains('hidden')) showMain();
     setTimeout(()=>{viewTicketDetails(ticketId,false);},100);
-  }
-}
-(function logLoginOnLoad(){
-  const hist=JSON.parse(localStorage.getItem('loginHistory')||'[]');
-  const u = (curUser && curUser.name) || 'Unknown';
-  // we’ll push on successful login instead (hooked below)
-})();
-
-// record logins
-const _doLogin = doLogin;
-window.doLogin = function(){
-  const username=(val('login-user')||'').trim().toLowerCase();
-  const password=val('login-pass');
-  const user=findUser(username);
-  if(user && user.password===password){
-    curUser=user; showMain();
-    const hist=JSON.parse(localStorage.getItem('loginHistory')||'[]');
-    hist.push({user:curUser.name, when:new Date().toLocaleString()});
-    localStorage.setItem('loginHistory', JSON.stringify(hist));
-  } else {
-    byId('login-msg').textContent="Login failed: Wrong username or password.";
   }
 }
 </script>
