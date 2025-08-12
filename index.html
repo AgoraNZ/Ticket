@@ -1,122 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Agora Ticketing Advanced</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-
-<!-- Bootstrap -->
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-<!-- SheetJS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
 <style>
-:root{
-  --bg:#f8faff; --primary:#001F3F; --accent:#FF851B;
-  --danger:#FF4136; --success:#2ECC40; --monitor:#1E88E5;
-  --font:'Segoe UI',Arial,sans-serif;
-  --maxw:980px; --logo:210px; --h1:2rem; --table-font:.95rem;
-}
-html,body{height:100%}
-body{background:var(--bg);color:var(--primary);font-family:var(--font)}
-.container-main{background:#fff;border-radius:18px;max-width:var(--maxw);margin:32px auto 48px;padding:24px 18px 28px;box-shadow:0 2px 32px #001F3F11}
-.logo-header{max-width:var(--logo);display:block;margin:0 auto 12px}
-h1{color:var(--accent);font-size:var(--h1);text-align:center;margin-bottom:10px}
-.form-label{color:var(--primary);font-weight:600}
-.form-control,.form-select{border-radius:8px}
-.btn-agora{background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:600}
-.btn-agora:hover{background:#ff6d00}
-.btn-admin{background:var(--primary);color:#fff;border:none;border-radius:6px}
-.btn-admin:hover{background:#173559}
-.btn-outline{background:#fff;color:var(--primary);border:1px solid var(--accent)}
-.btn-outline:hover{background:var(--accent);color:#fff}
-.nav-btns{display:flex;gap:10px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
-.logout-link{float:right;color:#a00;text-decoration:underline;cursor:pointer;font-size:.97em}
-.ticket-status-open{color:var(--success);font-weight:700}
-.ticket-status-closed{color:var(--danger);font-weight:700}
-.ticket-status-monitoring{color:var(--monitor);font-weight:700}
-.ticket-link{cursor:pointer;text-decoration:underline;color:var(--primary)}
-.ticket-link:hover{color:var(--accent)}
-.comment-box{background:#f6f6f8;border-radius:7px;margin-bottom:12px;padding:10px}
-.history-box{background:#fcfcfc;border-left:3px solid var(--accent);margin-bottom:14px;padding:7px 12px}
-.photo-thumb{max-width:80px;max-height:80px;display:inline-block;margin:4px 6px 4px 0;border-radius:6px;border:1px solid #eee}
-.file-chip{display:inline-block;padding:3px 6px;border:1px solid #eee;border-radius:6px;margin:3px 6px 3px 0;font-size:.9em}
-.small-note{font-size:.9em;color:#666}
-.badge-reassign{background:#fff3cd;color:#8a6d3b;border:1px solid #ffe49c;padding:2px 6px;border-radius:10px;font-size:.8em}
-.progress-mini{height:6px;background:#eee;border-radius:8px;overflow:hidden;width:180px;display:inline-block;vertical-align:middle;margin-left:8px}
-.progress-mini>div{height:100%;background:var(--accent);width:0%;transition:width .2s}
-.hidden{display:none!important}
-footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
-
-/* Desktop table */
-.table-area{display:block}
-.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.table,.table *{font-size:var(--table-font)!important}
-.table thead th{position:sticky;top:0;background:#fff;z-index:1}
-.table td,.table th{white-space:normal;word-break:break-word}
-.th-sort{cursor:pointer}
-
-/* Mobile card list */
-.ticket-cards{display:none}
-.tcard{border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 8px #0000000a}
-.tcard-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.t-id{font-weight:700}
-.t-badges{display:flex;gap:6px;flex-wrap:wrap}
-.b-status{font-weight:700;text-transform:capitalize}
-.b-age{background:#ffe082;color:#5d4100;border-radius:8px;padding:2px 6px}
-.b-priority{border-radius:8px;padding:2px 6px;border:1px solid #ddd}
-.b-media{border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ddd;font-size:.8em}
-.b-sla{background:#ffebee;color:#b71c1c;border-radius:8px;padding:2px 6px;font-weight:700}
-.tcard-body{margin-top:6px}
-.tcard-actions{display:flex;gap:8px;margin-top:8px}
-.t-more{font-size:.92em}
-@media (max-width:800px){
-  .table-area{display:none}
-  .ticket-cards{display:block}
-  .container-main{padding:16px}
-}
-@media (max-width:600px){
-  .container-main{padding:9px 2vw}
-  h1{font-size:1.3rem}
-  .logo-header{max-width:120px}
-}
-
-/* Summary Dashboard */
-.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.kpi{border:1px solid #eee;border-radius:12px;padding:14px;text-align:center;background:#fff;min-height:84px}
-.kpi .num{font-size:1.6rem;font-weight:800}
-.kpi .label{font-size:1rem;color:#4b5563}
-.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.sum-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
-.sum-title{font-weight:800;margin-bottom:6px;font-size:1.1rem}
-.chip{display:inline-block;padding:6px 10px;border:1px solid #ddd;border-radius:18px;margin-right:6px;cursor:pointer;user-select:none}
-.chip.active{border-color:var(--accent);color:var(--accent);font-weight:600}
-@media (max-width:900px){ .kpi-grid{grid-template-columns:1fr} .sum-grid{grid-template-columns:1fr} }
-
-/* Admin list / profile */
-.user-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:8px}
-.user-item{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:12px;padding:10px 12px;background:#fff}
-.user-name{font-weight:700}
-.role-pill{background:#e9f0ff;color:#173559;border-radius:999px;padding:2px 10px;font-size:.85rem}
-.user-item button{white-space:nowrap}
-
-/* Modal (profile + album + close) */
-.modal-mask{position:fixed;left:0;top:0;right:0;bottom:0;background:#0006;display:none;align-items:center;justify-content:center;z-index:9999}
-.modal-card{width:min(720px,94vw);background:#fff;border-radius:14px;padding:16px}
-.modal-header{font-weight:800;margin-bottom:6px}
-
-/* Inline loader */
-.loader{display:flex;gap:8px;align-items:center}
-.loader .bar{height:8px;background:#eee;border-radius:999px;overflow:hidden;flex:1}
-.loader .bar > div{height:100%;background:var(--accent);width:0%}
-
-/* Album grid */
-.album-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(120px,1fr));gap:8px}
-.album-grid img{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid #eee}
+  :root{
+    --bg:#f8faff; --primary:#001F3F; --accent:#FF851B;
+    --danger:#FF4136; --success:#2ECC40; --monitor:#1E88E5;
+    --font:'Segoe UI',Arial,sans-serif;
+    --maxw:980px; --logo:210px; --h1:2rem; --table-font:.95rem;
+  }
+  body{background:var(--bg);color:var(--primary);font-family:var(--font)}
+  .container-main{background:#fff;border-radius:18px;max-width:var(--maxw);margin:32px auto 48px;padding:24px 18px 28px;box-shadow:0 2px 32px #001F3F11}
+  .logo-header{max-width:var(--logo);display:block;margin:0 auto 12px}
+  h1{color:var(--accent);font-size:var(--h1);text-align:center;margin-bottom:10px}
+  .form-label{color:var(--primary);font-weight:600}
+  .form-control,.form-select{border-radius:8px}
+  .btn-agora{background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:600}
+  .btn-agora:hover{background:#ff6d00}
+  .btn-admin{background:var(--primary);color:#fff;border:none;border-radius:6px}
+  .btn-admin:hover{background:#173559}
+  .btn-outline{background:#fff;color:var(--primary);border:1px solid var(--accent)}
+  .btn-outline:hover{background:var(--accent);color:#fff}
+  .nav-btns{display:flex;gap:10px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
+  .logout-link{float:right;color:#a00;text-decoration:underline;cursor:pointer;font-size:.97em}
+  .ticket-status-open{color:var(--success);font-weight:700}
+  .ticket-status-closed{color:var(--danger);font-weight:700}
+  .ticket-status-monitoring{color:var(--monitor);font-weight:700}
+  .ticket-link{cursor:pointer;text-decoration:underline;color:var(--primary)}
+  .ticket-link:hover{color:var(--accent)}
+  .comment-box{background:#f6f6f8;border-radius:7px;margin-bottom:12px;padding:10px}
+  .history-box{background:#fcfcfc;border-left:3px solid var(--accent);margin-bottom:14px;padding:7px 12px}
+  .photo-thumb{max-width:80px;max-height:80px;display:inline-block;margin:4px 6px 4px 0;border-radius:6px;border:1px solid #eee}
+  .file-chip{display:inline-block;padding:3px 6px;border:1px solid #eee;border-radius:6px;margin:3px 6px 3px 0;font-size:.9em}
+  .small-note{font-size:.9em;color:#666}
+  .badge-reassign{background:#fff3cd;color:#8a6d3b;border:1px solid #ffe49c;padding:2px 6px;border-radius:10px;font-size:.8em}
+  .progress-mini{height:6px;background:#eee;border-radius:8px;overflow:hidden;width:180px;display:inline-block;vertical-align:middle;margin-left:8px}
+  .progress-mini>div{height:100%;background:var(--accent);width:0%;transition:width .2s}
+  .hidden{display:none!important}
+  footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
+  /* Desktop table */
+  .table-area{display:block}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .table,.table *{font-size:var(--table-font)!important}
+  .table thead th{position:sticky;top:0;background:#fff;z-index:1}
+  .table td,.table th{white-space:normal;word-break:break-word}
+  .th-sort{cursor:pointer}
+  /* Mobile cards */
+  .ticket-cards{display:none}
+  .tcard{border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 8px #0000000a}
+  .tcard-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .t-id{font-weight:700}
+  .t-badges{display:flex;gap:6px;flex-wrap:wrap}
+  .b-status{font-weight:700;text-transform:capitalize}
+  .b-age{background:#ffe082;color:#5d4100;border-radius:8px;padding:2px 6px}
+  .b-priority{border-radius:8px;padding:2px 6px;border:1px solid #ddd}
+  .b-media{border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ddd;font-size:.8em}
+  .b-sla{background:#ffebee;color:#b71c1c;border-radius:8px;padding:2px 6px;font-weight:700}
+  .tcard-body{margin-top:6px}
+  .tcard-actions{display:flex;gap:8px;margin-top:8px}
+  .t-more{font-size:.92em}
+  @media (max-width:800px){
+    .table-area{display:none}
+    .ticket-cards{display:block}
+    .container-main{padding:16px}
+  }
+  @media (max-width:600px){
+    .container-main{padding:9px 2vw}
+    h1{font-size:1.3rem}
+    .logo-header{max-width:120px}
+  }
+  /* Summary Dashboard */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .kpi{border:1px solid #eee;border-radius:12px;padding:10px;text-align:center;background:#fff}
+  .kpi .num{font-size:1.4rem;font-weight:800}
+  .kpi .label{font-size:.9rem;color:#666}
+  .sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sum-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fff}
+  .sum-title{font-weight:700;margin-bottom:6px}
+  .chip{display:inline-block;padding:4px 8px;border:1px solid #ddd;border-radius:14px;margin-right:6px;cursor:pointer;user-select:none}
+  .chip.active{border-color:var(--accent);color:var(--accent);font-weight:600}
+  /* Admin: user list cards & matrices */
+  .user-card{display:flex;align-items:center;justify-content:space-between;border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:10px}
+  .role-badge{background:#e7f0ff;color:#1f4ea3;border-radius:12px;padding:2px 8px;font-size:.85em;margin-left:8px}
+  .matrix-wrap{overflow-x:auto}
+  .matrix{display:grid;grid-template-columns:2fr repeat(4,1fr);min-width:540px}
+  .matrix .hdr,.matrix .cell{padding:10px 8px;border-bottom:1px solid #eee}
+  .matrix .hdr{font-weight:700;color:#173559}
+  .matrix .cell.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Modal overlay (loading/album) */
+  .screen-overlay{position:fixed;inset:0;background:#ffffffd9;display:none;align-items:center;justify-content:center;z-index:9999}
+  .loader{width:90px;height:90px;border-radius:50%;border:8px solid #eee;border-top-color:var(--accent);animation:spin 1s linear infinite;margin-bottom:10px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .overlay-box{text-align:center;color:#173559}
+  .album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;max-width:900px;margin:0 auto}
+  .album-grid img{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid #eee}
+  @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} .sum-grid{grid-template-columns:1fr} }
 </style>
-
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
@@ -228,16 +215,9 @@ footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
         <button class="btn btn-admin csv-btn" id="btn-xlsx" style="display:none" onclick="exportToXLSX()">Export XLSX</button>
       </div>
     </div>
-
     <div id="ticket-list-controls" class="mb-3"></div>
-
-    <!-- Desktop table -->
-    <div class="table-area">
-      <div class="table-wrap" id="ticket-table-wrap"></div>
-    </div>
-    <!-- Mobile cards -->
+    <div class="table-area"><div class="table-wrap" id="ticket-table-wrap"></div></div>
     <div class="ticket-cards" id="ticket-cards"></div>
-
     <div id="ticket-view-modal" class="mt-3 hidden"></div>
   </div>
 
@@ -249,11 +229,8 @@ footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
         <button class="btn btn-admin" onclick="exportSummary()">Export Summary CSV</button>
       </div>
     </div>
-
     <div id="summary-filters" class="mb-3"></div>
-
     <div class="kpi-grid mb-3" id="kpi-grid"></div>
-
     <div class="sum-grid">
       <div class="sum-card">
         <div class="sum-title">Tickets by Alert Type</div>
@@ -272,13 +249,11 @@ footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
         <canvas id="chartReassignSLA" height="160"></canvas>
       </div>
     </div>
-
     <div class="sum-card mt-3" id="recurring-box">
       <div class="sum-title">Recurring Problems (all time)</div>
       <div id="recurring-list"></div>
       <div id="recurring-results" class="mt-2"></div>
     </div>
-
     <div class="sum-card mt-3" id="photo-box">
       <div class="sum-title">Latest Photos by Dairy</div>
       <div id="latest-photos"></div>
@@ -288,10 +263,10 @@ footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
   <footer>Agora Ticketing v2.3 (2025-08-12)</footer>
 </div>
 
-<!-- Modals: Close / Profile / Album -->
-<div class="modal-mask" id="close-modal">
-  <div class="modal-card">
-    <div class="modal-header">Close Ticket</div>
+<!-- Close Modal (overlayed, not static) -->
+<div class="modal-mask" id="close-modal" style="display:none;position:fixed;inset:0;background:#00000055;align-items:center;justify-content:center;z-index:9990">
+  <div class="modal-card" style="background:#fff;border-radius:12px;max-width:620px;width:92%;padding:14px">
+    <div class="modal-header" style="font-weight:700;font-size:1.1rem">Close Ticket</div>
     <div class="mb-2">
       <label class="form-label">Resolution / Action Taken</label>
       <textarea id="close-note" class="form-control" rows="3" placeholder="Describe the fix"></textarea>
@@ -308,28 +283,13 @@ footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
   </div>
 </div>
 
-<div class="modal-mask" id="profile-modal">
-  <div class="modal-card">
-    <div class="modal-header">User Profile</div>
-    <div id="profile-body"></div>
-    <div class="mt-3 d-flex gap-2 justify-content-end">
-      <button class="btn btn-outline" onclick="hideProfile()">Close</button>
-    </div>
+<!-- Screen overlay (loading / album) -->
+<div id="screen-overlay" class="screen-overlay">
+  <div class="overlay-box">
+    <div class="loader"></div>
+    <div id="overlay-text">Loading…</div>
   </div>
 </div>
-
-<div class="modal-mask" id="album-modal">
-  <div class="modal-card">
-    <div class="modal-header" id="album-title">Album</div>
-    <div id="album-grid" class="album-grid"></div>
-    <div class="mt-3 d-flex justify-content-end"><button class="btn btn-outline" onclick="hideAlbum()">Close</button></div>
-  </div>
-</div>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
 
 <script>
 /* =================== CONFIG / INIT =================== */
@@ -343,7 +303,6 @@ const initialUsers = [
 if(!localStorage.getItem("users")){
   localStorage.setItem("users", JSON.stringify(initialUsers.map(u=>({...u,username:u.username.toLowerCase()}))));
 }
-
 const firebaseConfig = {
   apiKey:"AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
   authDomain:"dairy-farm-record-system.firebaseapp.com",
@@ -356,28 +315,31 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 const ticketsFolder = "Agora V1 Tickets";
 
-// EmailJS config
+// EmailJS
 const EMAILJS_SERVICE_ID = "service_228tpco";
 const EMAILJS_TEMPLATE_ID = "template_9s0ckye";
 const EMAILJS_PUBLIC_KEY = "8uQgECrkNStKV41S-";
 const TICKET_URL_ROOT = "https://agoranz.github.io/Ticket/";
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
-// SLA mins (breach: first response >24h; monitoring >1 week for actives)
+// SLA mins (first response within 24h; monitoring <= 7d)
 const SLA = { Temperature: 24*60, DEFAULT: 72*60 };
-const FIRST_RESPONSE_SLA_MIN = 24*60;
-const MONITORING_MAX_MIN = 7*24*60;
+const MONITOR_MAX_MIN = 7*24*60;
 
 // State
 let curUser=null, closeTicketId=null, currentSort={key:null,dir:1};
 let charts = {}; // chart instances
 
-/* =================== AUTH =================== */
+/* =================== AUTH & LOGIN HISTORY =================== */
 const byId=(id)=>document.getElementById(id);
 const val=(id)=>byId(id).value||'';
+function getUsers(){return JSON.parse(localStorage.getItem("users")||"[]")}
+function setUsers(users){localStorage.setItem("users", JSON.stringify(users))}
+function findUser(username){return getUsers().find(u=>u.username===username.trim().toLowerCase())}
 
 function showLogin(){byId('login-box').classList.remove('hidden');byId('signup-box').classList.add('hidden');byId('login-msg').textContent=''}
 function showSignup(){byId('signup-box').classList.remove('hidden');byId('login-box').classList.add('hidden');byId('login-msg').textContent=''}
+
 function showMain(){
   byId('login-section').classList.add('hidden');
   byId('ticket-section').classList.remove('hidden');
@@ -386,14 +348,12 @@ function showMain(){
   updateNavButtons(); autoFillTicketForm(); loadActiveCount(); checkHashForTicket();
 }
 function logout(){curUser=null;location.reload()}
-function getUsers(){return JSON.parse(localStorage.getItem("users")||"[]")}
-function setUsers(users){localStorage.setItem("users", JSON.stringify(users))}
-function findUser(username){return getUsers().find(u=>u.username===username.trim().toLowerCase())}
+
 function doLogin(){
   const username=(val('login-user')||'').trim().toLowerCase();
   const password=val('login-pass');
   const user=findUser(username);
-  if(user && user.password===password){curUser=user;showMain()} else byId('login-msg').textContent="Login failed: Wrong username or password."
+  if(user && user.password===password){curUser=user;pushLoginEvent(user);showMain()} else byId('login-msg').textContent="Login failed: Wrong username or password."
 }
 function doSignup(){
   const name=(val('signup-name')||'').trim();
@@ -401,7 +361,7 @@ function doSignup(){
   const password=val('signup-pass');
   if(!name||!username||!password) return byId('login-msg').textContent="All fields required.";
   if(findUser(username)) return byId('login-msg').textContent="Username already exists.";
-  const users=getUsers(); const user={username,name,password,role:"service"}; users.push(user); setUsers(users); curUser=user; showMain();
+  const users=getUsers(); const user={username,name,password,role:"service"}; users.push(user); setUsers(users); curUser=user; pushLoginEvent(user); showMain();
 }
 function updateNavButtons(){
   byId('user-position').textContent=`Position: Agora Service | ${curUser.name} (${curUser.role})`;
@@ -409,7 +369,16 @@ function updateNavButtons(){
   ['btn-closed-tickets','btn-summary','btn-admin','btn-csv-top','btn-xlsx-top'].forEach(id=>byId(id).style.display=isAdmin?'':'none');
 }
 
-/* =================== HELPERS / DATES =================== */
+/* Login history */
+function getLoginHistory(){ return JSON.parse(localStorage.getItem("loginHistory")||"[]"); }
+function setLoginHistory(arr){ localStorage.setItem("loginHistory", JSON.stringify(arr.slice(-200))); }
+function pushLoginEvent(user){
+  const hist=getLoginHistory();
+  hist.push({username:user.username,name:user.name,role:user.role,ts:new Date().toISOString()});
+  setLoginHistory(hist);
+}
+
+/* =================== MISC / DATES =================== */
 (async function(){
   try{
     const logoRef=storage.ref("Agora Logo/2F6-1YdaEP.jpeg");
@@ -417,7 +386,6 @@ function updateNavButtons(){
     byId("logo-img").src=url; byId("logo-img").style.display="block";
   }catch{}
 })();
-
 function autoFillTicketForm(){
   byId('service-person').value=curUser.name;
   byId('ticket-date').value=(new Date()).toISOString().slice(0,10);
@@ -427,7 +395,6 @@ function autoFillTicketForm(){
 }
 function toggleOtherAlert(){byId('other-alert-div').classList.toggle('hidden', val('alert-type')!=="Other")}
 byId('ticket-file').addEventListener('change',()=>renderFilePreview(byId('ticket-file').files, byId('ticket-file-preview')));
-
 function renderFilePreview(filesLike, container){
   const files=Array.from(filesLike||[]); container.innerHTML='';
   files.forEach(f=>{
@@ -444,15 +411,11 @@ function looksLikeImage(obj){
   return t || /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/.test(n);
 }
 function minutesBetween(aIso,bIso){ const A=new Date(aIso).getTime(); const B=new Date(bIso).getTime(); if(!isFinite(A)||!isFinite(B))return 0; return Math.max(0, Math.round((B-A)/60000)); }
-function fmtHoursFromMin(m){
-  const h = Math.round((m||0)/60);
-  return `${h}h`;
-}
+function fmtHrs(min){ const h=Math.round((min||0)/60); return h+'h'; }
 
 /* =================== STORAGE HELPERS =================== */
 const MAX_FILE_MB=20;
 const ALLOWED_TYPES=['image/jpeg','image/png','image/gif','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'];
-
 function validateFiles(files){
   const errs=[]; for(const f of files){ if(f.size>MAX_FILE_MB*1024*1024) errs.push(`${f.name}: >${MAX_FILE_MB}MB`); if(!ALLOWED_TYPES.includes(f.type)&&!f.type.startsWith('image/')) errs.push(`${f.name}: unsupported`) }
   return errs;
@@ -476,11 +439,10 @@ async function submitTicket(){
   const users=getUsers(), assignedNames=assigned.map(u=>(users.find(x=>x.username===u)||{}).name||u);
 
   const createdAtISO = new Date().toISOString();
-
   const data={
     id:uuidv4(),
     createdDate:val('ticket-date'),
-    createdAt: createdAtISO, // precise open timestamp
+    createdAt: createdAtISO,
     dairyNumber:val('dairy-number').trim(),
     farmName:val('farm-name').trim(),
     alertType:val('alert-type'),
@@ -500,10 +462,8 @@ async function submitTicket(){
     monitoringStartedAt:null,
     close:null
   };
-
   if(!data.dairyNumber||!data.farmName||!data.alertType||!data.issueDesc) return byId('ticket-msg').textContent="All required fields must be filled out.";
   if(data.alertType==="Other"&&!data.alertOther) return byId('ticket-msg').textContent="Specify the 'Other' alert type.";
-
   const files=Array.from(byId('ticket-file').files||[]); const errs=validateFiles(files); if(errs.length) return alert("Upload errors:\n"+errs.join("\n"));
   if(files.length){
     const pv=byId('ticket-file-preview');
@@ -514,10 +474,8 @@ async function submitTicket(){
       data.files.push({name:f.name,type:f.type,url});
     }
   }
-
   await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
   byId('ticket-msg').textContent="Ticket created."; byId('ticket-form').reset(); autoFillTicketForm(); loadActiveCount();
-
   assigned.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(data,to.username)});
 }
 
@@ -531,41 +489,29 @@ async function loadAllTickets(){
       if(fileRef.name.endsWith('.json') && !fileRef.name.startsWith('attachments/')){
         const url=await fileRef.getDownloadURL();
         const t=await fetch(url).then(r=>r.json());
-
         if(!Array.isArray(t.assignedTo)) t.assignedTo = t.assignedTo ? [t.assignedTo] : [];
         if(!Array.isArray(t.assignedNames)) t.assignedNames = t.assignedName ? [t.assignedName] : (t.assignedTo||[]);
         t.comments = t.comments || [];
         t.history  = t.history || [];
-
-        // ensure createdAt
         if(!t.createdAt){
           const createdEvt = (t.history||[]).find(h=> (h.action||"").toLowerCase()==="created");
           t.createdAt = createdEvt?.date || (t.createdDate ? (t.createdDate + "T00:00:00.000Z") : new Date().toISOString());
         }
-
-        // unify close (legacy)
         const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution;
         if (!t.close && hasLegacyClose) {
-          t.close = {
-            by:   t.closedBy   || "",
-            date: t.closedDate || "",
-            note: t.closeComment || t.resolution || "",
-            files: t.closeFiles || []
-          };
+          t.close = { by:t.closedBy||"", date:t.closedDate||"", note:t.closeComment||t.resolution||"", files:t.closeFiles||[] };
         } else if (t.close) {
           t.close.by   = t.close.by   || t.closedBy   || "";
           t.close.date = t.close.date || t.closedDate || "";
           t.close.note = t.close.note || t.closeComment || t.resolution || "";
           t.close.files = Array.isArray(t.close.files) ? t.close.files : (t.closeFiles || []);
         }
-
         arr.push(t);
       }
     }
     return arr;
   }catch{return[]}
 }
-
 async function loadActiveCount(){
   const tickets=await loadAllTickets();
   const n = tickets.filter(t=>t.status==="open" || t.status==="monitoring").length;
@@ -588,7 +534,7 @@ async function showActiveTickets(){
   byId('summary-section').classList.add('hidden');
   const isAdmin=curUser.role==="admin";
   ['btn-csv','btn-xlsx'].forEach(id=>byId(id).style.display=isAdmin?'':'none');
-  ticketFilterUI('active'); // open + monitoring
+  ticketFilterUI('active');
 }
 async function showClosedTickets(){
   if(curUser.role!=="admin") return alert("Admins only.");
@@ -601,18 +547,18 @@ async function showClosedTickets(){
 function ticketFilterUI(scope){
   const users=getUsers();
   byId('ticket-list-controls').innerHTML = `
-    <input class="form-control search-box d-inline" id="filter-search" placeholder="Keyword" style="max-width:220px">
-    <select id="filter-assignee" class="form-select search-box" style="max-width:200px">
+    <input class="form-control search-box d-inline" id="filter-search" placeholder="Keyword">
+    <select id="filter-assignee" class="form-select search-box">
       <option value="">All Users</option>
       ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
     </select>
-    <select id="filter-priority" class="form-select search-box" style="max-width:150px">
+    <select id="filter-priority" class="form-select search-box">
       <option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option>
     </select>
-    <select id="filter-alert" class="form-select search-box" style="max-width:200px">
+    <select id="filter-alert" class="form-select search-box">
       <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
     </select>
-    <input type="date" id="filter-date" class="form-control search-box" style="max-width:170px">
+    <input type="date" id="filter-date" class="form-control search-box">
     <span class="btn btn-sm btn-outline" id="chip-hasimg">Has Images</span>
     <button class="btn btn-agora btn-sm" onclick="filterTickets('${scope}')">Filter</button>`;
   byId('filter-search').onkeydown=(e)=>{if(e.key==='Enter')filterTickets(scope)};
@@ -630,7 +576,6 @@ async function filterTickets(scope){
         al=(byId('filter-alert')||{}).value||'',
         dt=(byId('filter-date')||{}).value||'',
         hasImg=byId('chip-hasimg')?.classList.contains('active');
-
   tickets=tickets.filter(t=>
     (!s || JSON.stringify(t).toLowerCase().includes(s.toLowerCase())) &&
     (!ass || (t.assignedTo||[]).map(x=>x.toLowerCase()).includes(ass.toLowerCase())) &&
@@ -639,26 +584,23 @@ async function filterTickets(scope){
     (!dt || (t.createdDate||"").startsWith(dt)) &&
     (!hasImg || (t.files?.length||0)>0)
   );
-
   renderTicketTable(tickets, scope==='closed');
   renderTicketCards(tickets, scope==='closed');
 }
 
-/* =================== DESKTOP TABLE =================== */
+/* =================== TABLES & CARDS =================== */
 function slaFor(t){ return (t.alertType==="Temperature") ? SLA.Temperature : SLA.DEFAULT; }
 function shortRow(t){
   const nowISO=new Date().toISOString();
   const minsOpen = (t.status==="open") ? minutesBetween(t.createdAt,nowISO) :
                    (t.status==="monitoring" ? minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO) : 0);
   const ageStr = (t.status==="closed" && t.close?.date)
-      ? `resolved ${fmtHoursFromMin(minutesBetween(t.createdAt, t.close.date))}`
-      : (t.status==="monitoring" ? `monitoring ${fmtHoursFromMin(minsOpen)}` : `open ${fmtHoursFromMin(minsOpen)}`);
+      ? `resolved ${fmtHrs(minutesBetween(t.createdAt, t.close.date))}`
+      : (t.status==="monitoring" ? `monitoring ${fmtHrs(minsOpen)}` : `open ${fmtHrs(minsOpen)}`);
   return {
-    id:t.id,
-    dairy:t.dairyNumber, farm:t.farmName,
+    id:t.id,dairy:t.dairyNumber,farm:t.farmName,
     alert:t.alertType+(t.alertType==='Other'?`: ${t.alertOther||''}`:''),
-    pr:t.priority, ass:(t.assignedNames||[]).join(', '),
-    opened:t.openedBy, date:t.createdDate||'', status:t.status, age:ageStr
+    pr:t.priority, ass:(t.assignedNames||[]).join(', '), opened:t.openedBy, date:t.createdDate||'', status:t.status, age:ageStr
   }
 }
 function sortBy(key, rows){
@@ -717,8 +659,6 @@ function renderTicketTable(tickets,isClosed){
     }).join('');
   }
 }
-
-/* =================== MOBILE CARDS =================== */
 function mediaCount(t){
   const issueImgs=(t.files||[]).filter(looksLikeImage).length;
   const commentImgs=(t.comments||[]).reduce((a,c)=>a+(c.files||[]).filter(looksLikeImage).length,0);
@@ -744,7 +684,7 @@ function renderTicketCards(tickets,isClosed){
         <div class="t-badges">
           <span class="b-priority">${t.priority}</span>
           <span class="b-status ${t.status==='open'?'text-success':(t.status==='monitoring'?'text-primary':'text-danger')}">${t.status}</span>
-          <span class="b-age">${fmtHoursFromMin(statusMinutes)}</span>
+          <span class="b-age">${fmtHrs(statusMinutes)}</span>
           ${mCount?`<span class="b-media">${mCount}</span>`:''}
           ${slaBadge}
         </div>
@@ -764,13 +704,12 @@ function renderTicketCards(tickets,isClosed){
   });
 }
 
-/* =================== DETAILS / COMMENT / REASSIGN / MONITORING =================== */
+/* =================== DETAILS / COMMENT =================== */
 window.viewTicketDetails=async function(id,isClosed){
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
   const isMobile=window.matchMedia("(max-width:800px)").matches;
   const container=isMobile?byId(`expand-${id}`):byId('ticket-view-modal');
   container.classList.remove('hidden');
-
   let html=`<h5>Ticket #${t.dairyNumber}</h5>
     <b>Farm:</b> ${t.farmName}<br>
     <b>Alert:</b> ${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}<br>
@@ -785,8 +724,6 @@ window.viewTicketDetails=async function(id,isClosed){
   if(t.files?.length){
     html+=`<div class="mt-2"><b>Files:</b> `+t.files.map(f=>looksLikeImage(f)?`<a href="${f.url}" target="_blank"><img class="photo-thumb" src="${f.url}" loading="lazy"></a>`:`<a class="file-chip" href="${f.url}" target="_blank">${f.name||'file'}</a>`).join(' ')+`</div>`;
   }
-
-  // Comments
   html+=`<div class="mt-3"><b>Comments:</b><br>`;
   (t.comments||[]).forEach(c=>{
     const badge=c.reassign?` <span class="badge-reassign">Reassigned ${c.reassign.mode==='replace'?'(replace)':'(add)'} → ${(c.reassign.added||[]).join(', ')}</span>`:'';
@@ -795,11 +732,10 @@ window.viewTicketDetails=async function(id,isClosed){
     </div>`;
   });
   html+=`</div>`;
-
   const canCommentReassign=(t.status!=="closed") && (curUser.role==="admin" || (t.assignedTo||[]).includes(curUser.username.toLowerCase()));
   if(t.status!=="closed"){
     const users=getUsers();
-    const allowMonitorToggle = t.status==="open"; // only toggle from open -> monitoring here
+    const allowMonitorToggle = t.status==="open";
     html+=`<div class="mt-2">
       <textarea id="new-comment" class="form-control" rows="2" placeholder="Add internal note..."></textarea>
       <input type="file" id="comment-files" class="form-control mt-1" multiple accept="image/*,.pdf,.doc,.docx,.txt">
@@ -807,10 +743,7 @@ window.viewTicketDetails=async function(id,isClosed){
       <div class="mt-2 p-2" style="border:1px dashed #ddd;border-radius:8px;">
         <div class="d-flex align-items-center justify-content-between">
           <label class="form-label mb-0">Assignees (optional)</label>
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="reassign-mode">
-            <label class="form-check-label" for="reassign-mode">Replace current</label>
-          </div>
+          <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="reassign-mode"><label class="form-check-label" for="reassign-mode">Replace current</label></div>
         </div>
         <select id="comment-assignees" class="form-select mt-1" multiple ${canCommentReassign?'':'disabled'}>
           ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
@@ -825,8 +758,6 @@ window.viewTicketDetails=async function(id,isClosed){
     </div>`;
     setTimeout(()=>{byId('comment-files')?.addEventListener('change',()=>renderFilePreview(byId('comment-files').files, byId('comment-files-preview')))},0);
   }
-
-  // History
   html+=`<div class="mt-3"><b>Ticket History:</b><br>`;
   (t.history||[]).forEach(h=>{
     html+=`<div class="history-box">
@@ -835,19 +766,15 @@ window.viewTicketDetails=async function(id,isClosed){
     </div>`;
   });
   html+=`</div>`;
-
-  // Closed details
   if(t.status==="closed" && t.close){
     const resMins = minutesBetween(t.createdAt, t.close.date);
-    html+=`<b>Closed by:</b> ${t.close.by}<br><b>Date Closed:</b> ${t.close.date||""}<br><b>Resolution:</b> ${t.close.note||""}<br><b>Resolution Time:</b> ${fmtHoursFromMin(resMins)}<br>`;
+    html+=`<b>Closed by:</b> ${t.close.by}<br><b>Date Closed:</b> ${t.close.date||""}<br><b>Resolution:</b> ${t.close.note||""}<br><b>Resolution Time:</b> ${fmtHrs(resMins)}<br>`;
     if(t.close.files?.length){
       html+=`<div class="mt-1"><b>Resolution Files:</b> `+t.close.files.map(ff=>looksLikeImage(ff)?`<a href="${ff.url}" target="_blank"><img class="photo-thumb" src="${ff.url}" loading="lazy"></a>`:`<a class="file-chip" href="${ff.url}" target="_blank">${ff.name||'file'}</a>`).join(' ')+`</div>`;
     }
   }
-
   container.innerHTML=html;
 };
-
 function renderAssigneeEditor(t){
   const users=getUsers();
   return `<div class="mt-2">
@@ -858,7 +785,6 @@ function renderAssigneeEditor(t){
     <button class="btn btn-admin mt-1" onclick="saveAssignees('${t.id}')">Save Assignees</button>
   </div>`;
 }
-
 window.saveAssignees=async function(id){
   if(curUser.role!=="admin") return;
   const sel=byId('edit-assignees'); const newU=Array.from(sel.selectedOptions).map(o=>o.value.toLowerCase());
@@ -871,7 +797,6 @@ window.saveAssignees=async function(id){
   newU.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(t,to.username)});
   viewTicketDetails(id,false);
 };
-
 window.addComment=async function(id){
   const text=(byId('new-comment')||{}).value?.trim()||'';
   const files=Array.from((byId('comment-files')||{files:[]}).files); const errs=validateFiles(files); if(errs.length) return alert("Upload errors:\n"+errs.join("\n"));
@@ -879,10 +804,7 @@ window.addComment=async function(id){
   const sel=byId('comment-assignees'); const chosen=sel?Array.from(sel.selectedOptions).map(o=>o.value.toLowerCase()):[]; const replace=byId('reassign-mode')?.checked||false;
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
   const users=getUsers(); const c={id:uuidv4(), text, user:curUser.name, date:(new Date()).toLocaleString(), files:[], setMonitoring:setMonitoring||false};
-
-  // First response timestamp (only once)
-  if(!t.firstResponseAt){ t.firstResponseAt = new Date().toISOString(); }
-
+  if(!t.firstResponseAt){ t.firstResponseAt = new Date().toISOString(); } // SLA 24h to first response timer
   const pv=byId('comment-files-preview');
   if(files.length){
     files.forEach(()=>{const bar=document.createElement('div');bar.className='progress-mini';bar.innerHTML='<div></div>';pv.appendChild(bar)});
@@ -892,7 +814,6 @@ window.addComment=async function(id){
       c.files.push({name:f.name,type:f.type,url});
     }
   }
-
   const canReassign=(t.status!=="closed")&&(curUser.role==="admin"||(t.assignedTo||[]).includes(curUser.username.toLowerCase()));
   if(canReassign && chosen.length){
     const old=t.assignedTo||[]; const oldSet=new Set(old); const newSet=new Set(replace?chosen:[...old,...chosen]);
@@ -902,46 +823,31 @@ window.addComment=async function(id){
     added.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(t,to.username)});
     t.history.push({action:"ReassignedViaComment", user:curUser.name, date:(new Date()).toISOString(), details:`${c.reassign.old.join(', ')} → ${t.assignedNames.join(', ')}`});
   }
-
-  // Monitoring transition
   if(setMonitoring && t.status==="open"){
     t.status = "monitoring";
     t.monitoringStartedAt = new Date().toISOString();
     t.history.push({action:"SetMonitoring", user:curUser.name, date:(new Date()).toISOString(), details:text||''});
   }
-
   t.comments.push(c);
   t.history.push({action:c.files.length?"CommentWithFiles":"Comment", user:curUser.name, date:(new Date()).toISOString(), details:text||'', files:(c.files||[])});
   await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
-
-  if(window.location.hash === `#ticket=${id}`){
-    viewTicketDetails(id, t.status==="closed");
-  }else{
-    // refresh active list
-    showActiveTickets();
-  }
+  showActiveTickets();
 };
 
-/* =================== CLOSE TICKET (MODAL) =================== */
-function showCloseModal(id){
-  closeTicketId=id; byId('close-note').value=''; byId('close-files').value=''; byId('close-files-preview').innerHTML=''; byId('close-modal').style.display='flex';
-}
+/* =================== CLOSE TICKET =================== */
+function showCloseModal(id){ closeTicketId=id; byId('close-note').value=''; byId('close-files').value=''; byId('close-files-preview').innerHTML=''; byId('close-modal').style.display='flex'; }
 function hideCloseModal(){ byId('close-modal').style.display='none'; closeTicketId=null; }
 byId('close-files').addEventListener('change',()=>renderFilePreview(byId('close-files').files, byId('close-files-preview')));
-
 async function doCloseFromModal(){
   if(!closeTicketId) return;
   const note = (byId('close-note').value || '').trim();
   const files = Array.from((byId('close-files').files || []));
   const errs = validateFiles(files);
   if (errs.length) return alert("Upload errors:\n" + errs.join("\n"));
-
   const tickets = await loadAllTickets();
   const t = tickets.find(x => x.id === closeTicketId);
   if (!t) return;
-
   const close = { note, by: curUser.name, date: (new Date()).toISOString(), files: [] };
-
   const pv = byId('close-files-preview');
   files.forEach(()=>{ const bar=document.createElement('div'); bar.className='progress-mini'; bar.innerHTML='<div></div>'; pv.appendChild(bar); });
   for (let i=0;i<files.length;i++){
@@ -950,144 +856,118 @@ async function doCloseFromModal(){
     const url = await uploadFileBlob(f, `close/${t.id}`, barFill);
     close.files.push({ name:f.name, type:f.type, url });
   }
-
-  // Unified shape
-  t.status = "closed";
-  t.close = close;
-
-  // Legacy fields for old exports
-  t.closedBy = close.by;
-  t.closedDate = close.date.slice(0,10);
-  t.closeComment = close.note;
-  t.closeFiles = close.files;
-
-  t.history = t.history || [];
-  t.history.push({
-    action: "ClosedWithFiles",
-    user: curUser.name,
-    date: (new Date()).toISOString(),
-    details: (note || ''),
-    files: (close.files || [])
-  });
-
-  await storage.ref(`${ticketsFolder}/${t.id}.json`)
-    .put(new Blob([JSON.stringify(t)], { type: "application/json" }));
-
-  hideCloseModal();
-  alert("Ticket closed.");
-  showActiveTickets();
+  t.status = "closed"; t.close = close;
+  t.closedBy = close.by; t.closedDate = close.date.slice(0,10); t.closeComment = close.note; t.closeFiles = close.files;
+  t.history = t.history || []; t.history.push({ action:"ClosedWithFiles", user:curUser.name, date:(new Date()).toISOString(), details:note||'', files:(close.files||[]) });
+  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)], { type: "application/json" }));
+  hideCloseModal(); alert("Ticket closed."); showActiveTickets();
 }
 
 /* =================== SUMMARY DASHBOARD =================== */
-async function showSummary(){
-  if(curUser.role!=="admin") return alert("Admins only.");
-  byId('ticket-section').classList.add('hidden');
-  byId('ticket-list-section').classList.add('hidden');
-  byId('summary-section').classList.remove('hidden');
-
-  // Filters
-  byId('summary-filters').innerHTML = `
+function chipsUI(){
+  return `
     <div class="d-flex flex-wrap gap-2 align-items-center">
-      <span class="chip active" data-days="all" onclick="setSummaryRange(this)">All</span>
-      <span class="chip" data-days="7" onclick="setSummaryRange(this)">7d</span>
-      <span class="chip" data-days="30" onclick="setSummaryRange(this)">30d</span>
-      <span class="chip" data-days="90" onclick="setSummaryRange(this)">90d</span>
-      <span class="chip" data-days="custom" onclick="setSummaryRange(this)">Custom</span>
-      <input type="date" id="sum-start" class="form-control" style="width:160px;display:none">
-      <input type="date" id="sum-end" class="form-control" style="width:160px;display:none">
+      <span class="chip active" data-range="all" onclick="setSummaryRange(this)">All</span>
+      <span class="chip" data-range="7" onclick="setSummaryRange(this)">7d</span>
+      <span class="chip" data-range="30" onclick="setSummaryRange(this)">30d</span>
+      <span class="chip" data-range="90" onclick="setSummaryRange(this)">90d</span>
+      <span class="chip" data-range="custom" onclick="setSummaryRange(this)">Custom</span>
+      <input type="date" id="from-date" class="form-control" style="max-width:150px;display:none">
+      <input type="date" id="to-date" class="form-control" style="max-width:150px;display:none">
       <select id="sum-alert" class="form-select" style="width:180px">
         <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
       </select>
-      <select id="sum-status" class="form-select" style="width:200px">
+      <select id="sum-status" class="form-select" style="width:210px">
         <option value="active">Active (Open+Monitoring)</option>
         <option value="closed">Closed</option>
         <option value="">All</option>
       </select>
       <button class="btn btn-agora btn-sm" onclick="renderSummary()">Apply</button>
     </div>`;
-  renderSummary();
 }
 function setSummaryRange(el){
   document.querySelectorAll('#summary-filters .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  const isCustom = el.dataset.days==='custom';
-  byId('sum-start').style.display = isCustom ? '' : 'none';
-  byId('sum-end').style.display   = isCustom ? '' : 'none';
+  const r=el.dataset.range; const fd=byId('from-date'), td=byId('to-date');
+  if(r==='custom'){ fd.style.display=''; td.style.display=''; } else { fd.style.display='none'; td.style.display='none'; }
 }
-function onlyNewFormat(t){
-  // Count averages from tickets that have proper createdAt / firstResponseAt / close.date in ISO (new schema)
-  return !!t.createdAt && (t.firstResponseAt || (t.status==='closed' && t.close?.date));
+async function showSummary(){
+  if(curUser.role!=="admin") return alert("Admins only.");
+  byId('ticket-section').classList.add('hidden');
+  byId('ticket-list-section').classList.add('hidden');
+  byId('summary-section').classList.remove('hidden');
+  byId('summary-filters').innerHTML = chipsUI();
+  renderSummary();
 }
+function inChosenRange(date, range, from, to){
+  const d=new Date(date); const now=new Date();
+  if(range==='all') return true;
+  if(range==='custom'){ if(!from||!to) return true; const F=new Date(from), T=new Date(to+'T23:59:59'); return d>=F && d<=T; }
+  const days=Number(range); return (now - d) <= days*86400000;
+}
+function destroyCharts(){ Object.values(charts).forEach(ch=>{ try{ch.destroy()}catch{} }); charts = {}; }
+function countBy(arr, fn){ const o={}; arr.forEach(x=>{const k=fn(x); o[k]=(o[k]||0)+1}); return o; }
+function groupBy(arr, fn){ const o={}; arr.forEach(x=>{const k=(typeof fn==='function')?fn(x):x[fn]; (o[k]||(o[k]=[])).push(x)}); return o; }
+
 async function renderSummary(){
   const tickets = await loadAllTickets();
-  const daysSel = (document.querySelector('#summary-filters .chip.active')?.dataset.days)||'all';
+  const chip = document.querySelector('#summary-filters .chip.active'); const range = chip?.dataset.range || 'all';
+  const from = byId('from-date').value||''; const to = byId('to-date').value||'';
   const alertSel = (byId('sum-alert')||{}).value||'';
   const statusSel = (byId('sum-status')||{}).value||'active';
   const now = new Date();
 
-  // Timeframe filter (for charts OTHER than donut)
-  const start = daysSel==='all' ? null :
-                daysSel==='custom' ? new Date((byId('sum-start').value||'1970-01-01')) :
-                new Date(now - parseInt(daysSel,10)*86400000);
-  const end   = daysSel==='custom' ? new Date((byId('sum-end').value||now.toISOString())) : now;
-
-  const inTime = (dt)=>!start || (new Date(dt) >= start && new Date(dt) <= end);
-
-  let filtered = tickets.filter(t=>{
-    const created = new Date(t.createdAt||t.createdDate||now);
-    const timeOK = inTime(created);
+  const filtered = tickets.filter(t=>{
+    const created = new Date(t.createdAt||now);
+    const inRange = inChosenRange(created, range, from, to);
     const alertOk = !alertSel || t.alertType===alertSel;
     const statusOk = !statusSel ? true : (statusSel==='closed'? t.status==='closed' : (t.status==='open'||t.status==='monitoring'));
-    return timeOK && alertOk && statusOk;
+    return inRange && alertOk && statusOk;
   });
 
-  // KPIs
   const active = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
-  const closedAll = tickets.filter(t=>t.status==='closed').length;
+  const closedAll = tickets.filter(t=>t.status==='closed');
 
-  // Build dynamic open category KPIs
-  const openByAlert = {};
-  active.forEach(t=>{ openByAlert[t.alertType] = (openByAlert[t.alertType]||0)+1; });
+  // KPI tiles
+  const activeCountsByType = countBy(active, t=>t.alertType||'Unknown');
+  const openTypeTiles = Object.entries(activeCountsByType).filter(([k,v])=>v>0).map(([k,v])=>({label:`Open ${k}`, value:v}));
 
-  // First response / resolution (ONLY from new-format onward)
-  const newFormat = tickets.filter(onlyNewFormat);
+  // metrics only from "new format" (after createdAt exists)
+  const newFormat = tickets.filter(t=>!!t.createdAt);
   const responses = newFormat.filter(t=>t.firstResponseAt);
   const avgFirstResponseMin = responses.length ? Math.round(responses.reduce((a,t)=>a+minutesBetween(t.createdAt, t.firstResponseAt),0)/responses.length) : 0;
-
   const closedNew = newFormat.filter(t=>t.status==='closed' && t.close?.date);
   const avgResolutionMin = closedNew.length ? Math.round(closedNew.reduce((a,t)=>a+minutesBetween(t.createdAt, t.close.date),0)/closedNew.length) : 0;
 
-  // SLA breaches (active)
   const activeBreach = active.filter(t=>{
-    const minutesOpen = (t.status==='monitoring')
-      ? minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString())
-      : minutesBetween(t.createdAt, now.toISOString());
-    return minutesOpen > slaFor(t);
+    const m = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString()) : minutesBetween(t.createdAt, now.toISOString());
+    const slaBreach = m > slaFor(t);
+    const monBreach = (t.status==='monitoring') && m > MONITOR_MAX_MIN;
+    return slaBreach || monBreach;
   }).length;
 
-  // KPI render
-  const kpi = [];
-  kpi.push(kpiItem(active.length, "Active Tickets"));
-  kpi.push(kpiItem(closedAll, "Closed Tickets (all time)"));
-  Object.entries(openByAlert).forEach(([k,v])=>{ if(v>0) kpi.push(kpiItem(v, `Open ${k}`)); });
-  kpi.push(kpiItem(avgFirstResponseMin?fmtHoursFromMin(avgFirstResponseMin):'0h', "Avg First Response (new)"));
-  kpi.push(kpiItem(avgResolutionMin?fmtHoursFromMin(avgResolutionMin):'0h', "Avg Resolution (new)"));
-  kpi.push(kpiItem(activeBreach, "Active SLA Breaches"));
-  byId('kpi-grid').innerHTML = kpi.join('');
-  function kpiItem(num,label){return `<div class="kpi"><div class="num">${(typeof num==='number')?num:num}</div><div class="label">${label}</div></div>`}
+  // KPI HTML
+  const kpi = [
+    {label:'Active Tickets', value:active.length},
+    {label:'Closed Tickets (all time)', value:closedAll.length},
+    ...openTypeTiles.map(o=>({label:o.label, value:o.value})),
+    {label:'Avg First Response (new)', value:fmtHrs(avgFirstResponseMin)||'-'},
+    {label:'Avg Resolution (new)', value:avgResolutionMin?fmtHrs(avgResolutionMin):'0h'},
+    {label:'Active SLA Breaches', value:activeBreach}
+  ];
+  byId('kpi-grid').innerHTML = kpi.map(x=>`<div class="kpi"><div class="num">${x.value}</div><div class="label">${x.label}</div></div>`).join('');
 
-  // Charts
   destroyCharts();
 
-  // 1) Alert type distribution (ALL tickets ever)
-  const alertCountsAll = countBy(tickets, x=>x.alertType||'Unknown');
+  // Donut = all tickets (all time) by alert type
+  const allCounts = countBy(tickets, x=>x.alertType||'Unknown');
   charts.alertType = new Chart(byId('chartAlertType').getContext('2d'), {
     type:'doughnut',
-    data:{ labels:Object.keys(alertCountsAll), datasets:[{ data:Object.values(alertCountsAll) }] },
+    data:{ labels:Object.keys(allCounts), datasets:[{ data:Object.values(allCounts) }] },
     options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
   });
 
-  // 2) Open age buckets (current active)
+  // Open age (active only, regardless of filter)
   const ageBuckets = { '0-24h':0, '1-3d':0, '4-7d':0, '8d+':0 };
   active.forEach(t=>{
     const mins = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString())
@@ -1100,157 +980,106 @@ async function renderSummary(){
   });
   charts.age = new Chart(byId('chartAge').getContext('2d'), {
     type:'bar', data:{ labels:Object.keys(ageBuckets), datasets:[{ label:'', data:Object.values(ageBuckets) }] },
-    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{precision:0}}} }
   });
 
-  // 3) Average times (hours, new-format only)
+  // Average times (new‑format only)
   charts.times = new Chart(byId('chartTimes').getContext('2d'), {
     type:'bar',
     data:{ labels:['First Response','Resolution'], datasets:[{ data:[Math.round(avgFirstResponseMin/60), Math.round(avgResolutionMin/60)] }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, title:{display:true,text:'hours'}}} }
   });
 
-  // 4) Reassignments & SLA (counts over filter selection for reassign; SLA = active)
-  const reassignedCount = filtered.filter(t=>(t.history||[]).some(h=>(h.action||'').toLowerCase().includes('reassign'))).length;
+  // Reassignments & SLA
+  const reassignedCount = tickets.filter(t=>(t.history||[]).some(h=>(h.action||'').toLowerCase().includes('reassign'))).length;
   charts.reassignSLA = new Chart(byId('chartReassignSLA').getContext('2d'), {
     type:'bar', data:{ labels:['Reassigned','SLA Breaches'], datasets:[{ data:[reassignedCount, activeBreach] }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
   });
 
-  // Recurring problems (all time)
-  renderRecurring(tickets);
-
-  // Latest photos grouped by dairy
-  renderPhotosByDairy(tickets);
-}
-function destroyCharts(){ Object.values(charts).forEach(ch=>{ try{ch.destroy()}catch{} }); charts = {}; }
-function countBy(arr, fn){ const o={}; arr.forEach(x=>{const k=fn(x); o[k]=(o[k]||0)+1}); return o; }
-function groupBy(arr, fn){ const o={}; arr.forEach(x=>{const k=(typeof fn==='function')?fn(x):x[fn]; (o[k]||(o[k]=[])).push(x)}); return o; }
-
-function renderRecurring(allTickets){
+  // Recurring problems (all time). Key: Dairy + Alert.
   const key = t => `${t.dairyNumber} | ${t.alertType}`;
-  const map = groupBy(allTickets, key);
-  const recur = Object.entries(map).filter(([k,arr])=>arr.length>=3)
-               .sort((a,b)=>b[1].length - a[1].length);
+  const map = groupBy(tickets, key);
+  const recur = Object.entries(map).filter(([k,arr])=>arr.length>=3).sort((a,b)=>b[1].length - a[1].length).slice(0,8);
+  byId('recurring-list').innerHTML = recur.length
+    ? `<ul class="mb-0">${recur.map(([k,arr])=>`<li><a href="#" onclick="showRecurring('${k.replace(/'/g,"\\'")}');return false;">${k}</a> — <b>${arr.length}</b> tickets</li>`).join('')}</ul>`
+    : `<i>No recurring clusters yet.</i>`;
+  byId('recurring-results').innerHTML='';
 
-  const list = byId('recurring-list');
-  if(!recur.length){ list.innerHTML = `<i>No recurring clusters yet.</i>`; byId('recurring-results').innerHTML=''; return; }
-
-  list.innerHTML = `<ul class="mb-2">${recur.map(([k,arr])=>{
-    const [dairy, alert] = k.split('|').map(s=>s.trim());
-    return `<li><a href="#" data-k="${dairy}||${alert}" class="rec-link">${dairy} | ${alert}</a> — <b>${arr.length}</b> tickets</li>`;
-  }).join('')}</ul>`;
-
-  // click handler: inline loader + cards, no jump
-  list.querySelectorAll('.rec-link').forEach(a=>{
-    a.onclick=(e)=>{
-      e.preventDefault();
-      const [dairy, alert] = (a.dataset.k||'||').split('||');
-      showRecurringCards(allTickets, dairy, alert);
-    };
-  });
+  // Latest photos by dairy (albums)
+  renderLatestPhotosByDairy(tickets);
 }
-function showRecurringCards(allTickets, dairy, alert){
-  const box = byId('recurring-results');
-  box.innerHTML = `
-    <div class="loader"><div>Loading tickets for <b>${dairy} | ${alert}</b>…</div>
-      <div class="bar"><div id="rec-bar"></div></div><span id="rec-pct">0%</span></div>`;
-  const rec = allTickets.filter(t=>String(t.dairyNumber)===String(dairy) && t.alertType===alert);
-  // Simulate progressive build with % indicator
-  const out = [];
-  let i=0;
-  function step(){
-    const chunk = Math.min(5, rec.length - i);
-    for(let j=0;j<chunk;j++){
-      const t = rec[i+j];
-      out.push(tcardHTML(t));
-    }
-    i += chunk;
-    const pct = rec.length? Math.round((i/rec.length)*100) : 100;
-    byId('rec-bar').style.width = pct + '%';
-    byId('rec-pct').textContent = pct + '%';
-    if(i<rec.length){ setTimeout(step, 40); }
-    else{
-      box.innerHTML = `<div class="mt-2"><div class="small-note mb-1">Tickets for <b>${dairy} | ${alert}</b> (all time)</div>${out.join('')}</div>`;
-    }
-  }
-  step();
 
-  function tcardHTML(t){
-    const isClosed=t.status==='closed';
-    const nowISO=new Date().toISOString();
-    const statusMinutes = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO)
-                          : (t.status==='open') ? minutesBetween(t.createdAt, nowISO)
-                          : minutesBetween(t.createdAt, t.close?.date||nowISO);
-    const mCount=mediaCount(t);
-    const slaMins=slaFor(t);
-    const slaBadge = (t.status!=='closed' && statusMinutes>slaMins) ? `<span class="b-sla">SLA</span>` : '';
-    return `<div class="tcard">
+function showOverlay(text){ const o=byId('screen-overlay'); byId('overlay-text').textContent=text||'Loading…'; o.style.display='flex'; }
+function hideOverlay(){ byId('screen-overlay').style.display='none'; }
+
+async function showRecurring(key){
+  showOverlay('Loading tickets…');
+  const tickets = await loadAllTickets();
+  const arr = tickets.filter(t=>`${t.dairyNumber} | ${t.alertType}`===key);
+  // Cards like ticket cards
+  const wrap = document.createElement('div');
+  arr.forEach(t=>{
+    const link=`<a href="#ticket=${t.id}">open</a>`;
+    const closed = t.status==='closed' ? (t.close?.date||'') : '';
+    const card = document.createElement('div');
+    card.className='tcard';
+    card.innerHTML=`
       <div class="tcard-head">
-        <div>
-          <div class="t-id">#${t.dairyNumber} • ${t.farmName}</div>
-          <div class="text-muted t-more">${t.alertType}${t.alertType==='Other'?': '+(t.alertOther||''):''}</div>
-        </div>
-        <div class="t-badges">
-          <span class="b-priority">${t.priority}</span>
-          <span class="b-status ${t.status==='open'?'text-success':(t.status==='monitoring'?'text-primary':'text-danger')}">${t.status}</span>
-          <span class="b-age">${fmtHoursFromMin(statusMinutes)}</span>
-          ${mCount?`<span class="b-media">${mCount}</span>`:''}
-          ${slaBadge}
-        </div>
+        <div><div class="t-id">#${t.dairyNumber} • ${t.farmName}</div><div class="text-muted t-more">${t.alertType}</div></div>
+        <div class="t-badges"><span class="b-status ${t.status==='open'?'text-success':(t.status==='monitoring'?'text-primary':'text-danger')}">${t.status}</span></div>
       </div>
       <div class="tcard-body">
-        <div><b>Opened:</b> ${t.createdDate||''}${isClosed?` • <b>Closed:</b> ${(t.close?.date||'').slice(0,10)}`:''}</div>
-        <div class="tcard-actions mt-2">
-          <button class="btn btn-outline btn-sm" onclick="viewTicketDetails('${t.id}', ${isClosed})">Open</button>
-        </div>
-      </div>
-    </div>`;
-  }
+        <div><b>Opened:</b> ${t.createdDate||''} • <b>Closed:</b> ${closed||'-'} • ${link}</div>
+        <div class="mt-1">${t.issueDesc||''}</div>
+      </div>`;
+    wrap.appendChild(card);
+  });
+  byId('recurring-results').innerHTML = `<div class="mt-2"><b>Tickets for ${key} (all time)</b></div>`;
+  byId('recurring-results').appendChild(wrap);
+  hideOverlay();
 }
 
-function renderPhotosByDairy(tickets){
-  // gather images with dairy key
-  const imgsByDairy = {};
+/* Photos by dairy with album modal */
+function renderLatestPhotosByDairy(tickets){
+  const byDairy={};
   tickets.forEach(t=>{
-    const add=(arr)=> (arr||[]).forEach(f=>{ if(looksLikeImage(f)) (imgsByDairy[t.dairyNumber]||(imgsByDairy[t.dairyNumber]=[])).push({url:f.url, farm:t.farmName}) });
-    add(t.files);
-    (t.comments||[]).forEach(c=>add(c.files));
-    add(t.close?.files);
+    const key=t.dairyNumber||'Unknown';
+    const add=(f,ts)=>{ (byDairy[key]||(byDairy[key]=[])).push({url:f.url,ts:ts||t.createdAt}); };
+    (t.files||[]).filter(looksLikeImage).forEach(f=>add(f,t.createdAt));
+    (t.comments||[]).forEach(c=>(c.files||[]).filter(looksLikeImage).forEach(f=>add(f,c.date)));
+    (t.close?.files||[]).filter(looksLikeImage).forEach(f=>add(f,t.close.date));
   });
-
-  const wrap = byId('latest-photos'); wrap.innerHTML='';
-  const entries = Object.entries(imgsByDairy);
-  if(!entries.length){ wrap.innerHTML = `<i>No photos yet.</i>`; return; }
-  const frag = document.createDocumentFragment();
-  entries.forEach(([dairy, arr])=>{
-    const few = arr.slice(-5); // last few
-    const div = document.createElement('div');
-    div.className = 'mb-2';
-    div.innerHTML = `<div class="mb-1"><b>Dairy ${dairy}</b> — ${arr.length} photos</div>` + 
-      few.map(x=>`<img class="photo-thumb" src="${x.url}" loading="lazy">`).join(' ') + 
-      ` <button class="btn btn-sm btn-outline" onclick="openAlbum('${dairy}')">Open album</button>`;
-    frag.appendChild(div);
+  const box=byId('latest-photos'); box.innerHTML='';
+  const dairies=Object.keys(byDairy).sort();
+  if(!dairies.length){ box.innerHTML='<i>No photos yet.</i>'; return; }
+  dairies.forEach(d=>{
+    const arr=byDairy[d].sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    const few=arr.slice(0,5);
+    const shell=document.createElement('div'); shell.className='mb-2';
+    shell.innerHTML=`<div class="mb-1"><b>Dairy #${d}</b> — ${arr.length} photos • <a href="#" onclick="openAlbum('${d.replace(/'/g,"\\'")}');return false;">Open album</a></div>
+      <div>${few.map(x=>`<img class="photo-thumb" src="${x.url}" loading="lazy">`).join('')}</div>`;
+    box.appendChild(shell);
   });
-  wrap.appendChild(frag);
-
-  // store for album view
-  window.__albumPhotos = imgsByDairy;
+  window._photoAlbums=byDairy; // store for album modal
 }
 function openAlbum(dairy){
-  const items = (window.__albumPhotos||{})[dairy]||[];
-  byId('album-title').textContent = `Album — Dairy ${dairy}`;
-  const grid = byId('album-grid'); grid.innerHTML = items.map(x=>`<a href="${x.url}" target="_blank"><img src="${x.url}" loading="lazy"></a>`).join('');
-  byId('album-modal').style.display='flex';
+  const album=(window._photoAlbums||{})[dairy]||[];
+  showOverlay(`Dairy #${dairy} — ${album.length} photos`);
+  const o=byId('screen-overlay');
+  const box=document.createElement('div');
+  box.innerHTML=`<div class="album-grid">${album.map(p=>`<a href="${p.url}" target="_blank"><img src="${p.url}" loading="lazy"></a>`).join('')}</div>
+    <div class="mt-3"><button class="btn btn-agora" onclick="hideOverlay()">Close</button></div>`;
+  const ob=byId('overlay-text'); ob.innerHTML=''; // clear text
+  o.querySelector('.overlay-box').innerHTML=''; // replace
+  o.querySelector('.overlay-box').appendChild(box);
 }
-function hideAlbum(){ byId('album-modal').style.display='none'; }
 
 /* =================== EXPORTS =================== */
 function normalizeTicket(t){
   let closedBy   = (t.close && t.close.by)   || t.closedBy   || "";
   let closedDate = (t.close && t.close.date) || t.closedDate || "";
   let closeNote  = (t.close && t.close.note) || t.closeComment || t.resolution || "";
-
   if ((!closedBy || !closedDate || !closeNote) && Array.isArray(t.history)) {
     const closeEvt = [...t.history].reverse().find(h => ((h.action||"").toLowerCase().includes("closed")));
     if (closeEvt) {
@@ -1259,56 +1088,29 @@ function normalizeTicket(t){
       closeNote  = closeNote  || (closeEvt.details || "");
     }
   }
-
   const issueFiles    = (t.files || []).map(f => f.url).join(" ; ");
   const commentFiles  = (t.comments || []).flatMap(c => (c.files || []).map(f => f.url)).join(" ; ");
   const resolvedFiles = ((t.close && t.close.files) || t.closeFiles || []).map(f => f.url).join(" ; ");
-
   const firstRespAt = t.firstResponseAt || "";
   const firstRespMin = firstRespAt ? minutesBetween(t.createdAt, firstRespAt) : "";
   const resolutionMin = (t.status==='closed' && t.close?.date) ? minutesBetween(t.createdAt, t.close.date) : "";
-
   const monitoringAt = t.monitoringStartedAt || "";
   const monitoringMinActive = (t.status==='monitoring' && monitoringAt) ? minutesBetween(monitoringAt, new Date().toISOString()) : "";
   const monitoringMinTotal = monitoringAt ? (t.status==='closed' ? minutesBetween(monitoringAt, t.close?.date||new Date().toISOString()) : monitoringMinActive) : "";
-
   const reassignedCount = (t.history || []).filter(h => (h.action || "").toLowerCase().includes("reassign")).length;
   const lastUpdated = ((t.history || []).map(h => h.date).sort().pop()) || t.createdAt || t.createdDate || "";
-
   return {
-    ID: t.id,
-    DairyNumber: t.dairyNumber,
-    FarmName: t.farmName,
-    AlertType: t.alertType,
-    Priority: t.priority,
-    AssignedTo: (t.assignedNames || []).join("; "),
-    Status: t.status,
-    CreatedDate: t.createdDate || "",
-    CreatedAtISO: t.createdAt || "",
-    FirstResponseAt: firstRespAt,
-    FirstResponseMinutes: firstRespMin,
-    MonitoringStartedAt: monitoringAt,
-    MonitoringMinutes: monitoringMinTotal,
-    ClosedDate: closedDate,
-    ClosedBy: closedBy,
-    CloseDescription: closeNote,
-    ResolutionMinutes: resolutionMin,
-    OpenedBy: t.openedBy || "",
-    IssueDescription: t.issueDesc || "",
-    IssueFiles: issueFiles,
-    CommentFileURLs: commentFiles,
-    ResolvedFiles: resolvedFiles,
-    CommentsCount: (t.comments || []).length,
-    HistoryCount: (t.history || []).length,
-    ReassignedCount: reassignedCount,
-    LastUpdated: lastUpdated
+    ID: t.id, DairyNumber: t.dairyNumber, FarmName: t.farmName, AlertType: t.alertType, Priority: t.priority,
+    AssignedTo: (t.assignedNames || []).join("; "), Status: t.status, CreatedDate: t.createdDate || "", CreatedAtISO: t.createdAt || "",
+    FirstResponseAt: firstRespAt, FirstResponseMinutes: firstRespMin, MonitoringStartedAt: monitoringAt, MonitoringMinutes: monitoringMinTotal,
+    ClosedDate: closedDate, ClosedBy: closedBy, CloseDescription: closeNote, ResolutionMinutes: resolutionMin, OpenedBy: t.openedBy || "",
+    IssueDescription: t.issueDesc || "", IssueFiles: issueFiles, CommentFileURLs: commentFiles, ResolvedFiles: resolvedFiles,
+    CommentsCount: (t.comments || []).length, HistoryCount: (t.history || []).length, ReassignedCount: reassignedCount, LastUpdated: lastUpdated
   };
 }
-
 async function exportToCSV(){
   const tickets=await loadAllTickets();
   const flat=tickets.map(normalizeTicket);
-
   const headers = Object.keys(flat[0] || {ID:"",DairyNumber:""});
   const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   const rows=[headers.join(',')].concat(flat.map(r=>headers.map(h=>quote(r[h])).join(',')));
@@ -1319,15 +1121,12 @@ async function exportToCSV(){
   document.body.appendChild(a); a.click();
   setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
 }
-
 async function exportToXLSX(){
   const tickets=await loadAllTickets();
   const flat=tickets.map(normalizeTicket);
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.json_to_sheet(flat);
   XLSX.utils.book_append_sheet(wb, ws, "Tickets");
-
-  // Optional sheets
   const comments=[];
   tickets.forEach(t=>{
     (t.comments||[]).forEach(c=>{
@@ -1343,8 +1142,66 @@ async function exportToXLSX(){
     });
   });
   if(comments.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(comments), "Comments");
-
   XLSX.writeFile(wb, "tickets_export.xlsx");
+}
+
+/* Export Summary CSV */
+async function exportSummary(){
+  const tickets = await loadAllTickets();
+  const now = new Date();
+
+  const active = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
+  const closedAll = tickets.filter(t=>t.status==='closed');
+
+  const countBy = (arr, fn)=>arr.reduce((m,x)=>{const k=fn(x); m[k]=(m[k]||0)+1; return m;}, {});
+  const allCounts = countBy(tickets, t=>t.alertType||'Unknown');
+
+  const minutesBetween=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/60000));
+  const slaFor=t=> (t.alertType==="Temperature") ? 24*60 : 72*60;
+
+  const ageBuckets = { '0-24h':0, '1-3d':0, '4-7d':0, '8d+':0 };
+  active.forEach(t=>{
+    const mins = (t.status==='monitoring')
+      ? minutesBetween(t.monitoringStartedAt||t.createdAt, now)
+      : minutesBetween(t.createdAt, now);
+    const days = mins/1440;
+    if(days<=1) ageBuckets['0-24h']++;
+    else if(days<=3) ageBuckets['1-3d']++;
+    else if(days<=7) ageBuckets['4-7d']++;
+    else ageBuckets['8d+']++;
+  });
+
+  const newFmt = tickets.filter(t=>!!t.createdAt);
+  const resp = newFmt.filter(t=>t.firstResponseAt);
+  const avgFR = resp.length ? Math.round(resp.reduce((a,t)=>a+minutesBetween(t.createdAt,t.firstResponseAt),0)/resp.length) : 0;
+  const closedNew = newFmt.filter(t=>t.status==='closed' && t.close?.date);
+  const avgRes = closedNew.length ? Math.round(closedNew.reduce((a,t)=>a+minutesBetween(t.createdAt,t.close.date),0)/closedNew.length) : 0;
+
+  const activeBreach = active.filter(t=>{
+    const mins = (t.status==='monitoring')
+      ? minutesBetween(t.monitoringStartedAt||t.createdAt, now)
+      : minutesBetween(t.createdAt, now);
+    return mins > slaFor(t) || (t.status==='monitoring' && mins > 7*24*60);
+  }).length;
+
+  const rows = [
+    ['Section','Metric','Value'],
+    ['KPI','Active Tickets', active.length],
+    ['KPI','Closed Tickets (all time)', closedAll.length],
+    ['KPI','Avg First Response (new, hours)', Math.round(avgFR/60)],
+    ['KPI','Avg Resolution (new, hours)', Math.round(avgRes/60)],
+    ['KPI','Active SLA Breaches', activeBreach],
+    ...Object.entries(allCounts).map(([k,v])=>['All-time by Alert Type', k, v]),
+    ...Object.entries(ageBuckets).map(([k,v])=>['Open Age Buckets', k, v])
+  ];
+
+  const csv = '\uFEFF' + rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'summary_export.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
 }
 
 /* =================== ADMIN PANEL =================== */
@@ -1354,23 +1211,40 @@ function adminPanel(){
   byId('summary-section').classList.add('hidden');
   byId('ticket-list-section').classList.remove('hidden');
 
-  const users=getUsers();
-
-  byId('ticket-list-controls').innerHTML = `
+  const users=getUsers().sort((a,b)=>a.name.localeCompare(b.name));
+  byId('ticket-list-controls').innerHTML=`
     <h4 class="mb-2">Admin Panel</h4>
+
     <div class="sum-card mb-3">
       <div class="sum-title">User Management</div>
       <div class="row g-2">
-        <div class="col-12 col-md-4"><input type="text" id="new-name" class="form-control" placeholder="Full name"></div>
-        <div class="col-12 col-md-4"><input type="email" id="new-email" class="form-control" placeholder="Email (username)"></div>
-        <div class="col-12 col-md-3"><input type="text" id="new-pass" class="form-control" placeholder="Password"></div>
-        <div class="col-12 col-md-1 d-grid"><button class="btn btn-admin" onclick="createUser()">Create</button></div>
+        <div class="col-md-4"><input id="new-fullname" class="form-control" placeholder="Full name"></div>
+        <div class="col-md-4"><input id="new-email" class="form-control" placeholder="Email (username)"></div>
+        <div class="col-md-3">
+          <select id="new-role" class="form-select">
+            <option value="service">Service</option><option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="col-md-1"><button class="btn btn-agora w-100" onclick="createUser()">Add</button></div>
       </div>
     </div>
 
     <div class="sum-card mb-3">
       <div class="sum-title">Existing Users</div>
-      <ul class="user-list" id="user-list"></ul>
+      <div id="user-list"></div>
+    </div>
+
+    <div class="sum-card mb-3">
+      <div class="sum-title">Login History</div>
+      <div class="d-flex gap-2 align-items-center mb-2">
+        <select id="loginhist-user" class="form-select" style="max-width:240px">
+          <option value="">All users</option>
+          ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
+        </select>
+        <button class="btn btn-agora" onclick="renderLoginHistory()">Apply</button>
+        <button class="btn btn-outline" onclick="clearLoginHistory()">Clear</button>
+      </div>
+      <div id="login-history-table"></div>
     </div>
 
     <div class="sum-card">
@@ -1385,69 +1259,97 @@ function adminPanel(){
       <div id="user-history-table"></div>
     </div>
   `;
-
   byId('ticket-table-wrap').innerHTML=''; byId('ticket-cards').innerHTML='';
   byId('ticket-view-modal').classList.add('hidden');
 
-  renderUserList();
-  renderUserHistory();
+  renderUserList(); renderLoginHistory(); renderUserHistory();
 }
 function renderUserList(){
-  const list=byId('user-list'); list.innerHTML='';
-  getUsers().forEach(u=>{
-    const li=document.createElement('li'); li.className='user-item';
-    li.innerHTML=`
-      <div><span class="user-name">${u.name}</span> <span class="role-pill">${u.role}</span></div>
-      <div class="d-flex gap-2">
-        <button class="btn btn-outline btn-sm" onclick="openProfile('${u.username}')">View</button>
-      </div>`;
-    list.appendChild(li);
+  const users=getUsers().sort((a,b)=>a.name.localeCompare(b.name));
+  const box=byId('user-list'); box.innerHTML='';
+  users.forEach(u=>{
+    const card=document.createElement('div'); card.className='user-card';
+    card.innerHTML=`<div class="d-flex align-items-center"><span style="font-weight:700">${u.name}</span> <span class="role-badge">${u.role}</span></div>
+      <button class="btn btn-outline" onclick="viewProfile('${u.username}')">View</button>`;
+    box.appendChild(card);
   });
 }
-function openProfile(username){
-  const u=getUsers().find(x=>x.username===username);
-  if(!u) return;
-  byId('profile-body').innerHTML = `
+function viewProfile(username){
+  const u=getUsers().find(x=>x.username===username); if(!u) return;
+  showOverlay(''); // reuse overlay as modal
+  const o=byId('screen-overlay'); const box=document.createElement('div');
+  box.innerHTML=`<div class="sum-card" style="max-width:520px;margin:0 auto">
+    <div class="sum-title">User Profile</div>
     <div><b>Name:</b> ${u.name}</div>
     <div><b>Email:</b> ${u.username}</div>
-    <div><b>Role:</b> <span class="role-pill">${u.role}</span></div>
-    <div class="mt-2 d-flex gap-2">
-      ${u.role!=='admin'?`<button class="btn btn-admin btn-sm" onclick="promote('${u.username}')">Make admin</button>`:`<button class="btn btn-outline btn-sm" onclick="demote('${u.username}')">Make service</button>`}
-      <button class="btn btn-outline btn-sm" onclick="resetPass('${u.username}')">Reset password</button>
-    </div>`;
-  byId('profile-modal').style.display='flex';
+    <div><b>Role:</b> ${u.role}</div>
+    <div class="mt-2"><button class="btn btn-agora" onclick="hideOverlay()">Close</button></div>
+  </div>`;
+  o.querySelector('.overlay-box').innerHTML=''; o.querySelector('.overlay-box').appendChild(box);
 }
-function hideProfile(){ byId('profile-modal').style.display='none'; }
-function promote(username){ const users=getUsers(); const u=users.find(x=>x.username===username); if(!u)return; u.role='admin'; setUsers(users); renderUserList(); openProfile(username); }
-function demote(username){ const users=getUsers(); const u=users.find(x=>x.username===username); if(!u)return; u.role='service'; setUsers(users); renderUserList(); openProfile(username); }
-function resetPass(username){ const users=getUsers(); const u=users.find(x=>x.username===username); if(!u)return; const p=prompt("New password for "+u.name); if(!p) return; u.password=p; setUsers(users); alert("Password updated."); }
 function createUser(){
-  const name=(val('new-name')||'').trim(); const email=(val('new-email')||'').trim().toLowerCase(); const pass=(val('new-pass')||'').trim();
-  if(!name||!email||!pass) return alert("Fill all fields."); if(findUser(email)) return alert("User exists.");
-  const users=getUsers(); users.push({name,username:email,password:pass,role:'service'}); setUsers(users);
-  renderUserList(); byId('new-name').value=''; byId('new-email').value=''; byId('new-pass').value='';
+  const name=(byId('new-fullname').value||'').trim();
+  const email=(byId('new-email').value||'').trim().toLowerCase();
+  const role=(byId('new-role').value||'service').trim();
+  if(!name||!email) return alert('Name and email required.');
+  const users=getUsers(); if(users.some(u=>u.username===email)) return alert('Email already exists.');
+  users.push({name,username:email,password:'dairy123',role}); setUsers(users); renderUserList();
 }
+function renderLoginHistory(){
+  const sel=(byId('loginhist-user')||{}).value||'';
+  const hist=getLoginHistory().filter(h=>!sel || h.username.toLowerCase()===sel).sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,100);
+  const box=byId('login-history-table');
+  if(!hist.length){ box.innerHTML='<i>No logins yet.</i>'; return; }
+  box.innerHTML = `
+    <div class="matrix-wrap">
+      <div class="matrix" style="grid-template-columns:2fr 2fr 1fr;">
+        <div class="hdr">User</div><div class="hdr">When</div><div class="hdr">Role</div>
+        ${hist.map(h=>`
+          <div class="cell name">${h.name}</div>
+          <div class="cell">${new Date(h.ts).toLocaleString()}</div>
+          <div class="cell">${h.role}</div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+function clearLoginHistory(){ if(!confirm('Clear all login history?')) return; setLoginHistory([]); renderLoginHistory(); }
 async function renderUserHistory(){
-  const tickets=await loadAllTickets();
-  const selected=(byId('hist-user')||{}).value||'';
-  const perUser={};
+  const tickets = await loadAllTickets();
+  const selected = (byId('hist-user')||{}).value||'';
+  const users = getUsers();
+  const keyFor = (t)=>{
+    if(t.openedByUser) return t.openedByUser.toLowerCase();
+    const nm=(t.openedBy||'').trim().toLowerCase();
+    const m=users.find(u=>u.name.toLowerCase()===nm);
+    return (m? m.username : nm).toLowerCase();
+  };
+  const perUser = {};
   tickets.forEach(t=>{
-    const userKey=(t.openedByUser||'').toLowerCase();
-    if(!userKey) return;
-    if(selected && userKey!==selected) return;
-    const properName=(getUsers().find(u=>u.username===userKey)||{}).name || (t.openedBy||userKey);
-    const key=userKey; if(!perUser[key]) perUser[key]={name:properName, created:0, reassigned:0, closed:0, comments:0};
-    perUser[key].created++;
-    perUser[key].closed += (t.status==='closed')?1:0;
-    perUser[key].reassigned += (t.history||[]).filter(h=>(h.action||'').toLowerCase().includes('reassign')).length;
-    perUser[key].comments += (t.comments||[]).length;
+    const k = keyFor(t); if(!k) return; if(selected && k!==selected) return;
+    const user = users.find(u=>u.username===k);
+    const properName = user ? user.name : (t.openedBy||k);
+    if(!perUser[k]) perUser[k] = { name: properName, created:0, reassigned:0, closed:0, comments:0 };
+    perUser[k].created++;
+    perUser[k].closed      += (t.status==='closed') ? 1 : 0;
+    perUser[k].reassigned  += (t.history||[]).filter(h=>(h.action||'').toLowerCase().includes('reassign')).length;
+    perUser[k].comments    += (t.comments||[]).length;
   });
-  const rows=Object.values(perUser).sort((a,b)=>a.name.localeCompare(b.name));
-  const html = `<table class="table table-bordered table-sm">
-    <thead><tr><th>User</th><th>Created</th><th>Reassigned</th><th>Closed</th><th>Comments</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr><td>${r.name}</td><td>${r.created}</td><td>${r.reassigned}</td><td>${r.closed}</td><td>${r.comments}</td></tr>`).join('')}</tbody>
-  </table>`;
-  byId('user-history-table').innerHTML=html;
+  const rows = Object.values(perUser).sort((a,b)=>a.name.localeCompare(b.name));
+  const box = byId('user-history-table');
+  if(!rows.length){ box.innerHTML='<i>No data for selection.</i>'; return; }
+  box.innerHTML = `
+    <div class="matrix-wrap">
+      <div class="matrix">
+        <div class="hdr">User</div><div class="hdr">Created</div><div class="hdr">Reassigned</div><div class="hdr">Closed</div><div class="hdr">Comments</div>
+        ${rows.map(r=>`
+          <div class="cell name">${r.name}</div>
+          <div class="cell">${r.created}</div>
+          <div class="cell">${r.reassigned}</div>
+          <div class="cell">${r.closed}</div>
+          <div class="cell">${r.comments}</div>
+        `).join('')}
+      </div>
+    </div>`;
 }
 
 /* =================== EMAIL =================== */
@@ -1456,7 +1358,6 @@ function sendTicketEmailNotification(ticket, toEmail){
   const openedUser=users.find(u=>u.username.toLowerCase()===(ticket.openedByUser||"").toLowerCase());
   if(!toEmail) return;
   const ticketLink=TICKET_URL_ROOT + "#ticket=" + ticket.id;
-
   const emailVars = {
     ticket_id: ticket.id,
     dairy_number: ticket.dairyNumber,
@@ -1471,7 +1372,6 @@ function sendTicketEmailNotification(ticket, toEmail){
     to_email: toEmail,
     cc_email: openedUser ? openedUser.username : ""
   };
-
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
     .catch(err=>console.error("EmailJS send error", err));
 }
