@@ -322,7 +322,7 @@ const initialUsers = [
   { username:"ahren.lomas@agora.co.nz", name:"Ahren Lomas", password:"MooMetrics24", role:"admin" },
   { username:"caroline@agora.co.nz", name:"Caroline Wallace", password:"dairy123", role:"admin" },
   { username:"kip@agora.co.nz", name:"Kip Bodle", password:"dairy123", role:"admin" },
-  { username:"josh.bull@agora.co.nz", name:"Josh Bull", password:"dairy123", role:"admin" }
+  { username:"josh.bull@agora.co.nz", name:"Josh Bull", password:"dairy123", role:"admin" },
   { username:"hayden.walsh@agora.co.nz", name:"Hayden Walsh", password:"dairy123", role:"admin" }
 ];
 if(!localStorage.getItem("users")){
@@ -417,7 +417,13 @@ function showSignup(){ byId('signup-form').classList.remove('hidden'); byId('log
 
 function pushLoginEvent(user){
   const hist = JSON.parse(localStorage.getItem("loginHistory")||"[]");
-  hist.push({username:user.username,name:user.name,role:user.role,ts:new Date().toISOString(),fp:deviceFingerprint()});
+  hist.push({
+    username:user.username,
+    name:user.name,
+    role:user.role,
+    ts:new Date().toISOString(),
+    fp:deviceFingerprint()
+  });
   localStorage.setItem("loginHistory", JSON.stringify(hist.slice(-300)));
 }
 function logout(){ curUser=null; location.reload(); }
@@ -517,7 +523,6 @@ async function loadAllTickets(){
   if (now - ticketsCache.ts < 60*1000 && ticketsCache.data?.length){ return ticketsCache.data; } // 60s cache
   try{
     const folderRef=storage.ref(ticketsFolder);
-    // listAll can be heavy; still needed to fetch everything. Cache aggressively.
     const res=await folderRef.listAll();
     const arr=[];
     await Promise.all(res.items.map(async(fileRef)=>{
@@ -541,7 +546,6 @@ function normalizeTicketShape(t){
     const createdEvt = (t.history||[]).find(h=> (h.action||"").toLowerCase()==="created");
     t.createdAt = createdEvt?.date || (t.createdDate ? (t.createdDate + "T00:00:00.000Z") : new Date().toISOString());
   }
-  // unify close structure
   const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution;
   if (!t.close && hasLegacyClose) {
     t.close = { by:t.closedBy||"", date:t.closedDate||"", note:t.closeComment||t.resolution||"", files:t.closeFiles||[] };
@@ -551,7 +555,6 @@ function normalizeTicketShape(t){
     t.close.note = t.close.note || t.closeComment || t.resolution || "";
     t.close.files = Array.isArray(t.close.files) ? t.close.files : (t.closeFiles || []);
   }
-  // initialize SLA if missing
   ensureSLAInitialized(t);
 }
 
@@ -565,13 +568,11 @@ async function loadActiveCount(){
 function ensureSLAInitialized(t){
   t.sla = t.sla || {};
   if (t.comments?.length){
-    // If comments exist and no baseline recorded, base on latest comment (cycle mode)
     const last = t.comments.reduce((a,c)=> (new Date(c.date) > new Date(a.date) ? c : a), t.comments[0]);
     if(!t.sla.baseline || new Date(last.date) > new Date(t.sla.baseline)){
       setSLACycle(t, 'comment', last.date);
     }
   }else{
-    // Initial cycle (from creation)
     if(!t.sla.baseline){ setSLACycle(t, 'created', t.createdAt); }
   }
 }
@@ -583,7 +584,7 @@ function setSLACycle(t, basis, isoBaseline){
   t.sla = {
     ...t.sla,
     cycle,
-    basis,                 // 'created' or 'comment'
+    basis,
     baseline,
     nextWarnAt:  new Date(new Date(baseline).getTime() + warnMin*60000).toISOString(),
     nextBreachAt:new Date(new Date(baseline).getTime() + breachMin*60000).toISOString(),
@@ -609,7 +610,6 @@ function recipientsForTicket(t){
   const emails = new Set();
   (t.assignedTo||[]).forEach(u=>emails.add(normalizeEmail(u)));
   if(t.openedByUser){ emails.add(normalizeEmail(t.openedByUser)); }
-  // Map to names
   const list=[...emails].map(e=>{
     const u = users.find(x=>x.username===e);
     return { email:e, name:u?.name||e };
@@ -645,7 +645,6 @@ async function runSLAWatchdogOnce(){
   try{
     const now = new Date();
     const tickets = await loadAllTickets();
-    // Only active tickets
     for (const t of tickets.filter(x=>x.status!=='closed')){
       ensureSLAInitialized(t);
       if(!t.sla?.baseline) continue;
@@ -653,16 +652,13 @@ async function runSLAWatchdogOnce(){
       const warnAt   = new Date(t.sla.nextWarnAt);
       const breachAt = new Date(t.sla.nextBreachAt);
 
-      // If someone commented after we scheduled, the addComment flow will reschedule. Guard here too:
       const latestCommentAt = t.comments?.length ? new Date(t.comments[t.comments.length-1].date) : null;
       if(t.sla.basis==='created' && latestCommentAt && latestCommentAt > new Date(t.sla.baseline)){
-        // Another client added a comment and didn't write SLA? Fix silently:
         setSLACycle(t, 'comment', latestCommentAt.toISOString());
         await persistTicket(t);
         continue;
       }
 
-      // 1) Warning (2h prior)
       if(!t.sla.warnSent && now >= warnAt && now < breachAt){
         const minsToBreach = Math.max(0, Math.round((breachAt-now)/60000));
         const recips = recipientsForTicket(t);
@@ -672,7 +668,6 @@ async function runSLAWatchdogOnce(){
         await persistTicket(t);
       }
 
-      // 2) Breach
       if(!t.sla.breached && now >= breachAt){
         t.sla.breached = true;
         const snapshotAssignees = (t.assignedNames||[]).slice();
@@ -698,11 +693,11 @@ async function runSLAWatchdogOnce(){
 }
 function startSLAWatchdog(){
   if(watchdogTimer) clearInterval(watchdogTimer);
-  runSLAWatchdogOnce(); // immediate
+  runSLAWatchdogOnce();
   watchdogTimer = setInterval(runSLAWatchdogOnce, SLA_WATCHDOG_INTERVAL);
 }
 
-/* =================== CREATE TICKET (includes SLA init) =================== */
+/* =================== CREATE TICKET (UUID id, dairy noted separately) =================== */
 async function submitTicket(){
   const assigned=Array.from(byId('assign-to').selectedOptions).map(o=>normalizeEmail(o.value));
   if(!assigned.length) return byId('ticket-msg').textContent="Select at least one assignee.";
@@ -710,10 +705,10 @@ async function submitTicket(){
 
   const createdAtISO = new Date().toISOString();
   const data={
-    id:uuidv4(),
+    id:uuidv4(),                     // UNIQUE TICKET ID
     createdDate:val('ticket-date'),
     createdAt: createdAtISO,
-    dairyNumber:val('dairy-number').trim(),
+    dairyNumber:val('dairy-number').trim(),   // noted separately
     farmName:val('farm-name').trim(),
     alertType:val('alert-type'),
     alertOther:val('alert-other').trim(),
@@ -731,7 +726,7 @@ async function submitTicket(){
     firstResponseAt:null,
     monitoringStartedAt:null,
     close:null,
-    sla:null // will be set below
+    sla:null
   };
   if(!data.dairyNumber||!data.farmName||!data.alertType||!data.issueDesc) return byId('ticket-msg').textContent="All required fields must be filled out.";
   if(data.alertType==="Other"&&!data.alertOther) return byId('ticket-msg').textContent="Specify the 'Other' alert type.";
@@ -747,7 +742,6 @@ async function submitTicket(){
     }
   }
 
-  // SLA initial schedule (24h; warn 22h)
   setSLACycle(data, 'created', createdAtISO);
 
   await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
@@ -756,7 +750,6 @@ async function submitTicket(){
   byId('ticket-msg').textContent="Ticket created.";
   byId('ticket-form').reset(); autoFillTicketForm(); loadActiveCount();
 
-  // Notify assignees (existing template for new tickets)
   assigned.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(data,to.username)});
 }
 
@@ -830,7 +823,7 @@ async function filterTickets(scope){
   renderTicketCards(tickets, scope==='closed');
 }
 
-/* =================== TABLES & CARDS with SLA badges =================== */
+/* =================== TABLES & CARDS (ID primary, dairy noted) =================== */
 function slaSnapshot(t){
   const now = new Date();
   const s = t.sla||{};
@@ -849,9 +842,17 @@ function shortRow(t){
       ? `resolved ${fmtHrs(minutesBetween(t.createdAt, t.close.date))}`
       : (t.status==="monitoring" ? `monitoring ${fmtHrs(snap.minsOpenSinceBaseline)}` : `open ${fmtHrs(snap.minsOpenSinceBaseline)}`);
   return {
-    id:t.id,dairy:t.dairyNumber,farm:t.farmName,
+    id:t.id,
+    dairy:t.dairyNumber,
+    farm:t.farmName,
     alert:t.alertType+(t.alertType==='Other'?`: ${t.alertOther||''}`:''),
-    pr:t.priority, ass:(t.assignedNames||[]).join(', '), opened:t.openedBy, date:t.createdDate||'', status:t.status, age:ageStr, snap
+    pr:t.priority,
+    ass:(t.assignedNames||[]).join(', '),
+    opened:t.openedBy,
+    date:t.createdDate||'',
+    status:t.status,
+    age:ageStr,
+    snap
   }
 }
 let _rowsCache=[], _rowsClosedFlag=false;
@@ -866,6 +867,7 @@ function renderTicketTable(tickets,isClosed){
   const rows=tickets.map(shortRow);
   _rowsCache=rows; _rowsClosedFlag=isClosed;
   let html=`<table class="table table-bordered table-sm"><thead><tr>
+    <th class="th-sort" onclick="renderSorted('id')">Ticket ID</th>
     <th class="th-sort" onclick="renderSorted('dairy')">Dairy #</th>
     <th class="th-sort" onclick="renderSorted('farm')">Farm</th>
     <th class="th-sort" onclick="renderSorted('alert')">Alert</th>
@@ -879,7 +881,8 @@ function renderTicketTable(tickets,isClosed){
     const t=tickets.find(x=>x.id===r.id); const snap=r.snap;
     const badge = snap.breached ? `<span class="badge bg-danger">SLA</span>` : (snap.warnDue? `<span class="badge bg-warning text-dark">Warn</span>` : '');
     html+=`<tr>
-      <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosed})">${r.dairy}</span></td>
+      <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosed})">${r.id}</span></td>
+      <td>${r.dairy||'-'}</td>
       <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
       <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${badge}</td>
       <td><span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span></td>
@@ -896,7 +899,8 @@ window.renderSorted=function(key){
     const snap=r.snap;
     const badge = snap.breached ? `<span class="badge bg-danger">SLA</span>` : (snap.warnDue? `<span class="badge bg-warning text-dark">Warn</span>` : '');
     return `<tr>
-      <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${_rowsClosedFlag})">${r.dairy}</span></td>
+      <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${_rowsClosedFlag})">${r.id}</span></td>
+      <td>${r.dairy||'-'}</td>
       <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
       <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${badge}</td>
       <td><span class="ticket-status-${t.status}">${(t.status||'')[0]?.toUpperCase()+(t.status||'').slice(1)}</span></td>
@@ -919,8 +923,8 @@ function renderTicketCards(tickets,isClosed){
     card.innerHTML=`
       <div class="tcard-head">
         <div>
-          <div class="t-id">#${t.dairyNumber} • ${t.farmName}</div>
-          <div class="text-muted t-more">${t.alertType}${t.alertType==='Other'?': '+(t.alertOther||''):''}</div>
+          <div class="t-id">ID: ${t.id}</div>
+          <div class="text-muted t-more">Dairy #${t.dairyNumber} • ${t.farmName}</div>
         </div>
         <div class="t-badges">
           <span class="b-priority">${t.priority}</span>
@@ -945,13 +949,14 @@ function renderTicketCards(tickets,isClosed){
   });
 }
 
-/* =================== DETAILS / COMMENT (reset SLA on any comment) =================== */
+/* =================== DETAILS / COMMENT =================== */
 window.viewTicketDetails=async function(id,isClosed){
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
   const isMobile=window.matchMedia("(max-width:800px)").matches;
   const container=isMobile?byId(`expand-${id}`):byId('ticket-view-modal');
   container.classList.remove('hidden');
-  let html=`<h5>Ticket #${t.dairyNumber}</h5>
+  let html=`<h5>Ticket ${t.id}</h5>
+    <b>Dairy Number:</b> ${t.dairyNumber}<br>
     <b>Farm:</b> ${t.farmName}<br>
     <b>Alert:</b> ${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}<br>
     <b>Priority:</b> ${t.priority}<br>
@@ -961,7 +966,6 @@ window.viewTicketDetails=async function(id,isClosed){
     <b>First Response:</b> ${t.firstResponseAt? new Date(t.firstResponseAt).toLocaleString() : '<i>Not yet</i>'}<br>
     <b>Issue:</b> ${t.issueDesc}<br>
     <b>Opened:</b> ${t.createdDate||""} by ${t.openedBy} (${t.position})<br>
-    <b>Ticket ID:</b> ${t.id}<br>
     ${renderSLAInline(t)}`;
   if(t.files?.length){
     html+=`<div class="mt-2"><b>Files:</b> `+t.files.map(f=>looksLikeImage(f)?`<a href="${f.url}" target="_blank"><img class="photo-thumb" src="${f.url}" loading="lazy"></a>`:`<a class="file-chip" href="${f.url}" target="_blank">${f.name||'file'}</a>`).join(' ')+`</div>`;
@@ -1061,7 +1065,7 @@ window.addComment=async function(id){
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
   const users=getUsers(); const c={id:uuidv4(), text, user:curUser.name, date:(new Date()).toISOString(), files:[], setMonitoring:setMonitoring||false};
 
-  if(!t.firstResponseAt){ t.firstResponseAt = new Date().toISOString(); } // first response timer
+  if(!t.firstResponseAt){ t.firstResponseAt = new Date().toISOString(); }
 
   const pv=byId('comment-files-preview');
   if(files.length){
@@ -1073,7 +1077,6 @@ window.addComment=async function(id){
     }
   }
 
-  // Assignee changes (optional)
   if(chosen.length){
     const old=t.assignedTo||[]; const oldSet=new Set(old); const newSet=new Set(replace?chosen:[...old,...chosen]);
     const oldArr=[...oldSet], newArr=[...newSet], added=newArr.filter(x=>!oldSet.has(x)), removed=replace?oldArr.filter(x=>!newSet.has(x)):[];
@@ -1083,18 +1086,15 @@ window.addComment=async function(id){
     t.history.push({action:"ReassignedViaComment", user:curUser.name, date:(new Date()).toISOString(), details:`${c.reassign.old.join(', ')} → ${t.assignedNames.join(', ')}`});
   }
 
-  // Optional monitoring toggle
   if(setMonitoring && t.status==="open"){
     t.status = "monitoring";
     t.monitoringStartedAt = new Date().toISOString();
     t.history.push({action:"SetMonitoring", user:curUser.name, date:(new Date()).toISOString(), details:text||''});
   }
 
-  // Add comment
   t.comments.push(c);
   t.history.push({action:c.files.length?"CommentWithFiles":"Comment", user:curUser.name, date:(new Date()).toISOString(), details:text||'', files:(c.files||[])});
 
-  // SLA RESET: any comment -> 3-day cycle (warn @70h, breach @72h)
   setSLACycle(t, 'comment', c.date);
 
   await persistTicket(t);
@@ -1196,17 +1196,14 @@ async function renderSummary(){
   const active = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
   const closedAll = tickets.filter(t=>t.status==='closed');
 
-  // metrics (new format)
   const newFormat = tickets.filter(t=>!!t.createdAt);
   const responses = newFormat.filter(t=>t.firstResponseAt);
   const avgFirstResponseMin = responses.length ? Math.round(responses.reduce((a,t)=>a+minutesBetween(t.createdAt, t.firstResponseAt),0)/responses.length) : 0;
   const closedNew = newFormat.filter(t=>t.status==='closed' && t.close?.date);
   const avgResolutionMin = closedNew.length ? Math.round(closedNew.reduce((a,t)=>a+minutesBetween(t.createdAt, t.close.date),0)/closedNew.length) : 0;
 
-  // SLA breaches (all time)
   const totalBreaches = tickets.reduce((a,t)=>a+((t.sla?.breaches||[]).length),0);
 
-  // KPI HTML
   const kpi = [
     {label:'Active Tickets', value:active.length},
     {label:'Closed Tickets (all time)', value:closedAll.length},
@@ -1220,7 +1217,6 @@ async function renderSummary(){
 
   destroyCharts();
 
-  // Donut by alert type (all tickets)
   const allCounts = countBy(tickets, x=>x.alertType||'Unknown');
   charts.alertType = new Chart(byId('chartAlertType').getContext('2d'), {
     type:'doughnut',
@@ -1228,7 +1224,6 @@ async function renderSummary(){
     options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
   });
 
-  // Age buckets (active)
   const ageBuckets = { '0-24h':0, '1-3d':0, '4-7d':0, '8d+':0 };
   active.forEach(t=>{
     const mins = minutesBetween(t.sla?.baseline||t.createdAt, now.toISOString());
@@ -1316,7 +1311,7 @@ function normalizeForExport(t){
   };
 }
 async function exportToCSV(){
-  await ensureXlsx(); // not needed for CSV, but keeps parity for environment
+  await ensureXlsx();
   const tickets=await loadAllTickets();
   const flat=tickets.map(normalizeForExport);
   if(!flat.length){ alert("No data to export."); return; }
@@ -1372,7 +1367,7 @@ async function exportSummary(){
   setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
 }
 
-/* =================== ADMIN PANEL (with SLA section) =================== */
+/* =================== ADMIN PANEL (login history fix) =================== */
 function adminPanel(){
   if(curUser.role!=="admin") return alert("Admins only.");
   byId('ticket-section').classList.add('hidden');
@@ -1415,7 +1410,6 @@ function adminPanel(){
       <div id="login-history-table"></div>
     </div>
 
-    <!-- NEW: SLA Monitor -->
     <div class="sum-card mb-3">
       <div class="sum-title">SLA Monitor</div>
       <div id="sla-stats" class="mb-2"></div>
@@ -1490,26 +1484,36 @@ function createUser(){
   const users=getUsers(); if(users.some(u=>u.username===email)) return alert('Email already exists.');
   users.push({name,username:email,password:'dairy123',role}); setUsers(users); renderUserList();
 }
+
+/* >>> FIXED: Login History shows each actual user, plus email & device */
 function renderLoginHistory(){
   const sel=(byId('loginhist-user')||{}).value||'';
   const hist=(JSON.parse(localStorage.getItem("loginHistory")||"[]"))
     .filter(h=>!sel || h.username===sel)
-    .sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,120);
+    .sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,200);
   const box=byId('login-history-table');
   if(!hist.length){ box.innerHTML='<i>No logins yet.</i>'; return; }
   box.innerHTML = `
     <div class="matrix-wrap">
-      <div class="matrix" style="grid-template-columns:2fr 2fr 1fr;">
-        <div class="hdr">User</div><div class="hdr">When</div><div class="hdr">Role</div>
+      <div class="matrix" style="grid-template-columns:2fr 2.2fr 1.6fr 1fr 2.2fr;">
+        <div class="hdr">Name</div>
+        <div class="hdr">Email</div>
+        <div class="hdr">When</div>
+        <div class="hdr">Role</div>
+        <div class="hdr">Device</div>
         ${hist.map(h=>`
-          <div class="cell name">${h.name}</div>
+          <div class="cell name">${h.name||'-'}</div>
+          <div class="cell">${h.username||'-'}</div>
           <div class="cell">${new Date(h.ts).toLocaleString()}</div>
-          <div class="cell">${h.role}</div>
+          <div class="cell">${h.role||'-'}</div>
+          <div class="cell" title="${h.fp||''}">${(h.fp||'').slice(0,10)}…</div>
         `).join('')}
       </div>
     </div>`;
 }
 function clearLoginHistory(){ if(!confirm('Clear all login history?')) return; localStorage.setItem("loginHistory","[]"); renderLoginHistory(); }
+
+/* User ticket activity */
 async function renderUserHistory(){
   const tickets = await loadAllTickets();
   const selected = (byId('hist-user')||{}).value||'';
@@ -1549,7 +1553,7 @@ async function renderUserHistory(){
     </div>`;
 }
 
-/* SLA Monitor rendering */
+/* SLA Monitor */
 async function renderSLAMonitor(){
   const tickets = await loadAllTickets();
   const totalTickets = tickets.length;
@@ -1573,24 +1577,21 @@ async function renderSLAMonitor(){
     <div class="pill">Breach Rate: <b>${pct}%</b></div>
     <div class="pill">Upcoming 24h Warnings: <b>${upcomingWarns.length}</b></div>`;
 
-  // Recent breaches
   const recent = breaches.sort((a,b)=>new Date(b.b.at)-new Date(a.b.at)).slice(0,20);
   byId('sla-breaches-list').innerHTML = recent.length
     ? `<ul class="mb-0">${recent.map(x=>{
         const dt=new Date(x.b.at).toLocaleString();
-        return `<li><span class="clicky ticket-link" onclick="viewTicketDetails('${x.t.id}', false)">#${x.t.dairyNumber} • ${x.t.farmName}</span> — ${dt} • cycle ${x.b.cycle} (${x.b.basis})</li>`;
+        return `<li><span class="clicky ticket-link" onclick="viewTicketDetails('${x.t.id}', false)">ID: ${x.t.id}</span> — Dairy #${x.t.dairyNumber} • ${x.t.farmName} — ${dt} • cycle ${x.b.cycle} (${x.b.basis})</li>`;
       }).join('')}</ul>`
     : `<i>No breaches yet.</i>`;
 
-  // Upcoming warns
   const up = upcomingWarns.sort((a,b)=>a.warnAt - b.warnAt).slice(0,20);
   byId('sla-upcoming-warns').innerHTML = up.length
     ? `<ul class="mb-0">${up.map(x=>{
-        return `<li><span class="clicky ticket-link" onclick="viewTicketDetails('${x.t.id}', false)">#${x.t.dairyNumber} • ${x.t.farmName}</span> — warn @ ${x.warnAt.toLocaleString()}</li>`;
+        return `<li><span class="clicky ticket-link" onclick="viewTicketDetails('${x.t.id}', false)">ID: ${x.t.id}</span> — Dairy #${x.t.dairyNumber} • ${x.t.farmName} — warn @ ${x.warnAt.toLocaleString()}</li>`;
       }).join('')}</ul>`
     : `<i>No warnings within 24h.</i>`;
 
-  // Farms with breaches
   const farmMap = {};
   breaches.forEach(x=>{
     const key = `${x.t.farmName} | ${x.t.dairyNumber}`;
@@ -1603,7 +1604,6 @@ async function renderSLAMonitor(){
       }).join('')}</ul>`
     : `<i>No farm breaches.</i>`;
 
-  // Users with breaches
   const userMap = {};
   breaches.forEach(x=>{
     const users = x.b.assignedAtBreach||[];
@@ -1625,7 +1625,7 @@ async function drillFarm(key){
   list.innerHTML = matched.map(t=>{
     const dates=(t.sla?.breaches||[]).map(b=>new Date(b.at).toLocaleString()).join(', ');
     return `<div class="tcard">
-      <div class="tcard-head"><div><div class="t-id">#${t.dairyNumber} • ${t.farmName}</div><div class="text-muted t-more">${t.alertType}</div></div></div>
+      <div class="tcard-head"><div><div class="t-id">ID: ${t.id}</div><div class="text-muted t-more">Dairy #${t.dairyNumber} • ${t.farmName}</div></div></div>
       <div class="tcard-body">
         <div><b>Breaches:</b> ${(t.sla?.breaches||[]).length} • ${dates}</div>
         <div class="mt-1"><button class="btn btn-agora btn-sm" onclick="hideOverlay();viewTicketDetails('${t.id}', false)">Open Ticket</button></div>
@@ -1642,7 +1642,7 @@ async function drillUser(name){
   list.innerHTML = matched.map(t=>{
     const dates=(t.sla?.breaches||[]).map(b=>new Date(b.at).toLocaleString()).join(', ');
     return `<div class="tcard">
-      <div class="tcard-head"><div><div class="t-id">#${t.dairyNumber} • ${t.farmName}</div><div class="text-muted t-more">${t.alertType}</div></div></div>
+      <div class="tcard-head"><div><div class="t-id">ID: ${t.id}</div><div class="text-muted t-more">Dairy #${t.dairyNumber} • ${t.farmName}</div></div></div>
       <div class="tcard-body">
         <div><b>Breaches:</b> ${(t.sla?.breaches||[]).length} • ${dates}</div>
         <div class="mt-1"><button class="btn btn-agora btn-sm" onclick="hideOverlay();viewTicketDetails('${t.id}', false)">Open Ticket</button></div>
@@ -1652,7 +1652,7 @@ async function drillUser(name){
   const o=byId('screen-overlay'); o.querySelector('.overlay-box').innerHTML=''; o.querySelector('.overlay-box').appendChild(list);
 }
 
-/* =================== EMAIL: ticket created (existing) =================== */
+/* =================== EMAIL: ticket created =================== */
 function sendTicketEmailNotification(ticket, toEmail){
   const users=getUsers();
   const openedUser=users.find(u=>u.username===normalizeEmail(ticket.openedByUser||""));
@@ -1691,7 +1691,7 @@ function checkHashForTicket(){
 <!--
 TEMPLATE: SLA WARNING (template_hp9krxq)
 Paste this HTML into EmailJS for template ID: template_hp9krxq
-Make sure the template variables match the keys we send: 
+Variables used (must match): 
 to_name, ticket_id, dairy_number, farm_name, alert_type, priority, assigned_name, opened_by, created_date, issue_desc, ticket_link, sla_cycle, minutes_to_breach
 -->
 <!--
