@@ -5,6 +5,7 @@
 <title>Agora Ticketing Advanced + SLA</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+
 <style>
   :root{
     --bg:#f8faff; --primary:#001F3F; --accent:#FF851B;
@@ -22,8 +23,8 @@
   .btn-agora:hover{background:#ff6d00}
   .btn-admin{background:var(--primary);color:#fff;border:none;border-radius:6px}
   .btn-admin:hover{background:#173559}
-  .btn-outline{background:#fff;color:var(--primary);border:1px solid var(--accent)}
-  .btn-outline:hover{background:var(--accent);color:#fff}
+  .btn-outline{background:#fff;color:var(--primary);border:1px solid #ffa34a}
+  .btn-outline:hover{background:#FF851B;color:#fff}
   .nav-btns{display:flex;gap:10px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
   .logout-link{float:right;color:#a00;text-decoration:underline;cursor:pointer;font-size:.97em}
 
@@ -43,7 +44,6 @@
   .hidden{display:none!important}
   footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
 
-  /* Desktop table */
   .table-area{display:block}
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .table,.table *{font-size:var(--table-font)!important}
@@ -51,7 +51,6 @@
   .table td,.table th{white-space:normal;word-break:break-word}
   .th-sort{cursor:pointer}
 
-  /* Mobile cards */
   .ticket-cards{display:none}
   .tcard{border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 8px #0000000a}
   .tcard-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
@@ -78,7 +77,6 @@
     .logo-header{max-width:120px}
   }
 
-  /* Summary Dashboard */
   .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   .kpi{border:1px solid #eee;border-radius:12px;padding:10px;text-align:center;background:#fff}
   .kpi .num{font-size:1.4rem;font-weight:800}
@@ -89,7 +87,6 @@
   .chip{display:inline-block;padding:4px 8px;border:1px solid #ddd;border-radius:14px;margin-right:6px;cursor:pointer;user-select:none}
   .chip.active{border-color:var(--accent);color:var(--accent);font-weight:600}
 
-  /* Admin */
   .user-card{display:flex;align-items:center;justify-content:space-between;border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:10px}
   .role-badge{background:#e7f0ff;color:#1f4ea3;border-radius:12px;padding:2px 8px;font-size:.85em;margin-left:8px}
   .matrix-wrap{overflow-x:auto}
@@ -98,7 +95,6 @@
   .matrix .hdr{font-weight:700;color:#173559}
   .matrix .cell.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-  /* Overlay */
   .screen-overlay{position:fixed;inset:0;background:#ffffffd9;display:none;align-items:center;justify-content:center;z-index:9999}
   .loader{width:90px;height:90px;border-radius:50%;border:8px solid #eee;border-top-color:var(--accent);animation:spin 1s linear infinite;margin-bottom:10px}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -310,41 +306,27 @@
 
 <script>
 /* =================== CONFIG / INIT =================== */
-const initialUsers = [
-  { username:"regan.beaver@agora.co.nz", name:"Regan Beaver", password:"Moometrics242", role:"admin" },
-  { username:"ahren.lomas@agora.co.nz", name:"Ahren Lomas", password:"MooMetrics24", role:"admin" },
-  { username:"caroline@agora.co.nz", name:"Caroline Wallace", password:"dairy123", role:"admin" },
-  { username:"kip@agora.co.nz", name:"Kip Bodle", password:"dairy123", role:"admin" },
-  { username:"josh.bull@agora.co.nz", name:"Josh Bull", password:"dairy123", role:"admin" },  // <-- MISSING COMMA FIXED
-  { username:"hayden.walsh@agora.co.nz", name:"Hayden Walsh", password:"dairy123", role:"admin" }
+const seedUsers = [
+  { username:"regan.beaver@agora.co.nz", name:"Regan Beaver",    password:"Moometrics242", role:"admin" },
+  { username:"ahren.lomas@agora.co.nz",  name:"Ahren Lomas",     password:"MooMetrics24",  role:"admin" },
+  { username:"caroline@agora.co.nz",     name:"Caroline Wallace",password:"dairy123",      role:"admin" },
+  { username:"kip@agora.co.nz",          name:"Kip Bodle",       password:"dairy123",      role:"admin" },
+  { username:"josh.bull@agora.co.nz",    name:"Josh Bull",       password:"dairy123",      role:"admin" }, /* <-- fixed comma */
+  { username:"hayden.walsh@agora.co.nz", name:"Hayden Walsh",    password:"dairy123",      role:"admin" }
 ];
-
-// merge seed users into existing (don’t clobber passwords)
-(function seedUsersSafely(){
-  const existing = JSON.parse(localStorage.getItem("users")||"[]").map(u=>({...u,username:(u.username||"").toLowerCase()}));
-  const byEmail = new Map(existing.map(u=>[u.username,u]));
-  initialUsers.forEach(s=>{
-    const key = s.username.toLowerCase();
-    if(!byEmail.has(key)){
-      byEmail.set(key, {...s, username:key});
+(function bootstrapUsers(){
+  try{
+    const existing = JSON.parse(localStorage.getItem("users")||"[]");
+    if(!existing.length){
+      localStorage.setItem("users", JSON.stringify(seedUsers.map(u=>({...u,username:u.username.toLowerCase()}))));
     }else{
-      // ensure name/role exist; keep their password
-      const cur = byEmail.get(key);
-      byEmail.set(key, {
-        username:key,
-        name: cur.name || s.name,
-        password: cur.password || s.password,
-        role: cur.role || s.role
-      });
+      // ensure lowercasing + de-dup emails
+      const map=new Map();
+      [...existing, ...seedUsers].forEach(u=>{ map.set((u.username||"").toLowerCase(), {...u, username:(u.username||"").toLowerCase()}); });
+      localStorage.setItem("users", JSON.stringify([...map.values()]));
     }
-  });
-  localStorage.setItem("users", JSON.stringify(Array.from(byEmail.values())));
+  }catch(e){ localStorage.setItem("users", JSON.stringify(seedUsers.map(u=>({...u,username:u.username.toLowerCase()})))); }
 })();
-
-function normalizeEmail(s){ return (s||'').trim().toLowerCase().replace(/\u200B/g,''); }
-function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
-function setUsers(users){ localStorage.setItem("users", JSON.stringify(users)); }
-function findUser(username){ return getUsers().find(u=>u.username===normalizeEmail(username)); }
 
 const firebaseConfig = {
   apiKey:"AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
@@ -357,23 +339,24 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 
-// NOTE: we will read tickets from multiple possible legacy roots
-const ticketRoots = ["Agora V1 Tickets", "Agora Tickets", "Tickets", "TicketRecords"];
-const primaryTicketsFolder = ticketRoots[0];
+/* Folders: try multiple to be robust */
+const ticketsFolders = ["Agora V1 Tickets","Tickets","Agora Tickets","TicketRecords"];
 
 /* EmailJS */
-const EMAILJS_SERVICE_ID         = "service_228tpco";
-const EMAILJS_TEMPLATE_ID        = "template_9s0ckye";   // New ticket created
-const EMAILJS_SLA_WARN_TEMPLATE  = "template_hp9krxq";   // SLA warning (2h prior)
-const EMAILJS_PUBLIC_KEY         = "8uQgECrkNStKV41S-";
-const TICKET_URL_ROOT            = "https://agoranz.github.io/Ticket/";
-emailjs.init(EMAILJS_PUBLIC_KEY);
+const EMAILJS_SERVICE_ID          = "service_228tpco";
+const EMAILJS_TEMPLATE_ID         = "template_9s0ckye";   // New ticket created
+const EMAILJS_SLA_WARN_TEMPLATE   = "template_hp9krxq";   // SLA warning (2h prior)
+const EMAILJS_SLA_BREACH_TEMPLATE = "template_breach123"; // SLA breach notice (optional - create in EmailJS)
+const EMAILJS_PUBLIC_KEY          = "8uQgECrkNStKV41S-";
+const TICKET_URL_ROOT             = "https://agoranz.github.io/Ticket/";
+if(window.emailjs){ emailjs.init(EMAILJS_PUBLIC_KEY); }
 
-/* SLA constants */
-const SLA_INITIAL_WARN_MIN   = 22*60;
-const SLA_INITIAL_BREACH_MIN = 24*60;
-const SLA_CYCLE_WARN_MIN     = 70*60;
-const SLA_CYCLE_BREACH_MIN   = 72*60;
+/* SLA CONFIG (testable) */
+const SLA_TEST_MODE = false; // true => warn ~2min, breach ~3min
+const SLA_INITIAL_WARN_MIN   = SLA_TEST_MODE ? 2  : 22*60;
+const SLA_INITIAL_BREACH_MIN = SLA_TEST_MODE ? 3  : 24*60;
+const SLA_CYCLE_WARN_MIN     = SLA_TEST_MODE ? 2  : 70*60;
+const SLA_CYCLE_BREACH_MIN   = SLA_TEST_MODE ? 3  : 72*60;
 const SLA_WATCHDOG_INTERVAL  = 60*1000;
 
 /* Cache / State */
@@ -384,7 +367,7 @@ let charts = {};
 const byId = (id)=>document.getElementById(id);
 const val  = (id)=>byId(id)?.value||'';
 
-/* =================== Lazy libs =================== */
+/* =================== PERF: Lazy load heavy libs =================== */
 function ensureChartJs(){
   return new Promise((res)=>{
     if(window.Chart){ res(); return; }
@@ -402,7 +385,12 @@ function ensureXlsx(){
   });
 }
 
-/* =================== AUTH =================== */
+/* =================== AUTH (desktop+mobile, remember me) =================== */
+function normalizeEmail(s){ return (s||'').trim().toLowerCase().replace(/\u200B/g,''); }
+function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
+function setUsers(users){ localStorage.setItem("users", JSON.stringify(users)); }
+function findUser(username){ return getUsers().find(u=>u.username===normalizeEmail(username)); }
+
 function deviceFingerprint(){
   const ua = (navigator.userAgent||'').slice(0,140);
   const plat = navigator.platform||'';
@@ -422,9 +410,8 @@ function tryAutoPrefill(){
   if(!r) return;
   if(r.fp !== deviceFingerprint()) return;
   const u = findUser(r.username);
-  if(u) byId('login-user').value = u.username;
+  if(u){ byId('login-user').value = u.username; }
 }
-
 function showLogin(){ byId('login-form').classList.remove('hidden'); byId('signup-form').classList.add('hidden'); byId('login-msg').textContent=''; }
 function showSignup(){ byId('signup-form').classList.remove('hidden'); byId('login-form').classList.add('hidden'); byId('login-msg').textContent=''; }
 
@@ -449,10 +436,9 @@ function doSignup(){
   const name  = (val('signup-name')||'').trim();
   const email = normalizeEmail(val('signup-user'));
   const pass  = String(val('signup-pass')||'');
-  if(!name||!email||!pass){ byId('login-msg').textContent="All fields required."; return; }
-  if(findUser(email)){ byId('login-msg').textContent="Username already exists."; return; }
-  const users=getUsers(); const user={username:email,name,password:pass,role:"service"};
-  users.push(user); setUsers(users);
+  if(!name||!email||!pass) return byId('login-msg').textContent="All fields required.";
+  if(findUser(email)) return byId('login-msg').textContent="Username already exists.";
+  const users=getUsers(); const user={username:email,name,password:pass,role:"service"}; users.push(user); setUsers(users);
   curUser=user; pushLoginEvent(user); showMain();
 }
 
@@ -507,7 +493,7 @@ function looksLikeImage(obj){
 function minutesBetween(aIso,bIso){ const A=new Date(aIso).getTime(); const B=new Date(bIso).getTime(); if(!isFinite(A)||!isFinite(B))return 0; return Math.max(0, Math.round((B-A)/60000)); }
 function fmtHrs(min){ const h=Math.round((min||0)/60); return h+'h'; }
 
-/* =================== STORAGE HELPERS & CACHE =================== */
+/* =================== STORAGE HELPERS & PERF CACHE =================== */
 const MAX_FILE_MB=20;
 const ALLOWED_TYPES=['image/jpeg','image/png','image/gif','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'];
 function validateFiles(files){
@@ -515,7 +501,7 @@ function validateFiles(files){
   return errs;
 }
 async function uploadFileBlob(file, prefix, progressBar){
-  const ref=storage.ref(`${primaryTicketsFolder}/${prefix}_${file.name}`);
+  const ref=storage.ref(`${prefix}_${file.name}`);
   const task=ref.put(file);
   return new Promise((res,rej)=>{
     task.on('state_changed',
@@ -526,77 +512,57 @@ async function uploadFileBlob(file, prefix, progressBar){
   });
 }
 function invalidateTicketsCache(){ ticketsCache.ts = 0; }
-
-// recursively collect all ticket JSON files under a folder (and legacy folders)
-async function listJsonTicketsUnder(root){
-  const out=[];
-  async function walk(prefixRef){
-    const res=await prefixRef.listAll();
-    for(const item of res.items){
-      if(item.name.endsWith('.json')){
-        try{
-          const url=await item.getDownloadURL();
-          const t=await fetch(url,{cache:'no-store'}).then(r=>r.json());
-          normalizeTicketShape(t);
-          out.push(t);
-        }catch(e){ console.warn('ticket read failed', item.fullPath, e); }
-      }
-    }
-    for(const sub of res.prefixes){ await walk(sub); }
-  }
+async function listFolderJsons(prefix){
   try{
-    const rootRef = storage.ref(root);
-    await walk(rootRef);
-  }catch(e){
-    // folder may not exist — ignore
-  }
-  return out;
+    const folderRef = storage.ref(prefix);
+    const res = await folderRef.listAll();
+    const jsonRefs = res.items.filter(it=>it.name.endsWith(".json") && !it.name.startsWith("attachments/") && !it.name.startsWith("comments/") && !it.name.startsWith("close/"));
+    return jsonRefs;
+  }catch(e){ return []; }
 }
-
 async function loadAllTickets(){
   const now = Date.now();
-  if (now - ticketsCache.ts < 60*1000 && ticketsCache.data?.length){ return ticketsCache.data; } // 60s cache
-
-  const results = [];
-  for(const root of ticketRoots){
-    const arr = await listJsonTicketsUnder(root);
-    results.push(...arr);
-  }
-  // de-dupe by id (prefer newest shape)
-  const map = new Map();
-  results.forEach(t=>{ if(t?.id){ map.set(t.id, t); } });
-  const data = Array.from(map.values());
-  ticketsCache = { ts:Date.now(), data };
-  return data;
+  if (now - ticketsCache.ts < 45*1000 && ticketsCache.data?.length){ return ticketsCache.data; }
+  try{
+    let refs=[];
+    for(const f of ticketsFolders){
+      const r = await listFolderJsons(f);
+      refs = refs.concat(r.map(rr=>({ref:rr, folder:f})));
+    }
+    const arr=[];
+    await Promise.all(refs.map(async({ref})=>{
+      const url=await ref.getDownloadURL();
+      const t=await fetch(url,{cache:'no-store'}).then(r=>r.json());
+      normalizeTicketShape(t);
+      arr.push(t);
+    }));
+    ticketsCache = { ts:Date.now(), data:arr };
+    return arr;
+  }catch(e){ console.error(e); return []; }
 }
-
 function normalizeTicketShape(t){
-  if(!t || typeof t!=='object') return;
   if(!Array.isArray(t.assignedTo)) t.assignedTo = t.assignedTo ? [t.assignedTo] : [];
   if(!Array.isArray(t.assignedNames)) t.assignedNames = t.assignedName ? [t.assignedName] : (t.assignedTo||[]);
   t.comments = t.comments || [];
   t.history  = t.history || [];
-  // createdAt
   if(!t.createdAt){
     const createdEvt = (t.history||[]).find(h=> (h.action||"").toLowerCase()==="created");
     t.createdAt = createdEvt?.date || (t.createdDate ? (t.createdDate + "T00:00:00.000Z") : new Date().toISOString());
   }
-  // ID fallback (legacy) — ensure unique id exists
-  if(!t.id){ t.id = uuidv4(); }
-
+  if(!t.id) t.id = uuidv4(); // ensure unique ID exists even for older records
+  if(!t.status) t.status = "open";
   // unify close structure
   const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution;
   if (!t.close && hasLegacyClose) {
     t.close = { by:t.closedBy||"", date:t.closedDate||"", note:t.closeComment||t.resolution||"", files:t.closeFiles||[] };
   } else if (t.close) {
-    t.close.by   = t.close.by   || t.closedBy   || "";
-    t.close.date = t.close.date || t.closedDate || "";
-    t.close.note = t.close.note || t.closeComment || t.resolution || "";
+    t.close.by    = t.close.by   || t.closedBy   || "";
+    t.close.date  = t.close.date || t.closedDate || "";
+    t.close.note  = t.close.note || t.closeComment || t.resolution || "";
     t.close.files = Array.isArray(t.close.files) ? t.close.files : (t.closeFiles || []);
   }
   ensureSLAInitialized(t);
 }
-
 async function loadActiveCount(){
   const tickets=await loadAllTickets();
   const n = tickets.filter(t=>t.status==="open" || t.status==="monitoring").length;
@@ -607,43 +573,31 @@ async function loadActiveCount(){
 function ensureSLAInitialized(t){
   t.sla = t.sla || {};
   if (t.comments?.length){
-    const last = t.comments.reduce((a,c)=> (new Date(c.date) > new Date(a.date) ? c : a), t.comments[0]);
+    const last = t.comments.reduce((a,c)=> new Date(c.date) > new Date(a.date) ? c : a, t.comments[0]);
     if(!t.sla.baseline || new Date(last.date) > new Date(t.sla.baseline)){
       setSLACycle(t, 'comment', last.date);
     }
-  }else{
-    if(!t.sla.baseline){ setSLACycle(t, 'created', t.createdAt); }
+  } else if(!t.sla.baseline){
+    setSLACycle(t, 'created', t.createdAt || new Date().toISOString());
   }
 }
 function setSLACycle(t, basis, isoBaseline){
   const cycle = Number(t.sla?.cycle||0) + (basis==='comment'?1:0);
-  const warnMin   = (basis==='created') ? SLA_INITIAL_WARN_MIN   : SLA_CYCLE_WARN_MIN;
-  const breachMin = (basis==='created') ? SLA_INITIAL_BREACH_MIN : SLA_CYCLE_BREACH_MIN;
+  const warnMin   = basis==='created' ? SLA_INITIAL_WARN_MIN   : SLA_CYCLE_WARN_MIN;
+  const breachMin = basis==='created' ? SLA_INITIAL_BREACH_MIN : SLA_CYCLE_BREACH_MIN;
   const baseline = new Date(isoBaseline||new Date()).toISOString();
   t.sla = {
     ...t.sla,
-    cycle,
-    basis,
-    baseline,
-    nextWarnAt:  new Date(new Date(baseline).getTime() + warnMin*60000).toISOString(),
-    nextBreachAt:new Date(new Date(baseline).getTime() + breachMin*60000).toISOString(),
-    warnSent:false,
-    breached:false,
+    cycle, basis, baseline,
+    nextWarnAt:   new Date(new Date(baseline).getTime() + warnMin*60000).toISOString(),
+    nextBreachAt: new Date(new Date(baseline).getTime() + breachMin*60000).toISOString(),
+    warnSent:false, breached:false,
     breaches: Array.isArray(t.sla?.breaches) ? t.sla.breaches : []
   };
   t.history = t.history || [];
-  t.history.push({
-    action:"SLA Scheduled",
-    user: curUser?.name || "System",
-    date: new Date().toISOString(),
-    details: `Cycle ${t.sla.cycle} • basis=${basis} • warn@ ${t.sla.nextWarnAt} • breach@ ${t.sla.nextBreachAt}`
-  });
+  t.history.push({action:"SLA Scheduled", user:curUser?.name||"System", date:new Date().toISOString(),
+                  details:`Cycle ${t.sla.cycle} • basis=${basis}`});
 }
-async function persistTicket(t){
-  await storage.ref(`${primaryTicketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
-  invalidateTicketsCache();
-}
-
 function recipientsForTicket(t){
   const users=getUsers();
   const emails = new Set();
@@ -656,6 +610,7 @@ function recipientsForTicket(t){
 }
 function ticketLinkFor(t){ return TICKET_URL_ROOT + "#ticket=" + t.id; }
 function sendSLAWarningEmail(t, recipient, minutesToBreach){
+  if(!window.emailjs) return Promise.resolve();
   const vars = {
     to_name: recipient.name || recipient.email,
     ticket_id: t.id,
@@ -674,75 +629,106 @@ function sendSLAWarningEmail(t, recipient, minutesToBreach){
   return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_SLA_WARN_TEMPLATE, vars, EMAILJS_PUBLIC_KEY)
     .catch(err=>console.error("EmailJS SLA warn error", err));
 }
-
-let _watchdogRunning = false;
+function sendSLABreachEmail(t){
+  if(!window.emailjs || !EMAILJS_SLA_BREACH_TEMPLATE) return Promise.resolve();
+  const recips = recipientsForTicket(t);
+  const varsBase = {
+    ticket_id: t.id,
+    dairy_number: t.dairyNumber,
+    farm_name: t.farmName,
+    alert_type: t.alertType==="Other" ? (t.alertType + ": " + (t.alertOther||"")) : t.alertType,
+    priority: t.priority,
+    assigned_name: (t.assignedNames||[]).join(', '),
+    opened_by: t.openedBy,
+    created_date: t.createdDate,
+    issue_desc: t.issueDesc,
+    ticket_link: ticketLinkFor(t),
+    sla_cycle: String(t.sla?.cycle ?? 0)
+  };
+  return Promise.all(recips.map(r=>{
+    const vars = { ...varsBase, to_name: r.name||r.email };
+    return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_SLA_BREACH_TEMPLATE, vars, EMAILJS_PUBLIC_KEY)
+      .catch(err=>console.error("EmailJS SLA breach error", err));
+  }));
+}
+let _watchdogRunning=false;
 async function runSLAWatchdogOnce(){
-  if(_watchdogRunning) return;
-  _watchdogRunning = true;
+  if(_watchdogRunning) return; _watchdogRunning=true;
   try{
-    const now = new Date();
+    const now=new Date();
     const tickets = await loadAllTickets();
     for (const t of tickets.filter(x=>x.status!=='closed')){
       ensureSLAInitialized(t);
-      if(!t.sla?.baseline) continue;
+      const s=t.sla||{}; if(!s.baseline) continue;
+      const warnAt=new Date(s.nextWarnAt), breachAt=new Date(s.nextBreachAt);
 
-      const warnAt   = new Date(t.sla.nextWarnAt);
-      const breachAt = new Date(t.sla.nextBreachAt);
-
-      const latestCommentAt = t.comments?.length ? new Date(t.comments[t.comments.length-1].date) : null;
-      if(t.sla.basis==='created' && latestCommentAt && latestCommentAt > new Date(t.sla.baseline)){
-        setSLACycle(t, 'comment', latestCommentAt.toISOString());
-        await persistTicket(t);
-        continue;
+      const lastC = t.comments?.[t.comments.length-1];
+      if(s.basis==='created' && lastC && new Date(lastC.date) > new Date(s.baseline)){
+        setSLACycle(t,'comment',lastC.date); await persistTicket(t); continue;
       }
 
-      if(!t.sla.warnSent && now >= warnAt && now < breachAt){
-        const minsToBreach = Math.max(0, Math.round((breachAt-now)/60000));
+      if(!s.warnSent && now>=warnAt && now<breachAt){
+        const minsToBreach=Math.max(0,Math.round((breachAt-now)/60000));
         const recips = recipientsForTicket(t);
         await Promise.all(recips.map(r=>sendSLAWarningEmail(t,r,minsToBreach)));
-        t.sla.warnSent = true;
-        t.history.push({action:"SLA Warned", user:"System", date:new Date().toISOString(), details:`Cycle ${t.sla.cycle} warned @ ${now.toISOString()}`});
+        t.sla.warnSent=true;
+        t.history.push({action:"SLA Warned", user:"System", date:new Date().toISOString(), details:`Cycle ${t.sla.cycle}`});
         await persistTicket(t);
       }
-
-      if(!t.sla.breached && now >= breachAt){
-        t.sla.breached = true;
-        const snapshotAssignees = (t.assignedNames||[]).slice();
-        const reason = (t.sla.basis==='created') ? 'No comment within 24h of creation' : 'No comment within 72h of last comment';
-        t.sla.breaches.push({
-          at: now.toISOString(),
-          cycle: t.sla.cycle,
-          basis: t.sla.basis,
-          baseline: t.sla.baseline,
-          assignedAtBreach: snapshotAssignees
-        });
-        t.history.push({
-          action:"SLA Breach",
-          user:"System",
-          date: now.toISOString(),
-          details: `Cycle ${t.sla.cycle} • ${reason}`
-        });
+      if(!s.breached && now>=breachAt){
+        t.sla.breached=true;
+        t.sla.breaches=[...(t.sla.breaches||[]), {at:new Date().toISOString(), cycle:s.cycle, basis:s.basis, baseline:s.baseline, assignedAtBreach:(t.assignedNames||[])}];
+        t.history.push({action:"SLA Breach", user:"System", date:new Date().toISOString(), details:`Cycle ${t.sla.cycle}`});
         await persistTicket(t);
+        await sendSLABreachEmail(t);
       }
     }
   }catch(e){ console.error("SLA watchdog error", e); }
-  finally{ _watchdogRunning = false; }
+  finally{ _watchdogRunning=false; }
 }
 function startSLAWatchdog(){
   if(watchdogTimer) clearInterval(watchdogTimer);
   runSLAWatchdogOnce();
   watchdogTimer = setInterval(runSLAWatchdogOnce, SLA_WATCHDOG_INTERVAL);
 }
+function slaSnapshot(t){
+  const now=new Date(), s=t.sla||{};
+  const warnAt=s.nextWarnAt?new Date(s.nextWarnAt):null;
+  const breachAt=s.nextBreachAt?new Date(s.nextBreachAt):null;
+  const warnDue=warnAt && now>=warnAt && !s.warnSent;
+  const breached=!!s.breached;
+  const minsOpenSinceBaseline=s.baseline? Math.max(0,Math.round((now - new Date(s.baseline))/60000)) : 0;
+  const minsToWarn = warnAt? Math.round((warnAt-now)/60000) : null;
+  const minsToBreach = breachAt? Math.round((breachAt-now)/60000) : null;
+  return { warnDue, breached, minsOpenSinceBaseline, minsToWarn, minsToBreach };
+}
+function renderSLAInline(t){
+  const s=t.sla||{}, fmt=x=>x?new Date(x).toLocaleString():'-';
+  const lastB=(s.breaches||[]).slice(-1)[0]?.at;
+  return `<div class="mt-2">
+    <span class="pill">SLA cycle: <b>${s.cycle||0}</b></span>
+    <span class="pill">Basis: <b>${s.basis||'-'}</b></span>
+    <span class="pill">Warn @ <b>${fmt(s.nextWarnAt)}</b></span>
+    <span class="pill">Breach @ <b>${fmt(s.nextBreachAt)}</b></span>
+    <span class="pill">Breaches: <b>${(s.breaches||[]).length}</b>${lastB?` (last: ${new Date(lastB).toLocaleString()})`:''}</span>
+  </div>`;
+}
+async function persistTicket(t){
+  // Save under first available folder
+  const folder = ticketsFolders[0];
+  await storage.ref(`${folder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
+  invalidateTicketsCache();
+}
 
 /* =================== CREATE TICKET =================== */
 async function submitTicket(){
   const assigned=Array.from(byId('assign-to').selectedOptions).map(o=>normalizeEmail(o.value));
-  if(!assigned.length){ byId('ticket-msg').textContent="Select at least one assignee."; return; }
+  if(!assigned.length) return byId('ticket-msg').textContent="Select at least one assignee.";
   const users=getUsers(), assignedNames=assigned.map(u=>(users.find(x=>x.username===u)||{}).name||u);
 
   const createdAtISO = new Date().toISOString();
   const data={
-    id:uuidv4(), // UNIQUE TICKET ID (primary identifier)
+    id:uuidv4(), // unique ticket id (NOT dairy number)
     createdDate:val('ticket-date'),
     createdAt: createdAtISO,
     dairyNumber:val('dairy-number').trim(),
@@ -765,28 +751,29 @@ async function submitTicket(){
     close:null,
     sla:null
   };
-  if(!data.dairyNumber||!data.farmName||!data.alertType||!data.issueDesc){ byId('ticket-msg').textContent="All required fields must be filled out."; return; }
-  if(data.alertType==="Other"&&!data.alertOther){ byId('ticket-msg').textContent="Specify the 'Other' alert type."; return; }
+  if(!data.dairyNumber||!data.farmName||!data.alertType||!data.issueDesc) return byId('ticket-msg').textContent="All required fields must be filled out.";
+  if(data.alertType==="Other"&&!data.alertOther) return byId('ticket-msg').textContent="Specify the 'Other' alert type.";
 
-  const files=Array.from(byId('ticket-file').files||[]); const errs=validateFiles(files); if(errs.length){ alert("Upload errors:\n"+errs.join("\n")); return; }
+  const files=Array.from(byId('ticket-file').files||[]); const errs=validateFiles(files); if(errs.length) return alert("Upload errors:\n"+errs.join("\n"));
   if(files.length){
     const pv=byId('ticket-file-preview');
     files.forEach(()=>{const bar=document.createElement('div');bar.className='progress-mini';bar.innerHTML='<div></div>';pv.appendChild(bar)});
     for(let i=0;i<files.length;i++){
       const f=files[i]; const bar=pv.querySelectorAll('.progress-mini>div')[i];
-      const url=await uploadFileBlob(f,`attachments/${data.id}`,bar);
+      const url=await uploadFileBlob(f,`${ticketsFolders[0]}/attachments/${data.id}`,bar);
       data.files.push({name:f.name,type:f.type,url});
     }
   }
 
   setSLACycle(data, 'created', createdAtISO);
 
-  await storage.ref(`${primaryTicketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
+  await storage.ref(`${ticketsFolders[0]}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
   invalidateTicketsCache();
 
   byId('ticket-msg').textContent="Ticket created.";
   byId('ticket-form').reset(); autoFillTicketForm(); loadActiveCount();
 
+  // Notify assignees (new ticket)
   assigned.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(data,to.username)});
 }
 
@@ -800,7 +787,7 @@ async function showActiveTickets(){
   ticketFilterUI('active');
 }
 async function showClosedTickets(){
-  if(curUser.role!=="admin"){ alert("Admins only."); return; }
+  if(curUser.role!=="admin") return alert("Admins only.");
   byId('ticket-section').classList.add('hidden');
   byId('ticket-list-section').classList.remove('hidden');
   byId('summary-section').classList.add('hidden');
@@ -814,25 +801,26 @@ function backToMain(){
   byId('ticket-list-controls').innerHTML='';
   byId('ticket-view-modal').classList.add('hidden');
   ['btn-csv','btn-xlsx'].forEach(id=>byId(id).style.display='none');
-  byId('summary-section').classList.add('hidden');
 }
 function ticketFilterUI(scope){
   const users=getUsers();
   byId('ticket-list-controls').innerHTML = `
-    <input class="form-control d-inline" style="max-width:220px" id="filter-search" placeholder="Keyword or ID">
-    <select id="filter-assignee" class="form-select" style="max-width:220px;display:inline-block">
-      <option value="">All Users</option>
-      ${users.map(u=>`<option value="${u.username}">${u.name}</option>`).join('')}
-    </select>
-    <select id="filter-priority" class="form-select" style="max-width:160px;display:inline-block">
-      <option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option>
-    </select>
-    <select id="filter-alert" class="form-select" style="max-width:200px;display:inline-block">
-      <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
-    </select>
-    <input type="date" id="filter-date" class="form-control" style="max-width:170px;display:inline-block">
-    <span class="btn btn-sm btn-outline" id="chip-hasimg">Has Images</span>
-    <button class="btn btn-agora btn-sm" onclick="filterTickets('${scope}')">Filter</button>`;
+    <div class="d-flex flex-wrap gap-2">
+      <input class="form-control search-box" style="max-width:220px" id="filter-search" placeholder="Keyword">
+      <select id="filter-assignee" class="form-select search-box" style="max-width:220px">
+        <option value="">All Users</option>
+        ${users.map(u=>`<option value="${u.username}">${u.name}</option>`).join('')}
+      </select>
+      <select id="filter-priority" class="form-select search-box" style="max-width:160px">
+        <option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option>
+      </select>
+      <select id="filter-alert" class="form-select search-box" style="max-width:200px">
+        <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
+      </select>
+      <input type="date" id="filter-date" class="form-control search-box" style="max-width:170px">
+      <span class="btn btn-sm btn-outline" id="chip-hasimg">Has Images</span>
+      <button class="btn btn-agora btn-sm" onclick="filterTickets('${scope}')">Filter</button>
+    </div>`;
   byId('filter-search').onkeydown=(e)=>{if(e.key==='Enter')filterTickets(scope)};
   byId('chip-hasimg').onclick=()=>byId('chip-hasimg').classList.toggle('active');
   filterTickets(scope);
@@ -860,26 +848,14 @@ async function filterTickets(scope){
   renderTicketCards(tickets, scope==='closed');
 }
 
-/* =================== TABLES & CARDS (ID first) =================== */
-function slaSnapshot(t){
-  const now = new Date();
-  const s = t.sla||{};
-  const warnAt = s.nextWarnAt ? new Date(s.nextWarnAt) : null;
-  const breachAt = s.nextBreachAt ? new Date(s.nextBreachAt) : null;
-  const warnDue   = warnAt && now>=warnAt && !(s.warnSent);
-  const breached  = !!s.breached;
-  const minsOpenSinceBaseline = s.baseline ? minutesBetween(s.baseline, now.toISOString()) : 0;
-  const minsToWarn   = warnAt? Math.round((warnAt-now)/60000) : null;
-  const minsToBreach = breachAt? Math.round((breachAt-now)/60000) : null;
-  return { warnDue, breached, minsOpenSinceBaseline, minsToWarn, minsToBreach };
-}
+/* =================== TABLES & CARDS =================== */
 function shortRow(t){
   const snap = slaSnapshot(t);
   const ageStr = (t.status==="closed" && t.close?.date)
       ? `resolved ${fmtHrs(minutesBetween(t.createdAt, t.close.date))}`
       : (t.status==="monitoring" ? `monitoring ${fmtHrs(snap.minsOpenSinceBaseline)}` : `open ${fmtHrs(snap.minsOpenSinceBaseline)}`);
   return {
-    id:t.id, dairy:t.dairyNumber, farm:t.farmName,
+    id:t.id,dairy:t.dairyNumber,farm:t.farmName,
     alert:t.alertType+(t.alertType==='Other'?`: ${t.alertOther||''}`:''),
     pr:t.priority, ass:(t.assignedNames||[]).join(', '), opened:t.openedBy, date:t.createdDate||'', status:t.status, age:ageStr, snap
   }
@@ -896,7 +872,6 @@ function renderTicketTable(tickets,isClosed){
   const rows=tickets.map(shortRow);
   _rowsCache=rows; _rowsClosedFlag=isClosed;
   let html=`<table class="table table-bordered table-sm"><thead><tr>
-    <th class="th-sort" onclick="renderSorted('id')">Ticket ID</th>
     <th class="th-sort" onclick="renderSorted('dairy')">Dairy #</th>
     <th class="th-sort" onclick="renderSorted('farm')">Farm</th>
     <th class="th-sort" onclick="renderSorted('alert')">Alert</th>
@@ -910,11 +885,10 @@ function renderTicketTable(tickets,isClosed){
     const t=tickets.find(x=>x.id===r.id); const snap=r.snap;
     const badge = snap.breached ? `<span class="badge bg-danger">SLA</span>` : (snap.warnDue? `<span class="badge bg-warning text-dark">Warn</span>` : '');
     html+=`<tr>
-      <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosed})">${r.id}</span></td>
-      <td>${r.dairy||'-'}</td>
-      <td>${r.farm||'-'}</td><td>${r.alert||'-'}</td><td>${r.pr||'-'}</td><td>${r.ass||'-'}</td>
-      <td>${r.opened||'-'}</td><td>${r.date||'-'}</td><td>${r.age} ${badge}</td>
-      <td><span class="ticket-status-${t.status}">${(t.status||'').charAt(0).toUpperCase()+(t.status||'').slice(1)}</span></td>
+      <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosed})">${r.dairy}</span></td>
+      <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
+      <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${badge}</td>
+      <td><span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span></td>
       <td>${!isClosed && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="showCloseModal('${r.id}')">Close</button>`:''}</td></tr>`;
   });
   html+=`</tbody></table>`;
@@ -928,11 +902,10 @@ window.renderSorted=function(key){
     const snap=r.snap;
     const badge = snap.breached ? `<span class="badge bg-danger">SLA</span>` : (snap.warnDue? `<span class="badge bg-warning text-dark">Warn</span>` : '');
     return `<tr>
-      <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${_rowsClosedFlag})">${r.id}</span></td>
-      <td>${r.dairy||'-'}</td>
-      <td>${r.farm||'-'}</td><td>${r.alert||'-'}</td><td>${r.pr||'-'}</td><td>${r.ass||'-'}</td>
-      <td>${r.opened||'-'}</td><td>${r.date||'-'}</td><td>${r.age} ${badge}</td>
-      <td><span class="ticket-status-${t.status}">${(t.status||'').charAt(0).toUpperCase()+(t.status||'').slice(1)}</span></td>
+      <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${_rowsClosedFlag})">${r.dairy}</span></td>
+      <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
+      <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${badge}</td>
+      <td><span class="ticket-status-${t.status}">${(t.status||'')[0]?.toUpperCase()+(t.status||'').slice(1)}</span></td>
       <td>${!_rowsClosedFlag && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="showCloseModal('${r.id}')">Close</button>`:''}</td></tr>`;
   }).join('');
 }
@@ -944,6 +917,7 @@ function mediaCount(t){
 }
 function renderTicketCards(tickets,isClosed){
   const wrap=byId('ticket-cards'); wrap.innerHTML='';
+  if(!tickets.length){ wrap.innerHTML='<i>No tickets found for the current filter.</i>'; return; }
   tickets.forEach(t=>{
     const snap = slaSnapshot(t);
     const mCount=mediaCount(t);
@@ -952,8 +926,8 @@ function renderTicketCards(tickets,isClosed){
     card.innerHTML=`
       <div class="tcard-head">
         <div>
-          <div class="t-id">ID: ${t.id.slice(0,8)}… • Dairy #${t.dairyNumber||'-'}</div>
-          <div class="text-muted t-more">${t.farmName||''} • ${t.alertType}${t.alertType==='Other'?': '+(t.alertOther||''):''}</div>
+          <div class="t-id">#${t.dairyNumber} • ${t.farmName}</div>
+          <div class="text-muted t-more">${t.alertType}${t.alertType==='Other'?': '+(t.alertOther||''):''}</div>
         </div>
         <div class="t-badges">
           <span class="b-priority">${t.priority}</span>
@@ -965,8 +939,8 @@ function renderTicketCards(tickets,isClosed){
       </div>
       <div class="tcard-body">
         <div><b>Assigned:</b> ${(t.assignedNames||[]).join(', ')||'-'}</div>
-        <div><b>Opened:</b> ${t.createdDate||''} &middot; <b>By:</b> ${t.openedBy||'-'}</div>
-        <div class="mt-1"><b>Issue:</b> ${t.issueDesc||''}</div>
+        <div><b>Opened:</b> ${t.createdDate||''} &middot; <b>By:</b> ${t.openedBy}</div>
+        <div class="mt-1"><b>Issue:</b> ${t.issueDesc}</div>
         ${(t.files?.length)?`<div class="mt-1">`+t.files.map(f=>looksLikeImage(f)?`<a href="${f.url}" target="_blank"><img class="photo-thumb" src="${f.url}" loading="lazy"></a>`:`<a class="file-chip" href="${f.url}" target="_blank">${f.name||'file'}</a>`).join(' ')+`</div>`:''}
         <div class="tcard-actions">
           <button class="btn btn-outline btn-sm" onclick="viewTicketDetails('${t.id}', ${isClosed})">Details</button>
@@ -984,17 +958,17 @@ window.viewTicketDetails=async function(id,isClosed){
   const isMobile=window.matchMedia("(max-width:800px)").matches;
   const container=isMobile?byId(`expand-${id}`):byId('ticket-view-modal');
   container.classList.remove('hidden');
-  const statusText = t.status ? (t.status.charAt(0).toUpperCase()+t.status.slice(1)) : '-';
-  let html=`<h5>Ticket ${t.id} (Dairy #${t.dairyNumber||'-'})</h5>
-    <b>Farm:</b> ${t.farmName||'-'}<br>
+  let html=`<h5>Ticket #${t.dairyNumber}</h5>
+    <div class="small-note">Unique ID: ${t.id}</div>
+    <b>Farm:</b> ${t.farmName}<br>
     <b>Alert:</b> ${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}<br>
-    <b>Priority:</b> ${t.priority||'-'}<br>
+    <b>Priority:</b> ${t.priority}<br>
     <b>Assigned:</b> ${(t.assignedNames||[]).join(', ')}<br>
     ${curUser.role==="admin"&&t.status!=="closed" ? renderAssigneeEditor(t):''}
-    <b>Status:</b> <span class="ticket-status-${t.status}">${statusText}</span><br>
+    <b>Status:</b> <span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span><br>
     <b>First Response:</b> ${t.firstResponseAt? new Date(t.firstResponseAt).toLocaleString() : '<i>Not yet</i>'}<br>
-    <b>Issue:</b> ${t.issueDesc||''}<br>
-    <b>Opened:</b> ${t.createdDate||""} by ${t.openedBy||'-'} (${t.position||'-'})<br>
+    <b>Issue:</b> ${t.issueDesc}<br>
+    <b>Opened:</b> ${t.createdDate||""} by ${t.openedBy} (${t.position})<br>
     ${renderSLAInline(t)}`;
   if(t.files?.length){
     html+=`<div class="mt-2"><b>Files:</b> `+t.files.map(f=>looksLikeImage(f)?`<a href="${f.url}" target="_blank"><img class="photo-thumb" src="${f.url}" loading="lazy"></a>`:`<a class="file-chip" href="${f.url}" target="_blank">${f.name||'file'}</a>`).join(' ')+`</div>`;
@@ -1049,20 +1023,6 @@ window.viewTicketDetails=async function(id,isClosed){
   }
   container.innerHTML=html;
 };
-function renderSLAInline(t){
-  const s=t.sla||{};
-  const warn = s.nextWarnAt ? new Date(s.nextWarnAt).toLocaleString() : '-';
-  const breach = s.nextBreachAt ? new Date(s.nextBreachAt).toLocaleString() : '-';
-  const count = (s.breaches||[]).length;
-  const lastB = (s.breaches||[]).slice(-1)[0]?.at;
-  return `<div class="mt-2">
-    <div class="pill">SLA cycle: <b>${s.cycle||0}</b></div>
-    <div class="pill">Basis: <b>${s.basis||'-'}</b></div>
-    <div class="pill">Warn @ <b>${warn}</b></div>
-    <div class="pill">Breach @ <b>${breach}</b></div>
-    <div class="pill">Breaches: <b>${count}</b>${lastB?` (last: ${new Date(lastB).toLocaleString()})`:''}</div>
-  </div>`;
-}
 function renderAssigneeEditor(t){
   const users=getUsers();
   return `<div class="mt-2">
@@ -1074,7 +1034,7 @@ function renderAssigneeEditor(t){
   </div>`;
 }
 window.saveAssignees=async function(id){
-  if(curUser.role!=="admin"){ return; }
+  if(curUser.role!=="admin") return;
   const sel=byId('edit-assignees'); const newU=Array.from(sel.selectedOptions).map(o=>normalizeEmail(o.value));
   const users=getUsers(); const newNames=newU.map(u=>(users.find(x=>x.username===u)||{}).name||u);
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
@@ -1088,7 +1048,7 @@ window.saveAssignees=async function(id){
 
 window.addComment=async function(id){
   const text=(byId('new-comment')||{}).value?.trim()||'';
-  const files=Array.from((byId('comment-files')||{files:[]}).files); const errs=validateFiles(files); if(errs.length){ alert("Upload errors:\n"+errs.join("\n")); return; }
+  const files=Array.from((byId('comment-files')||{files:[]}).files); const errs=validateFiles(files); if(errs.length) return alert("Upload errors:\n"+errs.join("\n"));
   const setMonitoring = !!byId('set-monitoring')?.checked;
   const sel=byId('comment-assignees'); const chosen=sel?Array.from(sel.selectedOptions).map(o=>normalizeEmail(o.value)):[]; const replace=byId('reassign-mode')?.checked||false;
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
@@ -1101,7 +1061,7 @@ window.addComment=async function(id){
     files.forEach(()=>{const bar=document.createElement('div');bar.className='progress-mini';bar.innerHTML='<div></div>';pv.appendChild(bar)});
     for(let i=0;i<files.length;i++){
       const f=files[i]; const bar=pv.querySelectorAll('.progress-mini>div')[i];
-      const url=await uploadFileBlob(f,`comments/${id}_${c.id}`,bar);
+      const url=await uploadFileBlob(f,`${ticketsFolders[0]}/comments/${id}_${c.id}`,bar);
       c.files.push({name:f.name,type:f.type,url});
     }
   }
@@ -1139,7 +1099,7 @@ async function doCloseFromModal(){
   const note = (byId('close-note').value || '').trim();
   const files = Array.from((byId('close-files').files || []));
   const errs = validateFiles(files);
-  if (errs.length){ alert("Upload errors:\n" + errs.join("\n")); return; }
+  if (errs.length) return alert("Upload errors:\n" + errs.join("\n"));
   const tickets = await loadAllTickets();
   const t = tickets.find(x => x.id === closeTicketId);
   if (!t) return;
@@ -1149,7 +1109,7 @@ async function doCloseFromModal(){
   for (let i=0;i<files.length;i++){
     const f = files[i];
     const barFill = pv.querySelectorAll('.progress-mini > div')[i];
-    const url = await uploadFileBlob(f, `close/${t.id}`, barFill);
+    const url = await uploadFileBlob(f, `${ticketsFolders[0]}/close/${t.id}`, barFill);
     close.files.push({ name:f.name, type:f.type, url });
   }
   t.status = "closed"; t.close = close;
@@ -1188,7 +1148,7 @@ function setSummaryRange(el){
   if(r==='custom'){ fd.style.display=''; td.style.display=''; } else { fd.style.display='none'; td.style.display='none'; }
 }
 async function showSummary(){
-  if(curUser.role!=="admin"){ alert("Admins only."); return; }
+  if(curUser.role!=="admin") return alert("Admins only.");
   byId('ticket-section').classList.add('hidden');
   byId('ticket-list-section').classList.add('hidden');
   byId('summary-section').classList.remove('hidden');
@@ -1261,7 +1221,7 @@ async function renderSummary(){
     else ageBuckets['8d+']++;
   });
   charts.age = new Chart(byId('chartAge').getContext('2d'), {
-    type:'bar', data:{ labels:Object.keys(ageBuckets), datasets:[{ data:Object.values(ageBuckets) }] },
+    type:'bar', data:{ labels:Object.keys(ageBuckets), datasets:[{ label:'', data:Object.values(ageBuckets) }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{precision:0}}} }
   });
 
@@ -1328,7 +1288,7 @@ function normalizeForExport(t){
   const lastUpdated = ((t.history || []).map(h => h.date).sort().pop()) || t.createdAt || t.createdDate || "";
   const breaches = (t.sla?.breaches||[]).length;
   return {
-    TicketID: t.id, DairyNumber: t.dairyNumber, FarmName: t.farmName, AlertType: t.alertType, Priority: t.priority,
+    ID: t.id, DairyNumber: t.dairyNumber, FarmName: t.farmName, AlertType: t.alertType, Priority: t.priority,
     AssignedTo: (t.assignedNames || []).join("; "), Status: t.status, CreatedDate: t.createdDate || "", CreatedAtISO: t.createdAt || "",
     FirstResponseAt: firstRespAt, FirstResponseMinutes: firstRespMin,
     ClosedDate: t.close?.date||"", ClosedBy: t.close?.by||"", CloseDescription: t.close?.note||"", ResolutionMinutes: resolutionMin,
@@ -1375,10 +1335,28 @@ async function exportToXLSX(){
   if(comments.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(comments), "Comments");
   XLSX.writeFile(wb, "tickets_export.xlsx");
 }
+async function exportSummary(){
+  const tickets = await loadAllTickets();
+  const active = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
+  const closedAll = tickets.filter(t=>t.status==='closed');
+  const totalBreaches = tickets.reduce((a,t)=>a+((t.sla?.breaches||[]).length),0);
+  const rows = [
+    ['Section','Metric','Value'],
+    ['KPI','Active Tickets', active.length],
+    ['KPI','Closed Tickets (all time)', closedAll.length],
+    ['KPI','SLA Breaches (all time)', totalBreaches]
+  ];
+  const csv = '\uFEFF' + rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'summary_export.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
+}
 
 /* =================== ADMIN PANEL =================== */
 function adminPanel(){
-  if(curUser.role!=="admin"){ alert("Admins only."); return; }
+  if(curUser.role!=="admin") return alert("Admins only.");
   byId('ticket-section').classList.add('hidden');
   byId('summary-section').classList.add('hidden');
   byId('ticket-list-section').classList.remove('hidden');
@@ -1463,45 +1441,30 @@ function createUser(){
   const name=(byId('new-fullname').value||'').trim();
   const email=normalizeEmail(byId('new-email').value||'');
   const role=(byId('new-role').value||'service').trim();
-  if(!name||!email){ alert('Name and email required.'); return; }
-  const users=getUsers(); if(users.some(u=>u.username===email)){ alert('Email already exists.'); return; }
+  if(!name||!email) return alert('Name and email required.');
+  const users=getUsers(); if(users.some(u=>u.username===email)) return alert('Email already exists.');
   users.push({name,username:email,password:'dairy123',role}); setUsers(users); renderUserList();
 }
-
-// Show correct names per event; fallbacks if older log entries miss fields
 function renderLoginHistory(){
   const sel=(byId('loginhist-user')||{}).value||'';
-  const users = getUsers();
-  const byEmail = new Map(users.map(u=>[u.username,u]));
   const hist=(JSON.parse(localStorage.getItem("loginHistory")||"[]"))
     .filter(h=>!sel || h.username===sel)
     .sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,200);
-
-  const rows = hist.map(h=>{
-    const u = byEmail.get(normalizeEmail(h.username||'')) || {};
-    return {
-      name: h.name || u.name || (h.username || '(unknown)'),
-      ts: h.ts || '',
-      role: h.role || u.role || ''
-    };
-  });
-
   const box=byId('login-history-table');
-  if(!rows.length){ box.innerHTML='<i>No logins yet.</i>'; return; }
+  if(!hist.length){ box.innerHTML='<i>No logins yet.</i>'; return; }
   box.innerHTML = `
     <div class="matrix-wrap">
       <div class="matrix" style="grid-template-columns:2fr 2fr 1fr;">
         <div class="hdr">User</div><div class="hdr">When</div><div class="hdr">Role</div>
-        ${rows.map(r=>`
-          <div class="cell name">${r.name}</div>
-          <div class="cell">${new Date(r.ts).toLocaleString()}</div>
-          <div class="cell">${r.role}</div>
+        ${hist.map(h=>`
+          <div class="cell name">${h.name}</div>
+          <div class="cell">${new Date(h.ts).toLocaleString()}</div>
+          <div class="cell">${h.role}</div>
         `).join('')}
       </div>
     </div>`;
 }
 function clearLoginHistory(){ if(!confirm('Clear all login history?')) return; localStorage.setItem("loginHistory","[]"); renderLoginHistory(); }
-
 async function renderUserHistory(){
   const tickets = await loadAllTickets();
   const selected = (byId('hist-user')||{}).value||'';
@@ -1560,8 +1523,10 @@ function sendTicketEmailNotification(ticket, toEmail){
     to_email: toEmail,
     cc_email: openedUser ? openedUser.username : ""
   };
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
-    .catch(err=>console.error("EmailJS send error", err));
+  if(window.emailjs){
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
+      .catch(err=>console.error("EmailJS send error", err));
+  }
 }
 
 /* =================== HASH DEEP LINK =================== */
@@ -1577,6 +1542,81 @@ function checkHashForTicket(){
 </script>
 
 <!-- =================== EMAIL TEMPLATES (for EmailJS) =================== -->
-<!-- SLA WARNING TEMPLATE remains the same as before -->
+<!--
+TEMPLATE: SLA WARNING (template_hp9krxq)
+Vars: to_name, ticket_id, dairy_number, farm_name, alert_type, priority, assigned_name, opened_by, created_date, issue_desc, ticket_link, sla_cycle, minutes_to_breach
+HTML:
+<div style="font-family: system-ui, sans-serif, Arial; font-size: 14px; color: #001f3f;">
+  <div style="font-size: 16px; color: #FF851B; font-weight: bold; margin-bottom: 6px;">
+    ⏰ SLA Warning — Action Needed (2 hours to breach)
+  </div>
+  <div style="margin-bottom: 10px;">
+    Hello {{to_name}},
+    <br>
+    This ticket is approaching an SLA breach. You have <b>{{minutes_to_breach}} minutes</b> to respond before a breach is registered.
+  </div>
+  <div style="padding: 14px 16px; background: #f7f9fb; border-radius: 8px; border: 1px solid #eee; margin-bottom: 12px;">
+    <table>
+      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Ticket ID:</td><td>{{ticket_id}}</td></tr>
+      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Dairy Number:</td><td>{{dairy_number}}</td></tr>
+      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Farm Name:</td><td>{{farm_name}}</td></tr>
+      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Alert Type:</td><td>{{alert_type}}</td></tr>
+      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Priority:</td><td>{{priority}}</td></tr>
+      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Assigned To:</td><td>{{assigned_name}}</td></tr>
+      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Opened By:</td><td>{{opened_by}}</td></tr>
+      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Created Date:</td><td>{{created_date}}</td></tr>
+      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">SLA Cycle:</td><td>{{sla_cycle}}</td></tr>
+    </table>
+  </div>
+  <div style="margin: 8px 0 8px 0;">
+    <span style="font-weight: bold;">Issue Description:</span>
+    <div style="background:#f6f6f8; padding:10px 12px; border-radius:5px; margin-top:2px;">
+      {{issue_desc}}
+    </div>
+  </div>
+  <div style="margin:14px 0;">
+    <span style="font-weight:bold;">Ticket Link:</span>
+    <a href="{{ticket_link}}" style="color:#FF851B; word-break:break-all;">{{ticket_link}}</a>
+  </div>
+  <div style="margin-top: 22px; color: #999; font-size: 13px;">
+    This is an automated notification from the Agora Dairy Support Team.<br>
+    Add a comment on the ticket to reset the SLA timer.
+  </div>
+</div>
+-->
+
+<!--
+TEMPLATE: SLA BREACH (template_breach123)
+Vars: to_name, ticket_id, dairy_number, farm_name, alert_type, priority, assigned_name, opened_by, created_date, issue_desc, ticket_link, sla_cycle
+HTML:
+<div style="font-family: system-ui, sans-serif, Arial; font-size: 14px; color: #001f3f;">
+  <div style="font-size: 16px; color: #b71c1c; font-weight: bold; margin-bottom: 6px;">
+    ❗ SLA Breach — Immediate Attention Required
+  </div>
+  <div style="margin-bottom: 10px;">
+    Hello {{to_name}},
+    <br>
+    This ticket has <b>breached</b> SLA (cycle {{sla_cycle}}). Please respond and update the ticket.
+  </div>
+  <div style="padding: 14px 16px; background: #f7f9fb; border-radius: 8px; border: 1px solid #eee; margin-bottom: 12px;">
+    <table>
+      <tr><td style="font-weight: bold; padding-right:8px;">Ticket ID:</td><td>{{ticket_id}}</td></tr>
+      <tr><td style="font-weight: bold; padding-right:8px;">Dairy Number:</td><td>{{dairy_number}}</td></tr>
+      <tr><td style="font-weight: bold; padding-right:8px;">Farm Name:</td><td>{{farm_name}}</td></tr>
+      <tr><td style="font-weight: bold; padding-right:8px;">Alert Type:</td><td>{{alert_type}}</td></tr>
+      <tr><td style="font-weight: bold; padding-right:8px;">Priority:</td><td>{{priority}}</td></tr>
+      <tr><td style="font-weight: bold; padding-right:8px;">Assigned To:</td><td>{{assigned_name}}</td></tr>
+      <tr><td style="font-weight: bold; padding-right:8px;">Opened By:</td><td>{{opened_by}}</td></tr>
+      <tr><td style="font-weight: bold; padding-right:8px;">Created Date:</td><td>{{created_date}}</td></tr>
+    </table>
+  </div>
+  <div style="margin:14px 0;">
+    <a href="{{ticket_link}}" style="color:#FF851B; word-break:break-all;">Open ticket</a>
+  </div>
+  <div style="margin-top: 22px; color: #999; font-size: 13px;">
+    Automated message — Agora Dairy Support Team
+  </div>
+</div>
+-->
 </body>
 </html>
