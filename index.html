@@ -318,11 +318,12 @@
 <script>
 /* =================== CONFIG / INIT =================== */
 const initialUsers = [
-  { username:"regan.beaver@agora.co.nz", name:"Regan Beaver", password:"Moometrics24", role:"admin" },
+  { username:"regan.beaver@agora.co.nz", name:"Regan Beaver", password:"Moometrics242", role:"admin" },
   { username:"ahren.lomas@agora.co.nz", name:"Ahren Lomas", password:"MooMetrics24", role:"admin" },
   { username:"caroline@agora.co.nz", name:"Caroline Wallace", password:"dairy123", role:"admin" },
   { username:"kip@agora.co.nz", name:"Kip Bodle", password:"dairy123", role:"admin" },
   { username:"josh.bull@agora.co.nz", name:"Josh Bull", password:"dairy123", role:"admin" }
+  { username:"hayden.walsh@agora.co.nz", name:"Hayden Walsh", password:"dairy123", role:"admin" }
 ];
 if(!localStorage.getItem("users")){
   localStorage.setItem("users", JSON.stringify(initialUsers.map(u=>({...u,username:u.username.toLowerCase()}))));
