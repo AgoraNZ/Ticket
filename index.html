@@ -119,7 +119,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
 <!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-<!-- UUID -->
+<!-- UUID (for comment IDs only) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
 </head>
 <body>
@@ -200,11 +200,14 @@
           <option>Low</option><option selected>Medium</option><option>High</option><option>Urgent</option>
         </select>
       </div>
+
+      <!-- SINGLE SELECT on creation -->
       <div class="mb-2">
-        <label class="form-label">Assign To (Ctrl/Cmd for multiple)</label>
-        <select id="assign-to" class="form-select" multiple></select>
+        <label class="form-label">Assign To</label>
+        <select id="assign-to" class="form-select"></select>
         <div class="small-note mt-1">Admins can reassign later; new assignees get an email.</div>
       </div>
+
       <div class="mb-2">
         <label class="form-label">Description of Issue</label>
         <textarea id="issue-desc" class="form-control" rows="2" required></textarea>
@@ -316,20 +319,7 @@
 </div>
 
 <script>
-/* =================== CONFIG / INIT =================== */
-const initialUsers = [
-  { username:"regan.beaver@agora.co.nz",   name:"Regan Beaver",   password:"Moometrics242", role:"admin" },
-  { username:"ahren.lomas@agora.co.nz",    name:"Ahren Lomas",    password:"MooMetrics24", role:"admin" },
-  { username:"caroline@agora.co.nz",       name:"Caroline Wallace", password:"dairy123",   role:"admin" },
-  { username:"kip@agora.co.nz",            name:"Kip Bodle",      password:"dairy123",     role:"admin" },
-  { username:"josh.bull@agora.co.nz",      name:"Josh Bull",      password:"dairy123",     role:"admin" },
-  { username:"hayden.walsh@agora.co.nz",   name:"Hayden Walsh",   password:"dairy123",     role:"admin" }
-]; // <-- fixed missing comma above that broke the script
-
-if(!localStorage.getItem("users")){
-  localStorage.setItem("users", JSON.stringify(initialUsers.map(u=>({...u,username:u.username.toLowerCase()}))));
-}
-
+/* =================== CONFIG =================== */
 const firebaseConfig = {
   apiKey:"AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
   authDomain:"dairy-farm-record-system.firebaseapp.com",
@@ -347,13 +337,52 @@ const EMAILJS_SERVICE_ID         = "service_228tpco";
 const EMAILJS_TEMPLATE_ID        = "template_9s0ckye";   // New ticket created
 const EMAILJS_SLA_WARN_TEMPLATE  = "template_hp9krxq";   // SLA warning (2h prior)
 const EMAILJS_PUBLIC_KEY         = "8uQgECrkNStKV41S-";
-const TICKET_URL_ROOT            = "https://agoranz.github.io/Ticket/"; // update to your host if different
+const TICKET_URL_ROOT            = "https://agoranz.github.io/Ticket/"; // adjust if needed
 emailjs.init(EMAILJS_PUBLIC_KEY);
+
+/* =================== USERS (robust init + migration) =================== */
+const initialUsers = [
+  { username:"regan.beaver@agora.co.nz",   name:"Regan Beaver",     password:"Moometrics242", role:"admin" },
+  { username:"ahren.lomas@agora.co.nz",    name:"Ahren Lomas",      password:"MooMetrics24",  role:"admin" },
+  { username:"caroline@agora.co.nz",       name:"Caroline Wallace", password:"dairy123",      role:"admin" },
+  { username:"kip@agora.co.nz",            name:"Kip Bodle",        password:"dairy123",      role:"admin" },
+  { username:"josh.bull@agora.co.nz",      name:"Josh Bull",        password:"dairy123",      role:"admin" },
+  { username:"hayden.walsh@agora.co.nz",   name:"Hayden Walsh",     password:"dairy123",      role:"admin" }
+];
+function normalizeEmail(s){ return (s||'').trim().toLowerCase().replace(/\u200B/g,''); }
+function migrateUsersStore(){
+  let users = [];
+  try { users = JSON.parse(localStorage.getItem("users")||"[]"); } catch { users = []; }
+  if(!Array.isArray(users)) users = [];
+  const map = new Map();
+  users.forEach(u=>{
+    const email = normalizeEmail(u.username || u.email || "");
+    if(!email) return;
+    map.set(email, {
+      username: email,
+      name: u.name || u.fullName || email,
+      password: u.password || u.pass || "dairy123",
+      role: (u.role==="admin") ? "admin" : "service"
+    });
+  });
+  initialUsers.forEach(u=>{
+    const email = normalizeEmail(u.username);
+    if(!map.has(email)) map.set(email, { ...u, username: email });
+  });
+  if ([...map.values()].every(u=>u.role!=="admin")) {
+    map.set("admin@agora.co.nz", { username:"admin@agora.co.nz", name:"Admin", password:"admin", role:"admin" });
+  }
+  const arr = [...map.values()];
+  localStorage.setItem("users", JSON.stringify(arr));
+  return arr;
+}
+function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
+function setUsers(users){ localStorage.setItem("users", JSON.stringify(users)); }
+function findUser(username){ return getUsers().find(u=>u.username===normalizeEmail(username)); }
 
 /* =================== UTIL / HELPERS =================== */
 const byId = (id)=>document.getElementById(id);
 const val  = (id)=>byId(id)?.value||'';
-function normalizeEmail(s){ return (s||'').trim().toLowerCase().replace(/\u200B/g,''); }
 function minutesBetween(aIso,bIso){ const A=new Date(aIso).getTime(); const B=new Date(bIso).getTime(); if(!isFinite(A)||!isFinite(B))return 0; return Math.max(0, Math.round((B-A)/60000)); }
 function fmtHrs(min){ const h=Math.round((min||0)/60); return h+'h'; }
 function looksLikeImage(obj){
@@ -380,11 +409,7 @@ function ensureXlsx(){
   });
 }
 
-/* =================== AUTH (robust desktop flow + remember me) =================== */
-function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
-function setUsers(users){ localStorage.setItem("users", JSON.stringify(users)); }
-function findUser(username){ return getUsers().find(u=>u.username===normalizeEmail(username)); }
-
+/* =================== AUTH (hardened) =================== */
 function deviceFingerprint(){
   const ua = (navigator.userAgent||'').slice(0,140);
   const plat = navigator.platform||'';
@@ -406,13 +431,10 @@ function tryAutoPrefill(){
   const u = findUser(r.username);
   if(u){ byId('login-user').value = u.username; }
 }
-
 function showLogin(){ byId('login-form').classList.remove('hidden'); byId('signup-form').classList.add('hidden'); byId('login-msg').textContent=''; }
 function showSignup(){ byId('signup-form').classList.remove('hidden'); byId('login-form').classList.add('hidden'); byId('login-msg').textContent=''; }
-
 function pushLoginEvent(user){
   const hist = JSON.parse(localStorage.getItem("loginHistory")||"[]");
-  // snapshot the data at the moment of login (prevents later name/role edits rewriting history)
   hist.push({username:user.username,name:user.name,role:user.role,ts:new Date().toISOString(),fp:deviceFingerprint()});
   localStorage.setItem("loginHistory", JSON.stringify(hist.slice(-300)));
 }
@@ -420,24 +442,26 @@ function logout(){ curUser=null; location.reload(); }
 
 let curUser=null;
 function doLogin(){
+  migrateUsersStore();
   const username = normalizeEmail(val('login-user'));
   const password = String(val('login-pass')||'');
   const user = findUser(username);
   if(user && user.password === password){
-    curUser = {...user}; // copy to avoid accidental mutation
+    curUser = {...user};
     pushLoginEvent(user);
     saveRememberMe(username);
     showMain();
   }else{
-    byId('login-msg').textContent = "Login failed: wrong username or password.";
+    byId('login-msg').textContent = user ? "Login failed: wrong password." : "Login failed: user not found.";
   }
 }
 function doSignup(){
+  migrateUsersStore();
   const name  = (val('signup-name')||'').trim();
   const email = normalizeEmail(val('signup-user'));
   const pass  = String(val('signup-pass')||'');
-  if(!name||!email||!pass) return byId('login-msg').textContent="All fields required.";
-  if(findUser(email)) return byId('login-msg').textContent="Username already exists.";
+  if(!name||!email||!pass){ byId('login-msg').textContent="All fields required."; return; }
+  if(findUser(email)){ byId('login-msg').textContent="Username already exists."; return; }
   const users=getUsers();
   const user={username:email,name,password:pass,role:"service"};
   users.push(user); setUsers(users);
@@ -446,6 +470,7 @@ function doSignup(){
 
 /* =================== INIT UI =================== */
 (async function(){
+  migrateUsersStore();
   try{
     const logoRef=storage.ref("Agora Logo/2F6-1YdaEP.jpeg");
     const url=await logoRef.getDownloadURL();
@@ -453,6 +478,7 @@ function doSignup(){
   }catch{}
   tryAutoPrefill();
 })();
+
 function showMain(){
   byId('login-section').classList.add('hidden');
   byId('ticket-section').classList.remove('hidden');
@@ -462,7 +488,7 @@ function showMain(){
   autoFillTicketForm();
   loadActiveCount();
   checkHashForTicket();
-  startSLAWatchdog(); // start SLA engine
+  startSLAWatchdog();
 }
 function updateNavButtons(){
   byId('user-position').textContent=`Position: Agora Service | ${curUser.name} (${curUser.role})`;
@@ -474,8 +500,15 @@ function updateNavButtons(){
 function autoFillTicketForm(){
   byId('service-person').value=curUser.name;
   byId('ticket-date').value=(new Date()).toISOString().slice(0,10);
+
+  // SINGLE-SELECT “Assign To”; default preselect = current user
   const users=getUsers(), sel=byId('assign-to'); sel.innerHTML='';
-  users.forEach(u=>{const o=document.createElement('option');o.value=u.username; o.textContent=u.name; sel.appendChild(o)});
+  users.forEach(u=>{
+    const o=document.createElement('option'); o.value=u.username; o.textContent=u.name;
+    if(u.username===curUser.username) o.selected = true;
+    sel.appendChild(o);
+  });
+
   byId('ticket-file').value=''; byId('ticket-file-preview').innerHTML='';
 }
 function toggleOtherAlert(){ byId('other-alert-div').classList.toggle('hidden', val('alert-type')!=="Other"); }
@@ -492,7 +525,7 @@ function renderFilePreview(filesLike, container){
   });
 }
 
-/* =================== STORAGE HELPERS & PERF CACHE =================== */
+/* =================== STORAGE HELPERS =================== */
 const MAX_FILE_MB=20;
 const ALLOWED_TYPES=['image/jpeg','image/png','image/gif','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'];
 function validateFiles(files){
@@ -510,29 +543,42 @@ async function uploadFileBlob(file, prefix, progressBar){
     );
   });
 }
+function pathExists(path){
+  return storage.ref(path).getDownloadURL().then(()=>true).catch(()=>false);
+}
+
 function invalidateTicketsCache(){ ticketsCache.ts = 0; }
 let ticketsCache = { ts:0, data:[] };
 
+/* Normalize and hydrate legacy tickets so open/closed load correctly */
 function normalizeTicketShape(t){
+  // arrays
   if(!Array.isArray(t.assignedTo)) t.assignedTo = t.assignedTo ? [t.assignedTo] : [];
   if(!Array.isArray(t.assignedNames)) t.assignedNames = t.assignedName ? [t.assignedName] : (t.assignedTo||[]);
-  t.comments = t.comments || [];
-  t.history  = t.history || [];
+  t.comments = Array.isArray(t.comments)?t.comments:[];
+  t.history  = Array.isArray(t.history)?t.history:[];
+
+  // createdAt
   if(!t.createdAt){
-    const createdEvt = (t.history||[]).find(h=> (h.action||"").toLowerCase()==="created");
+    const createdEvt = (t.history||[]).find(h=>(h.action||"").toLowerCase()==="created");
     t.createdAt = createdEvt?.date || (t.createdDate ? (t.createdDate + "T00:00:00.000Z") : new Date().toISOString());
   }
-  // unify close structure
-  const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution;
+  // unify close structure and status
+  const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution || (t.close && (t.close.date||t.close.by||t.close.note));
   if (!t.close && hasLegacyClose) {
-    t.close = { by:t.closedBy||"", date:t.closedDate||"", note:t.closeComment||t.resolution||"", files:t.closeFiles||[] };
+    t.close = { by:t.closedBy||"", date:t.closedDate? new Date(t.closedDate).toISOString(): "", note:t.closeComment||t.resolution||"", files:t.closeFiles||[] };
   } else if (t.close) {
     t.close.by   = t.close.by   || t.closedBy   || "";
-    t.close.date = t.close.date || t.closedDate || "";
+    t.close.date = t.close.date || (t.closedDate? new Date(t.closedDate).toISOString(): "");
     t.close.note = t.close.note || t.closeComment || t.resolution || "";
     t.close.files = Array.isArray(t.close.files) ? t.close.files : (t.closeFiles || []);
   }
-  // SLA init
+  // status repair
+  if(!t.status) t.status = "open";
+  if(t.close?.date){ t.status="closed"; }
+  else if(t.monitoringStartedAt){ t.status="monitoring"; }
+
+  // SLA
   ensureSLAInitialized(t);
 }
 
@@ -544,7 +590,8 @@ async function loadAllTickets(){
     const res=await folderRef.listAll();
     const arr=[];
     await Promise.all(res.items.map(async(fileRef)=>{
-      if(fileRef.name.endsWith('.json') && !fileRef.name.startsWith('attachments/')){
+      // Only JSON ticket docs (####.json)
+      if(fileRef.name.endsWith('.json') && /^[0-9]{4}\.json$/.test(fileRef.name)){
         const url=await fileRef.getDownloadURL();
         const t=await fetch(url,{cache:'no-store'}).then(r=>r.json());
         normalizeTicketShape(t);
@@ -562,7 +609,7 @@ async function loadActiveCount(){
 }
 
 /* =================== SLA CONFIG + ENGINE =================== */
-const SLA_TEST_MODE = false; // set true for quick testing (warn ~2m, breach ~3m)
+const SLA_TEST_MODE = false; // true => warn ~2m, breach ~3m
 const SLA_INITIAL_WARN_MIN   = SLA_TEST_MODE ? 2  : 22*60;
 const SLA_INITIAL_BREACH_MIN = SLA_TEST_MODE ? 3  : 24*60;
 const SLA_CYCLE_WARN_MIN     = SLA_TEST_MODE ? 2  : 70*60;
@@ -601,6 +648,7 @@ function setSLACycle(t, basis, isoBaseline){
     details:`Cycle ${t.sla.cycle} • basis=${basis} • warn@ ${t.sla.nextWarnAt} • breach@ ${t.sla.nextBreachAt}`
   });
 }
+
 async function persistTicket(t){
   await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
   invalidateTicketsCache();
@@ -616,6 +664,7 @@ function recipientsForTicket(t){
   });
 }
 function ticketLinkFor(t){ return TICKET_URL_ROOT + "#ticket=" + t.id; }
+
 function sendSLAWarningEmail(t, recipient, minutesToBreach){
   if(!window.emailjs) return Promise.resolve();
   const vars = {
@@ -636,6 +685,7 @@ function sendSLAWarningEmail(t, recipient, minutesToBreach){
   return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_SLA_WARN_TEMPLATE, vars, EMAILJS_PUBLIC_KEY)
     .catch(err=>console.error("EmailJS SLA warn error", err));
 }
+
 let _watchdogRunning=false, watchdogTimer=null;
 async function runSLAWatchdogOnce(){
   if(_watchdogRunning) return; _watchdogRunning=true;
@@ -658,7 +708,6 @@ async function runSLAWatchdogOnce(){
         continue;
       }
 
-      // Warning
       if(!s.warnSent && now >= warnAt && now < breachAt){
         const minsToBreach = Math.max(0, Math.round((breachAt-now)/60000));
         const recips = recipientsForTicket(t);
@@ -667,7 +716,6 @@ async function runSLAWatchdogOnce(){
         t.history.push({action:"SLA Warned", user:"System", date:new Date().toISOString(), details:`Cycle ${t.sla.cycle} warned`});
         await persistTicket(t);
       }
-      // Breach
       if(!s.breached && now >= breachAt){
         t.sla.breached = true;
         t.sla.breaches = [...(t.sla.breaches||[]), {
@@ -690,7 +738,6 @@ function startSLAWatchdog(){
   watchdogTimer = setInterval(runSLAWatchdogOnce, SLA_WATCHDOG_INTERVAL);
 }
 
-/* helpers used by UI badges / details */
 function slaSnapshot(t){
   const now = new Date();
   const s = t.sla||{};
@@ -718,15 +765,49 @@ function renderSLAInline(t){
   </div>`;
 }
 
-/* =================== CREATE TICKET (unique id; SLA init) =================== */
+/* =================== 4-digit Ticket ID generator =================== */
+async function generateTicketId4(){
+  const metaRef = storage.ref(`${ticketsFolder}/_meta/last_id.txt`);
+  let last = 0;
+  try{
+    const url = await metaRef.getDownloadURL();
+    const txt = await fetch(url, {cache:'no-store'}).then(r=>r.text());
+    last = parseInt(txt,10) || 0;
+  }catch(e){
+    try{
+      const listing = await storage.ref(ticketsFolder).listAll();
+      const nums = [];
+      listing.items.forEach(it=>{
+        const m = it.name.match(/^(\d{4})\.json$/);
+        if(m) nums.push(parseInt(m[1],10));
+      });
+      last = nums.length ? Math.max(...nums) : 0;
+    }catch{}
+  }
+  for(let step=1; step<=10000; step++){
+    const next = (last + step) % 10000;
+    const id = String(next).padStart(4,'0');
+    const exists = await pathExists(`${ticketsFolder}/${id}.json`);
+    if(!exists){
+      try{ await metaRef.putString(String(next)); }catch{}
+      return id;
+    }
+  }
+  return String(Math.floor(Math.random()*10000)).padStart(4,'0');
+}
+
+/* =================== CREATE TICKET =================== */
 async function submitTicket(){
-  const assigned=Array.from(byId('assign-to').selectedOptions).map(o=>normalizeEmail(o.value));
-  if(!assigned.length) return byId('ticket-msg').textContent="Select at least one assignee.";
-  const users=getUsers(), assignedNames=assigned.map(u=>(users.find(x=>x.username===u)||{}).name||u);
+  const primaryAssignee = normalizeEmail(byId('assign-to')?.value||'');
+  if(!primaryAssignee){ byId('ticket-msg').textContent="Select an assignee."; return; }
+
+  const users=getUsers();
+  const assigned=[primaryAssignee];
+  const assignedNames=assigned.map(u=>(users.find(x=>x.username===u)||{}).name||u);
 
   const createdAtISO = new Date().toISOString();
   const data={
-    id:uuidv4(),                     // unique ID (not dairy number)
+    id: await generateTicketId4(),   // numeric 4-digit ID
     createdDate:val('ticket-date'),
     createdAt: createdAtISO,
     dairyNumber:val('dairy-number').trim(),
@@ -749,10 +830,13 @@ async function submitTicket(){
     close:null,
     sla:null
   };
-  if(!data.dairyNumber||!data.farmName||!data.alertType||!data.issueDesc) return byId('ticket-msg').textContent="All required fields must be filled out.";
-  if(data.alertType==="Other"&&!data.alertOther) return byId('ticket-msg').textContent="Specify the 'Other' alert type.";
 
-  const files=Array.from(byId('ticket-file').files||[]); const errs=validateFiles(files); if(errs.length) return alert("Upload errors:\n"+errs.join("\n"));
+  if(!data.createdDate || !data.dairyNumber || !data.farmName || !data.alertType || !data.issueDesc){
+    byId('ticket-msg').textContent="All required fields must be filled out."; return;
+  }
+  if(data.alertType==="Other"&&!data.alertOther){ byId('ticket-msg').textContent="Specify the 'Other' alert type."; return; }
+
+  const files=Array.from(byId('ticket-file').files||[]); const errs=validateFiles(files); if(errs.length){ alert("Upload errors:\n"+errs.join("\n")); return; }
   if(files.length){
     const pv=byId('ticket-file-preview');
     files.forEach(()=>{const bar=document.createElement('div');bar.className='progress-mini';bar.innerHTML='<div></div>';pv.appendChild(bar)});
@@ -763,7 +847,7 @@ async function submitTicket(){
     }
   }
 
-  setSLACycle(data, 'created', createdAtISO); // SLA initial schedule
+  setSLACycle(data, 'created', createdAtISO);
 
   await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
   invalidateTicketsCache();
@@ -771,8 +855,7 @@ async function submitTicket(){
   byId('ticket-msg').textContent="Ticket created.";
   byId('ticket-form').reset(); autoFillTicketForm(); loadActiveCount();
 
-  // Notify assignees (new ticket email)
-  assigned.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(data,to.username)});
+  sendTicketEmailNotification(data, primaryAssignee);
 }
 
 /* =================== LOAD / FILTER =================== */
@@ -845,7 +928,7 @@ async function filterTickets(scope){
   renderTicketCards(tickets, scope==='closed');
 }
 
-/* =================== TABLES & CARDS with SLA badges =================== */
+/* =================== TABLES & CARDS =================== */
 function shortRow(t){
   const snap = slaSnapshot(t);
   const ageStr = (t.status==="closed" && t.close?.date)
@@ -948,7 +1031,7 @@ function renderTicketCards(tickets,isClosed){
   });
 }
 
-/* =================== DETAILS / COMMENT (resets SLA on comment) =================== */
+/* =================== DETAILS / COMMENT =================== */
 window.viewTicketDetails=async function(id,isClosed){
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
   const isMobile=window.matchMedia("(max-width:800px)").matches;
@@ -989,7 +1072,7 @@ window.viewTicketDetails=async function(id,isClosed){
           <label class="form-label mb-0">Assignees (optional)</label>
           <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="reassign-mode"><label class="form-check-label" for="reassign-mode">Replace current</label></div>
         </div>
-        <select id="comment-assignees" class="form-select mt-1" multiple>
+        <select id="comment-assignees" class="form-select" multiple>
           ${users.map(u=>`<option value="${u.username}">${u.name}</option>`).join('')}
         </select>
         <div class="small-note mt-1">Leave empty to keep current assignees. Toggle = Replace; otherwise Add.</div>
@@ -1062,7 +1145,6 @@ window.addComment=async function(id){
     }
   }
 
-  // Assignee changes (optional)
   if(chosen.length){
     const old=t.assignedTo||[]; const oldSet=new Set(old); const newSet=new Set(replace?chosen:[...old,...chosen]);
     const oldArr=[...oldSet], newArr=[...newSet], added=newArr.filter(x=>!oldSet.has(x)), removed=replace?oldArr.filter(x=>!newSet.has(x)):[];
@@ -1072,18 +1154,15 @@ window.addComment=async function(id){
     t.history.push({action:"ReassignedViaComment", user:curUser.name, date:(new Date()).toISOString(), details:`${c.reassign.old.join(', ')} → ${t.assignedNames.join(', ')}`});
   }
 
-  // Optional monitoring toggle
   if(setMonitoring && t.status==="open"){
     t.status = "monitoring";
     t.monitoringStartedAt = new Date().toISOString();
     t.history.push({action:"SetMonitoring", user:curUser.name, date:(new Date()).toISOString(), details:text||''});
   }
 
-  // Add comment
   t.comments.push(c);
   t.history.push({action:c.files.length?"CommentWithFiles":"Comment", user:curUser.name, date:(new Date()).toISOString(), details:text||'', files:(c.files||[])});
 
-  // SLA RESET: any comment -> 3-day cycle (warn @70h, breach @72h)
   setSLACycle(t, 'comment', c.date);
 
   await persistTicket(t);
@@ -1186,16 +1265,13 @@ async function renderSummary(){
   const active = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
   const closedAll = tickets.filter(t=>t.status==='closed');
 
-  // metrics
   const responses = tickets.filter(t=>t.firstResponseAt);
   const avgFirstResponseMin = responses.length ? Math.round(responses.reduce((a,t)=>a+minutesBetween(t.createdAt, t.firstResponseAt),0)/responses.length) : 0;
   const closedNew = tickets.filter(t=>t.status==='closed' && t.close?.date);
   const avgResolutionMin = closedNew.length ? Math.round(closedNew.reduce((a,t)=>a+minutesBetween(t.createdAt, t.close.date),0)/closedNew.length) : 0;
 
-  // SLA breaches (all time)
   const totalBreaches = tickets.reduce((a,t)=>a+((t.sla?.breaches||[]).length),0);
 
-  // KPI
   const kpi = [
     {label:'Active Tickets', value:active.length},
     {label:'Closed Tickets (all time)', value:closedAll.length},
@@ -1208,7 +1284,6 @@ async function renderSummary(){
   await ensureChartJs();
   destroyCharts();
 
-  // Donut by alert type
   const allCounts = countBy(tickets, x=>x.alertType||'Unknown');
   charts.alertType = new Chart(byId('chartAlertType').getContext('2d'), {
     type:'doughnut',
@@ -1216,7 +1291,6 @@ async function renderSummary(){
     options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
   });
 
-  // Age buckets (active)
   const ageBuckets = { '0-24h':0, '1-3d':0, '4-7d':0, '8d+':0 };
   active.forEach(t=>{
     const mins = minutesBetween(t.sla?.baseline||t.createdAt, now.toISOString());
@@ -1304,7 +1378,7 @@ function normalizeForExport(t){
   };
 }
 async function exportToCSV(){
-  await ensureXlsx(); // not required for CSV, but ensures environment parity
+  await ensureXlsx(); // ensure same env
   const tickets=await loadAllTickets();
   const flat=tickets.map(normalizeForExport);
   if(!flat.length){ alert("No data to export."); return; }
@@ -1360,7 +1434,7 @@ async function exportSummary(){
   setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
 }
 
-/* =================== ADMIN PANEL (with SLA monitor) =================== */
+/* =================== ADMIN PANEL + SLA Monitor =================== */
 function adminPanel(){
   if(curUser.role!=="admin") return alert("Admins only.");
   byId('ticket-section').classList.add('hidden');
@@ -1560,7 +1634,6 @@ async function renderSLAMonitor(){
     <div class="pill">Breach Rate: <b>${pct}%</b></div>
     <div class="pill">Upcoming 24h Warnings: <b>${upcomingWarns.length}</b></div>`;
 
-  // Recent breaches
   const recent = breaches.sort((a,b)=>new Date(b.b.at)-new Date(a.b.at)).slice(0,20);
   byId('sla-breaches-list').innerHTML = recent.length
     ? `<ul class="mb-0">${recent.map(x=>{
@@ -1569,7 +1642,6 @@ async function renderSLAMonitor(){
       }).join('')}</ul>`
     : `<i>No breaches yet.</i>`;
 
-  // Upcoming warns
   const up = upcomingWarns.sort((a,b)=>a.warnAt - b.warnAt).slice(0,20);
   byId('sla-upcoming-warns').innerHTML = up.length
     ? `<ul class="mb-0">${up.map(x=>{
@@ -1577,7 +1649,6 @@ async function renderSLAMonitor(){
       }).join('')}</ul>`
     : `<i>No warnings within 24h.</i>`;
 
-  // Farms with breaches
   const farmMap = {};
   breaches.forEach(x=>{
     const key = `${x.t.farmName} | ${x.t.dairyNumber}`;
@@ -1590,7 +1661,6 @@ async function renderSLAMonitor(){
       }).join('')}</ul>`
     : `<i>No farm breaches.</i>`;
 
-  // Users with breaches
   const userMap = {};
   breaches.forEach(x=>{
     const users = x.b.assignedAtBreach||[];
@@ -1678,46 +1748,6 @@ function checkHashForTicket(){
 <!--
 Set EmailJS template (ID: template_hp9krxq) with these variables:
 to_name, ticket_id, dairy_number, farm_name, alert_type, priority, assigned_name, opened_by, created_date, issue_desc, ticket_link, sla_cycle, minutes_to_breach
-
-HTML suggestion:
-
-<div style="font-family: system-ui, sans-serif, Arial; font-size: 14px; color: #001f3f;">
-  <div style="font-size: 16px; color: #FF851B; font-weight: bold; margin-bottom: 6px;">
-    ⏰ SLA Warning — Action Needed (2 hours to breach)
-  </div>
-  <div style="margin-bottom: 10px;">
-    Hello {{to_name}},
-    <br>
-    This ticket is approaching an SLA breach. You have <b>{{minutes_to_breach}} minutes</b> to respond before a breach is registered.
-  </div>
-  <div style="padding: 14px 16px; background: #f7f9fb; border-radius: 8px; border: 1px solid #eee; margin-bottom: 12px;">
-    <table>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Ticket ID:</td><td>{{ticket_id}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Dairy Number:</td><td>{{dairy_number}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Farm Name:</td><td>{{farm_name}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Alert Type:</td><td>{{alert_type}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Priority:</td><td>{{priority}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Assigned To:</td><td>{{assigned_name}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Opened By:</td><td>{{opened_by}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Created Date:</td><td>{{created_date}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">SLA Cycle:</td><td>{{sla_cycle}}</td></tr>
-    </table>
-  </div>
-  <div style="margin: 8px 0 8px 0;">
-    <span style="font-weight: bold;">Issue Description:</span>
-    <div style="background:#f6f6f8; padding:10px 12px; border-radius:5px; margin-top:2px;">
-      {{issue_desc}}
-    </div>
-  </div>
-  <div style="margin:14px 0;">
-    <span style="font-weight:bold;">Ticket Link:</span>
-    <a href="{{ticket_link}}" style="color:#FF851B; word-break:break-all;">{{ticket_link}}</a>
-  </div>
-  <div style="margin-top: 22px; color: #999; font-size: 13px;">
-    This is an automated notification from the Agora Dairy Support Team.<br>
-    Add a comment on the ticket to reset the SLA timer.
-  </div>
-</div>
 -->
 </body>
 </html>
