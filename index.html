@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Agora Ticketing Advanced + SLA</title>
+<title>Agora Ticketing Advanced + SLA + Custom Ticket</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
 
@@ -112,6 +112,10 @@
   .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef3ff;color:#173559;border:1px solid #dbe7ff;margin-right:6px}
   .clicky{cursor:pointer}
   @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} .sum-grid{grid-template-columns:1fr} }
+
+  /* Modals */
+  .modal-mask{display:none;position:fixed;inset:0;background:#00000055;align-items:center;justify-content:center;z-index:9990}
+  .modal-card{background:#fff;border-radius:12px;max-width:720px;width:92%;padding:14px}
 </style>
 
 <!-- Firebase -->
@@ -201,7 +205,6 @@
         </select>
       </div>
 
-      <!-- SINGLE SELECT on creation -->
       <div class="mb-2">
         <label class="form-label">Assign To</label>
         <select id="assign-to" class="form-select"></select>
@@ -287,12 +290,12 @@
     </div>
   </div>
 
-  <footer>Agora Ticketing v2.10 (2025-09-12)</footer>
+  <footer>Agora Ticketing v3.0 (2025-09-12)</footer>
 </div>
 
 <!-- Close Modal -->
-<div class="modal-mask" id="close-modal" style="display:none;position:fixed;inset:0;background:#00000055;align-items:center;justify-content:center;z-index:9990">
-  <div class="modal-card" style="background:#fff;border-radius:12px;max-width:620px;width:92%;padding:14px">
+<div class="modal-mask" id="close-modal">
+  <div class="modal-card">
     <div class="modal-header" style="font-weight:700;font-size:1.1rem">Close Ticket</div>
     <div class="mb-2">
       <label class="form-label">Resolution / Action Taken</label>
@@ -307,6 +310,78 @@
       <button class="btn btn-outline" onclick="hideCloseModal()">Cancel</button>
       <button class="btn btn-agora" onclick="doCloseFromModal()">Close Ticket</button>
     </div>
+  </div>
+</div>
+
+<!-- Custom Ticket Modal (Admin -> bottom button) -->
+<div class="modal-mask" id="custom-modal">
+  <div class="modal-card">
+    <div class="modal-header" style="font-weight:700;font-size:1.1rem">Create Custom Ticket (Backdated)</div>
+    <div class="small-note mb-2">All subsequent comments/monitoring/close times will progress relative to the backdated start.</div>
+    <form id="custom-form" onsubmit="event.preventDefault();submitCustomTicket();">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">Backdated Start (date & time)</label>
+          <input id="custom-backdate" type="datetime-local" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Priority</label>
+          <select id="custom-priority" class="form-select">
+            <option>Low</option><option selected>Medium</option><option>High</option><option>Urgent</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-2 mt-1">
+        <div class="col-md-6">
+          <label class="form-label">Dairy Number</label>
+          <input id="custom-dairy" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Farm Name</label>
+          <input id="custom-farm" class="form-control" required>
+        </div>
+      </div>
+
+      <div class="row g-2 mt-1">
+        <div class="col-md-6">
+          <label class="form-label">Alert Type</label>
+          <select id="custom-alert" class="form-select" onchange="toggleCustomOther()">
+            <option value="">Select...</option>
+            <option>Temperature</option><option>Concentration</option>
+            <option>Plant Pressure</option><option>Milking Vacuum</option>
+            <option>Teat Spray</option><option>Other</option>
+          </select>
+        </div>
+        <div class="col-md-6 hidden" id="custom-other-wrap">
+          <label class="form-label">Other Alert Type</label>
+          <input id="custom-other" class="form-control">
+        </div>
+      </div>
+
+      <div class="row g-2 mt-1">
+        <div class="col-md-6">
+          <label class="form-label">Assign To</label>
+          <select id="custom-assign" class="form-select"></select>
+          <div class="small-note mt-1">Default = you. Admins can reassign later.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Attach Photo/File</label>
+          <input id="custom-files" type="file" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.txt">
+          <div id="custom-files-preview" class="mt-1"></div>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <label class="form-label">Description of Issue</label>
+        <textarea id="custom-desc" class="form-control" rows="2" required></textarea>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-outline" type="button" onclick="hideCustomModal()">Cancel</button>
+        <button class="btn btn-agora" type="submit">Create Custom Ticket</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -390,42 +465,30 @@ function looksLikeImage(obj){
   const n=((obj&&obj.name)||obj?.url||'').toLowerCase();
   return t || /\.(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/.test(n);
 }
-function toISOFromLocal(dateStr, timeStr){
-  const t=timeStr && /^\d{2}:\d{2}/.test(timeStr) ? timeStr : "00:00";
-  return new Date(`${dateStr}T${t}:00`).toISOString();
-}
 
-/* ===== Virtual Time (Custom Ticket) ===== */
-function ticketHasVirtual(t){
-  return !!(t?.timeModel && t.timeModel.mode==='virtual' && t.timeModel.virtualStart && t.timeModel.realStart);
+/* Virtual time helpers (for Custom Tickets) */
+function isCustomTicket(t){ return t && t.timeMode === "custom" && t.customBase?.origin && t.realAnchor; }
+function virtualNowISO(t){
+  if(!isCustomTicket(t)) return new Date().toISOString();
+  const base = new Date(t.customBase.origin).getTime();
+  const anchor = new Date(t.realAnchor).getTime();
+  const now = Date.now();
+  const shifted = base + Math.max(0, now - anchor);
+  return new Date(shifted).toISOString();
 }
-function virtualNowISO(t, realIso){
-  const real = realIso ? new Date(realIso) : new Date();
-  if(!ticketHasVirtual(t)) return real.toISOString();
-  const rs = new Date(t.timeModel.realStart).getTime();
-  const vs = new Date(t.timeModel.virtualStart).getTime();
-  const offset = real.getTime() - rs;
-  return new Date(vs + offset).toISOString();
+function addHistory(t, action, details, files){
+  t.history = t.history || [];
+  t.history.push({
+    action, user: curUser?.name || "System",
+    date: virtualNowISO(t),
+    details: details || "",
+    files: files || []
+  });
 }
-function createdAtReal(t){ return t.createdAtReal || t.createdAt; }
 
 /* =================== PERF: Lazy load heavy libs =================== */
-function ensureChartJs(){
-  return new Promise((res)=>{
-    if(window.Chart){ res(); return; }
-    const s=document.createElement('script');
-    s.src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
-    s.onload=res; document.head.appendChild(s);
-  });
-}
-function ensureXlsx(){
-  return new Promise((res)=>{
-    if(window.XLSX){ res(); return; }
-    const s=document.createElement('script');
-    s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    s.onload=res; document.head.appendChild(s);
-  });
-}
+function ensureChartJs(){ return new Promise((res)=>{ if(window.Chart){ res(); return; } const s=document.createElement('script'); s.src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"; s.onload=res; document.head.appendChild(s); }); }
+function ensureXlsx(){ return new Promise((res)=>{ if(window.XLSX){ res(); return; } const s=document.createElement('script'); s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; s.onload=res; document.head.appendChild(s); }); }
 
 /* =================== AUTH (hardened) =================== */
 function deviceFingerprint(){
@@ -436,11 +499,7 @@ function deviceFingerprint(){
 }
 function saveRememberMe(username){
   if(!byId('remember-me')?.checked) return;
-  localStorage.setItem('rememberedUser', JSON.stringify({
-    username: normalizeEmail(username),
-    fp: deviceFingerprint(),
-    at: Date.now()
-  }));
+  localStorage.setItem('rememberedUser', JSON.stringify({ username: normalizeEmail(username), fp: deviceFingerprint(), at: Date.now() }));
 }
 function tryAutoPrefill(){
   const r = JSON.parse(localStorage.getItem('rememberedUser')||'null');
@@ -518,15 +577,12 @@ function updateNavButtons(){
 function autoFillTicketForm(){
   byId('service-person').value=curUser.name;
   byId('ticket-date').value=(new Date()).toISOString().slice(0,10);
-
-  // SINGLE-SELECT “Assign To”; default preselect = current user
   const users=getUsers(), sel=byId('assign-to'); sel.innerHTML='';
   users.forEach(u=>{
     const o=document.createElement('option'); o.value=u.username; o.textContent=u.name;
     if(u.username===curUser.username) o.selected = true;
     sel.appendChild(o);
   });
-
   byId('ticket-file').value=''; byId('ticket-file-preview').innerHTML='';
 }
 function toggleOtherAlert(){ byId('other-alert-div').classList.toggle('hidden', val('alert-type')!=="Other"); }
@@ -568,22 +624,50 @@ function pathExists(path){
 function invalidateTicketsCache(){ ticketsCache.ts = 0; }
 let ticketsCache = { ts:0, data:[] };
 
-/* Normalize and hydrate legacy/custom tickets so open/closed load correctly */
+/* Normalize and hydrate legacy tickets so open/closed load correctly */
+function ensureSLAInitialized(t){
+  /* Skip SLA for disabled (custom) tickets */
+  if(t.sla && t.sla.disabled) return;
+  t.sla = t.sla || {};
+  if (t.comments?.length){
+    const last = t.comments.reduce((a,c)=> new Date(c.date) > new Date(a.date) ? c : a, t.comments[0]);
+    if(!t.sla.baseline || new Date(last.date) > new Date(t.sla.baseline)){
+      setSLACycle(t, 'comment', last.date);
+    }
+  } else if(!t.sla.baseline){
+    setSLACycle(t, 'created', t.createdAt || new Date().toISOString());
+  }
+}
+function setSLACycle(t, basis, isoBaseline){
+  /* Do not schedule SLA for disabled/custom tickets */
+  if(t.sla && t.sla.disabled) return;
+  const cycle = Number(t.sla?.cycle||0) + (basis==='comment'?1:0);
+  const warnMin   = basis==='created' ? SLA_INITIAL_WARN_MIN   : SLA_CYCLE_WARN_MIN;
+  const breachMin = basis==='created' ? SLA_INITIAL_BREACH_MIN : SLA_CYCLE_BREACH_MIN;
+  const baseline = new Date(isoBaseline||new Date()).toISOString();
+  t.sla = {
+    ...t.sla,
+    cycle, basis, baseline,
+    nextWarnAt:   new Date(new Date(baseline).getTime() + warnMin*60000).toISOString(),
+    nextBreachAt: new Date(new Date(baseline).getTime() + breachMin*60000).toISOString(),
+    warnSent:false, breached:false,
+    breaches: Array.isArray(t.sla?.breaches) ? t.sla.breaches : []
+  };
+  addHistory(t, "SLA Scheduled", `Cycle ${t.sla.cycle} • basis=${basis} • warn@ ${t.sla.nextWarnAt} • breach@ ${t.sla.nextBreachAt}`);
+}
+
 function normalizeTicketShape(t){
-  // arrays
   if(!Array.isArray(t.assignedTo)) t.assignedTo = t.assignedTo ? [t.assignedTo] : [];
   if(!Array.isArray(t.assignedNames)) t.assignedNames = t.assignedName ? [t.assignedName] : (t.assignedTo||[]);
   t.comments = Array.isArray(t.comments)?t.comments:[];
   t.history  = Array.isArray(t.history)?t.history:[];
 
-  // createdAt / createdDate
+  /* Back-compat time fields */
   if(!t.createdAt){
     const createdEvt = (t.history||[]).find(h=>(h.action||"").toLowerCase()==="created");
     t.createdAt = createdEvt?.date || (t.createdDate ? (t.createdDate + "T00:00:00.000Z") : new Date().toISOString());
   }
-  if(!t.createdDate){ t.createdDate = t.createdAt.slice(0,10); }
-
-  // unify close structure and status
+  /* Close structure normalize */
   const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution || (t.close && (t.close.date||t.close.by||t.close.note));
   if (!t.close && hasLegacyClose) {
     t.close = { by:t.closedBy||"", date:t.closedDate? new Date(t.closedDate).toISOString(): "", note:t.closeComment||t.resolution||"", files:t.closeFiles||[] };
@@ -593,17 +677,47 @@ function normalizeTicketShape(t){
     t.close.note = t.close.note || t.closeComment || t.resolution || "";
     t.close.files = Array.isArray(t.close.files) ? t.close.files : (t.closeFiles || []);
   }
-
-  // status repair
+  /* Status repair */
   if(!t.status) t.status = "open";
   if(t.close?.date){ t.status="closed"; }
   else if(t.monitoringStartedAt){ t.status="monitoring"; }
 
-  // ensure timeModel coherence (older tickets won't have it)
-  if(t.timeModel && !t.createdAtReal){ t.createdAtReal = t.timeModel.realStart || new Date().toISOString(); }
+  /* TimeMode default */
+  if(!t.timeMode) t.timeMode = "normal";
+  if(t.timeMode==="custom"){
+    t.customBase = t.customBase || {};
+    if(!t.customBase.origin) t.customBase.origin = t.createdAt; // best effort
+    if(!t.realAnchor) t.realAnchor = t.createdAt;               // best effort
+    t.sla = t.sla || {};
+    t.sla.disabled = true; // always disable
+  }
 
-  // SLA
   ensureSLAInitialized(t);
+}
+
+async function loadAllTickets(){
+  const now = Date.now();
+  if (now - ticketsCache.ts < 60*1000 && ticketsCache.data?.length){ return ticketsCache.data; }
+  try{
+    const folderRef=storage.ref(ticketsFolder);
+    const res=await folderRef.listAll();
+    const arr=[];
+    await Promise.all(res.items.map(async(fileRef)=>{
+      if(fileRef.name.endsWith('.json') && /^[0-9]{4}\.json$/.test(fileRef.name)){
+        const url=await fileRef.getDownloadURL();
+        const t=await fetch(url,{cache:'no-store'}).then(r=>r.json());
+        normalizeTicketShape(t);
+        arr.push(t);
+      }
+    }));
+    ticketsCache = { ts:Date.now(), data:arr };
+    return arr;
+  }catch(e){ console.error(e); return []; }
+}
+async function loadActiveCount(){
+  const tickets=await loadAllTickets();
+  const n = tickets.filter(t=>t.status==="open" || t.status==="monitoring").length;
+  byId('num-open-tix').textContent=n;
 }
 
 /* =================== SLA CONFIG + ENGINE =================== */
@@ -613,47 +727,6 @@ const SLA_INITIAL_BREACH_MIN = SLA_TEST_MODE ? 3  : 24*60;
 const SLA_CYCLE_WARN_MIN     = SLA_TEST_MODE ? 2  : 70*60;
 const SLA_CYCLE_BREACH_MIN   = SLA_TEST_MODE ? 3  : 72*60;
 const SLA_WATCHDOG_INTERVAL  = 60*1000;
-
-function ensureSLAInitialized(t){
-  t.sla = t.sla || {};
-  // derive last interaction
-  if (t.comments?.length){
-    const last = t.comments.reduce((a,c)=> new Date(c.realAt||c.date) > new Date(a.realAt||a.date) ? c : a, t.comments[0]);
-    if(!t.sla.baselineReal || new Date(last.realAt||last.date) > new Date(t.sla.baselineReal||0)){
-      setSLACycle(t, 'comment', (last.realAt||last.date), last.date);
-    }
-  } else if(!t.sla.baselineReal){
-    const realBase = t.createdAtReal || t.createdAt;
-    const virtBase = t.createdAt;
-    setSLACycle(t, 'created', realBase, virtBase);
-  }
-}
-function setSLACycle(t, basis, isoBaselineReal, isoBaselineVirtual){
-  const cycle = Number(t.sla?.cycle||0) + (basis==='comment'?1:0);
-  const warnMin   = basis==='created' ? SLA_INITIAL_WARN_MIN   : SLA_CYCLE_WARN_MIN;
-  const breachMin = basis==='created' ? SLA_INITIAL_BREACH_MIN : SLA_CYCLE_BREACH_MIN;
-
-  const baselineReal    = new Date(isoBaselineReal||new Date()).toISOString();
-  const baselineVirtual = (isoBaselineVirtual || (ticketHasVirtual(t) ? virtualNowISO(t, isoBaselineReal) : baselineReal));
-
-  t.sla = {
-    ...t.sla,
-    cycle, basis,
-    baselineReal,
-    baselineVirtual,
-    nextWarnAt:   new Date(new Date(baselineReal).getTime() + warnMin*60000).toISOString(),
-    nextBreachAt: new Date(new Date(baselineReal).getTime() + breachMin*60000).toISOString(),
-    warnSent:false, breached:false,
-    breaches: Array.isArray(t.sla?.breaches) ? t.sla.breaches : []
-  };
-  t.history = t.history || [];
-  t.history.push({
-    action:"SLA Scheduled",
-    user:curUser?.name||"System",
-    date: ticketHasVirtual(t) ? baselineVirtual : baselineReal, // visible timeline
-    details:`Cycle ${t.sla.cycle} • basis=${basis} • warn@ ${t.sla.nextWarnAt} • breach@ ${t.sla.nextBreachAt}`
-  });
-}
 
 async function persistTicket(t){
   await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
@@ -699,18 +772,17 @@ async function runSLAWatchdogOnce(){
     const now=new Date();
     const tickets = await loadAllTickets();
     for (const t of tickets.filter(x=>x.status!=='closed')){
+      if(t.sla?.disabled) continue; // skip custom tickets
       ensureSLAInitialized(t);
-      if(!t.sla?.baselineReal) continue;
+      if(!t.sla?.baseline) continue;
 
       const s=t.sla;
       const warnAt   = new Date(s.nextWarnAt);
       const breachAt = new Date(s.nextBreachAt);
 
-      // If someone commented after baseline (compare REAL times), reschedule
-      const latest = t.comments?.length ? t.comments[t.comments.length-1] : null;
-      const latestReal = latest ? new Date(latest.realAt || latest.date) : null;
-      if(latestReal && latestReal > new Date(s.baselineReal)){
-        setSLACycle(t, 'comment', latestReal.toISOString(), latest?.date || latestReal.toISOString());
+      const latestCommentAt = t.comments?.length ? new Date(t.comments[t.comments.length-1].date) : null;
+      if(s.basis==='created' && latestCommentAt && latestCommentAt > new Date(s.baseline)){
+        setSLACycle(t, 'comment', latestCommentAt.toISOString());
         await persistTicket(t);
         continue;
       }
@@ -720,7 +792,7 @@ async function runSLAWatchdogOnce(){
         const recips = recipientsForTicket(t);
         await Promise.all(recips.map(r=>sendSLAWarningEmail(t,r,minsToBreach)));
         t.sla.warnSent = true;
-        t.history.push({action:"SLA Warned", user:"System", date: ticketHasVirtual(t) ? virtualNowISO(t) : new Date().toISOString(), details:`Cycle ${t.sla.cycle} warned`});
+        addHistory(t,"SLA Warned",`Cycle ${t.sla.cycle} warned`);
         await persistTicket(t);
       }
       if(!s.breached && now >= breachAt){
@@ -729,11 +801,10 @@ async function runSLAWatchdogOnce(){
           at: now.toISOString(),
           cycle: s.cycle,
           basis: s.basis,
-          baselineReal: s.baselineReal,
-          baselineVirtual: s.baselineVirtual,
+          baseline: s.baseline,
           assignedAtBreach: (t.assignedNames||[]).slice()
         }];
-        t.history.push({action:"SLA Breach", user:"System", date: ticketHasVirtual(t) ? virtualNowISO(t) : now.toISOString(), details:`Cycle ${t.sla.cycle}`});
+        addHistory(t,"SLA Breach",`Cycle ${t.sla.cycle}`);
         await persistTicket(t);
       }
     }
@@ -747,30 +818,33 @@ function startSLAWatchdog(){
 }
 
 function slaSnapshot(t){
-  const nowReal = new Date().toISOString();
-  const nowVirt = ticketHasVirtual(t) ? virtualNowISO(t, nowReal) : nowReal;
-  const s=t.sla||{};
-  const warnAt   = s.nextWarnAt ? new Date(s.nextWarnAt) : null;
+  const now = new Date();
+  const s = t.sla||{};
+  const warnAt = s.nextWarnAt ? new Date(s.nextWarnAt) : null;
   const breachAt = s.nextBreachAt ? new Date(s.nextBreachAt) : null;
-  const warnDue   = warnAt && new Date(nowReal)>=warnAt && !(s.warnSent);
+  const warnDue   = warnAt && now>=warnAt && !(s.warnSent);
   const breached  = !!s.breached;
-  const baselineForAge = s.baselineVirtual || t.createdAt;
-  const minsOpenSinceBaseline = minutesBetween(baselineForAge, nowVirt);
-  const minsToWarn   = warnAt? Math.round((warnAt-new Date(nowReal))/60000) : null;
-  const minsToBreach = breachAt? Math.round((breachAt-new Date(nowReal))/60000) : null;
+  const minsOpenSinceBaseline = s.baseline ? minutesBetween(s.baseline, now.toISOString()) : 0;
+  const minsToWarn   = warnAt? Math.round((warnAt-now)/60000) : null;
+  const minsToBreach = breachAt? Math.round((breachAt-now)/60000) : null;
   return { warnDue, breached, minsOpenSinceBaseline, minsToWarn, minsToBreach };
 }
 function renderSLAInline(t){
+  if(t.sla?.disabled){
+    return `<div class="mt-2">
+      <div class="pill">SLA: <b>Disabled</b> (custom/backdated)</div>
+      <div class="pill">Time Mode: <b>Custom</b></div>
+      <div class="pill">Base: <b>${new Date(t.customBase.origin).toLocaleString()}</b></div>
+    </div>`;
+  }
   const s=t.sla||{};
   const warn = s.nextWarnAt ? new Date(s.nextWarnAt).toLocaleString() : '-';
   const breach = s.nextBreachAt ? new Date(s.nextBreachAt).toLocaleString() : '-';
   const count = (s.breaches||[]).length;
   const lastB = (s.breaches||[]).slice(-1)[0]?.at;
-  const baseV = s.baselineVirtual || t.createdAt;
   return `<div class="mt-2">
     <div class="pill">SLA cycle: <b>${s.cycle||0}</b></div>
     <div class="pill">Basis: <b>${s.basis||'-'}</b></div>
-    <div class="pill">Baseline (ticket time): <b>${new Date(baseV).toLocaleString()}</b></div>
     <div class="pill">Warn @ <b>${warn}</b></div>
     <div class="pill">Breach @ <b>${breach}</b></div>
     <div class="pill">Breaches: <b>${count}</b>${lastB?` (last: ${new Date(lastB).toLocaleString()})`:''}</div>
@@ -808,7 +882,7 @@ async function generateTicketId4(){
   return String(Math.floor(Math.random()*10000)).padStart(4,'0');
 }
 
-/* =================== CREATE TICKET (standard) =================== */
+/* =================== CREATE TICKET (Normal) =================== */
 async function submitTicket(){
   const primaryAssignee = normalizeEmail(byId('assign-to')?.value||'');
   if(!primaryAssignee){ byId('ticket-msg').textContent="Select an assignee."; return; }
@@ -817,14 +891,12 @@ async function submitTicket(){
   const assigned=[primaryAssignee];
   const assignedNames=assigned.map(u=>(users.find(x=>x.username===u)||{}).name||u);
 
-  const createdAtRealISO = new Date().toISOString();
-  const createdAtVirtualISO = createdAtRealISO; // standard ticket = real timeline
+  const createdAtISO = new Date().toISOString();
   const data={
-    id: await generateTicketId4(),   // numeric 4-digit ID
+    id: await generateTicketId4(),
     createdDate:val('ticket-date'),
-    createdAt: createdAtVirtualISO,
-    createdAtReal: createdAtRealISO,
-    timeModel: null, // standard ticket has no virtual clock
+    createdAt: createdAtISO,
+    timeMode: "normal",
     dairyNumber:val('dairy-number').trim(),
     farmName:val('farm-name').trim(),
     alertType:val('alert-type'),
@@ -838,7 +910,7 @@ async function submitTicket(){
     openedByUser:curUser.username,
     position:"Agora Service",
     comments:[],
-    history:[{action:"Created",user:curUser.name,date:createdAtVirtualISO,details:""}],
+    history:[{action:"Created",user:curUser.name,date:createdAtISO,details:""}],
     files:[],
     firstResponseAt:null,
     monitoringStartedAt:null,
@@ -847,8 +919,7 @@ async function submitTicket(){
   };
 
   if(!data.createdDate || !data.dairyNumber || !data.farmName || !data.alertType || !data.issueDesc){
-    byId('ticket-msg').textContent="All required fields must be filled out."; return;
-  }
+    byId('ticket-msg').textContent="All required fields must be filled out."; return; }
   if(data.alertType==="Other"&&!data.alertOther){ byId('ticket-msg').textContent="Specify the 'Other' alert type."; return; }
 
   const files=Array.from(byId('ticket-file').files||[]); const errs=validateFiles(files); if(errs.length){ alert("Upload errors:\n"+errs.join("\n")); return; }
@@ -862,7 +933,7 @@ async function submitTicket(){
     }
   }
 
-  setSLACycle(data, 'created', createdAtRealISO, createdAtVirtualISO);
+  setSLACycle(data, 'created', createdAtISO);
 
   await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
   invalidateTicketsCache();
@@ -873,206 +944,95 @@ async function submitTicket(){
   sendTicketEmailNotification(data, primaryAssignee);
 }
 
-/* =================== LEGACY DISCOVERY + INGEST (recurses old folders) =================== */
-const LEGACY_JSON_CANDIDATES = ['ticket.json','details.json','data.json','info.json','meta.json'];
-
-async function readLegacyJSONIfExists(folderRef){
-  for (const name of LEGACY_JSON_CANDIDATES){
-    try{
-      const ref = folderRef.child(name);
-      const url = await ref.getDownloadURL();
-      const json = await fetch(url,{cache:'no-store'}).then(r=>r.json());
-      return { json, source: ref.fullPath };
-    }catch(_){}
-  }
-  try{
-    const { items } = await folderRef.listAll();
-    for (const it of items){
-      const m = it.name.match(/^(\d{4})\.json$/);
-      if(m){
-        try{
-          const url = await it.getDownloadURL();
-          const json = await fetch(url,{cache:'no-store'}).then(r=>r.json());
-          return { json, source: it.fullPath };
-        }catch(_){}
-      }
-    }
-  }catch(_){}
-  return null;
+/* =================== CREATE TICKET (Custom/Backdated via Admin) =================== */
+function openCustomTicket(){
+  if(curUser.role!=="admin"){ alert("Admins only."); return; }
+  const users=getUsers();
+  const sel=byId('custom-assign'); sel.innerHTML='';
+  users.forEach(u=>{
+    const o=document.createElement('option'); o.value=u.username; o.textContent=u.name;
+    if(u.username===curUser.username) o.selected = true;
+    sel.appendChild(o);
+  });
+  // default backdate = now (rounded to 5 min)
+  const d=new Date(); d.setSeconds(0,0);
+  const pad=n=>String(n).padStart(2,'0');
+  const v=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  byId('custom-backdate').value=v;
+  byId('custom-files').value=''; byId('custom-files-preview').innerHTML='';
+  byId('custom-modal').style.display='flex';
 }
-async function listAllDeep(folderRef){
-  const out = [];
-  async function walk(ref){
-    const res = await ref.listAll();
-    for (const it of res.items){ out.push(it); }
-    for (const p of res.prefixes){ await walk(p); }
-  }
-  await walk(folderRef);
-  return out;
-}
-function parseLegacyName(name){
-  const idMatch = name.match(/(?:^|[\s_-])(\d{4})(?:$|[\s_-])/);
-  const id = idMatch ? idMatch[1] : null;
-  const dairyMatch = name.match(/dairy[\s_-]*#?\s*(\d+)/i) || name.match(/#\s*(\d+)/);
-  const dairyNumber = dairyMatch ? dairyMatch[1] : '';
-  let farmName = name.replace(/ticket|dairy|#|\d{4}|-|_/gi,'').trim();
-  farmName = farmName.replace(/\s{2,}/g,' ').trim();
-  if(!farmName) farmName = '';
-  return { id, dairyNumber, farmName };
-}
-async function getEarliestTimeInFolder(folderRef){
-  try{
-    const files = await listAllDeep(folderRef);
-    let earliest = null;
-    for (const f of files){
-      try{
-        const md = await f.getMetadata();
-        const t = new Date(md.timeCreated);
-        if(!earliest || t < earliest) earliest = t;
-      }catch(_){}
-    }
-    return earliest ? earliest.toISOString() : null;
-  }catch(_){ return null; }
-}
-async function ingestLegacyFolder(folderRef){
-  let base = {};
-  let sourceJson = null;
-  const found = await readLegacyJSONIfExists(folderRef);
-  if(found){ base = found.json || {}; sourceJson = found.source; }
+function hideCustomModal(){ byId('custom-modal').style.display='none'; }
+function toggleCustomOther(){ byId('custom-other-wrap').classList.toggle('hidden', val('custom-alert')!=="Other"); }
+byId('custom-files').addEventListener('change',()=>renderFilePreview(byId('custom-files').files, byId('custom-files-preview')));
 
-  const files = await listAllDeep(folderRef);
-  const issueFiles = [], closeFiles = [];
-  for (const f of files){
-    if (sourceJson && f.fullPath === sourceJson) continue;
-    if (/\/(close|closed|resolution|resolved)\//i.test(f.fullPath)){
-      try{ const url=await f.getDownloadURL(); closeFiles.push({ name:f.name, type:'', url }); }catch(_){}
-    }else{
-      try{ const url=await f.getDownloadURL(); issueFiles.push({ name:f.name, type:'', url }); }catch(_){}
-    }
-  }
+async function submitCustomTicket(){
+  if(curUser.role!=="admin"){ alert("Admins only."); return; }
 
-  const inferred = parseLegacyName(folderRef.name);
-  const earliestISO = await getEarliestTimeInFolder(folderRef) || new Date().toISOString();
-  const id = String(base.id || inferred.id || Math.floor(Math.random()*10000)).padStart(4,'0');
+  const baseLocal = val('custom-backdate'); // yyyy-mm-ddThh:mm (local)
+  if(!baseLocal){ alert("Select a backdated start."); return; }
+  const baseISO = new Date(baseLocal).toISOString();
+  const createdDate = baseLocal.slice(0,10);
 
-  const t = {
-    id,
-    createdAt: base.createdAt || earliestISO,
-    createdAtReal: base.createdAtReal || base.createdAt || earliestISO,
-    createdDate: base.createdDate || (base.createdAt ? base.createdAt.slice(0,10) : earliestISO.slice(0,10)),
-    timeModel: base.timeModel || null,
-    dairyNumber: base.dairyNumber || inferred.dairyNumber || '',
-    farmName: base.farmName || inferred.farmName || '',
-    alertType: base.alertType || 'Other',
-    alertOther: base.alertOther || 'Legacy import',
-    issueDesc: base.issueDesc || base.description || 'Imported from legacy folder',
-    priority: base.priority || 'Medium',
-    assignedTo: base.assignedTo || [],
-    assignedNames: base.assignedNames || [],
-    openedBy: base.openedBy || base.createdBy || 'Unknown',
-    openedByUser: base.openedByUser || '',
-    position: base.position || 'Agora Service',
-    comments: Array.isArray(base.comments) ? base.comments : [],
-    history: Array.isArray(base.history) ? base.history : [],
-    files: base.files || issueFiles,
-    firstResponseAt: base.firstResponseAt || null,
-    monitoringStartedAt: base.monitoringStartedAt || null,
-    close: base.close || (closeFiles.length ? { by: base.closedBy || 'Unknown', date: base.closedDate ? new Date(base.closedDate).toISOString() : earliestISO, note: base.closeComment || base.resolution || 'Legacy close', files: closeFiles } : null),
-    status: base.status || ( (base.closedDate || closeFiles.length) ? 'closed' : (base.monitoringStartedAt ? 'monitoring' : 'open') ),
-    sla: base.sla || null
+  const primaryAssignee = normalizeEmail(val('custom-assign'));
+  if(!primaryAssignee){ alert("Select assignee."); return; }
+
+  const users=getUsers();
+  const assigned=[primaryAssignee];
+  const assignedNames=assigned.map(u=>(users.find(x=>x.username===u)||{}).name||u);
+
+  const data={
+    id: await generateTicketId4(),
+    createdDate,
+    createdAt: baseISO,
+    timeMode: "custom",
+    customBase: { origin: baseISO },
+    realAnchor: new Date().toISOString(),
+    dairyNumber:val('custom-dairy').trim(),
+    farmName:val('custom-farm').trim(),
+    alertType:val('custom-alert'),
+    alertOther:val('custom-other').trim(),
+    issueDesc:val('custom-desc').trim(),
+    priority:val('custom-priority'),
+    assignedTo:assigned,
+    assignedNames,
+    status:"open",
+    openedBy:curUser.name,
+    openedByUser:curUser.username,
+    position:"Agora Service",
+    comments:[],
+    history:[{action:"Created",user:curUser.name,date:baseISO,details:"(Custom/Backdated)"}],
+    files:[],
+    firstResponseAt:null,
+    monitoringStartedAt:null,
+    close:null,
+    sla:{ disabled:true, note:"Custom ticket (backdated)" }
   };
 
-  if(!found){
-    t.history.push({ action:"Imported (Legacy)", user:"System", date:earliestISO, details:`Ingested from folder ${folderRef.fullPath}` });
-  }
-  if(closeFiles.length && !base.close){
-    t.history.push({ action:"Closed (Legacy)", user:"System", date:t.close.date, details:"Closed inferred from legacy close folder/files", files:closeFiles });
-  }
+  if(!data.dairyNumber || !data.farmName || !data.alertType || !data.issueDesc){
+    alert("All required fields must be filled out."); return; }
+  if(data.alertType==="Other"&&!data.alertOther){ alert("Specify the 'Other' alert type."); return; }
 
-  normalizeTicketShape(t);
-  ensureSLAInitialized(t);
-  return t;
-}
-async function ingestRoot(rootRef){
-  const out = [];
-  const rootListing = await rootRef.listAll();
-
-  // Flat style: ####.json at root
-  await Promise.all(rootListing.items.map(async(fileRef)=>{
-    if(fileRef.name.endsWith('.json') && /^[0-9]{4}\.json$/.test(fileRef.name)){
-      try{
-        const url = await fileRef.getDownloadURL();
-        const t   = await fetch(url,{cache:'no-store'}).then(r=>r.json());
-        normalizeTicketShape(t); out.push(t);
-      }catch(e){ console.warn("Skip broken json", fileRef.fullPath, e); }
-    }
-  }));
-
-  // Legacy style: per-ticket folders
-  for (const folder of rootListing.prefixes){
-    try{
-      const ticket = await ingestLegacyFolder(folder);
-      out.push(ticket);
-    }catch(e){ console.warn("Skip legacy folder", folder.fullPath, e); }
-  }
-  return out;
-}
-async function discoverTicketRoots(){
-  const roots = [];
-  roots.push(storage.ref(ticketsFolder));
-  try{
-    const top = await storage.ref().listAll();
-    top.prefixes.forEach(p=>{
-      if(/ticket/i.test(p.name) || /agora/i.test(p.name)){
-        const already = roots.some(r=>r.fullPath===p.fullPath);
-        if(!already) roots.push(p);
-      }
-    });
-  }catch(_){}
-  return roots;
-}
-
-/* =================== LOAD / COUNT (uses legacy ingest) =================== */
-async function loadAllTickets(){
-  const now = Date.now();
-  if (now - ticketsCache.ts < 60*1000 && ticketsCache.data?.length){ return ticketsCache.data; }
-  const all = [];
-  try{
-    const roots = await discoverTicketRoots();
-    for (const r of roots){
-      try{
-        const part = await ingestRoot(r);
-        all.push(...part);
-      }catch(e){ console.warn("Root ingest failed:", r.fullPath, e); }
-    }
-  }catch(e){
-    console.error("Ticket discovery failed", e);
-  }
-
-  // De-dup by ticket id (prefer richer)
-  const byIdMap = new Map();
-  for (const t of all){
-    if(!byIdMap.has(t.id)) byIdMap.set(t.id, t);
-    else{
-      const existing = byIdMap.get(t.id);
-      const score = (x)=> (x.close?1:0) + (Array.isArray(x.history)?x.history.length:0) + (Array.isArray(x.comments)?x.comments.length:0);
-      if (score(t) > score(existing)) byIdMap.set(t.id, t);
+  const files=Array.from(byId('custom-files').files||[]); const errs=validateFiles(files); if(errs.length){ alert("Upload errors:\n"+errs.join("\n")); return; }
+  if(files.length){
+    const pv=byId('custom-files-preview');
+    files.forEach(()=>{const bar=document.createElement('div');bar.className='progress-mini';bar.innerHTML='<div></div>';pv.appendChild(bar)});
+    for(let i=0;i<files.length;i++){
+      const f=files[i]; const bar=pv.querySelectorAll('.progress-mini>div')[i];
+      const url=await uploadFileBlob(f,`attachments/${data.id}`,bar);
+      data.files.push({name:f.name,type:f.type,url});
     }
   }
 
-  const arr = [...byIdMap.values()];
-  arr.forEach(t=>{ try{ normalizeTicketShape(t); ensureSLAInitialized(t); }catch(_){ } });
-
-  ticketsCache = { ts: Date.now(), data: arr };
-  return arr;
-}
-async function loadActiveCount(){
-  const tickets=await loadAllTickets();
-  const n = tickets.filter(t=>t.status==="open" || t.status==="monitoring").length;
-  byId('num-open-tix').textContent=n;
+  // SLA intentionally NOT scheduled
+  await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
+  invalidateTicketsCache();
+  hideCustomModal();
+  alert("Custom (backdated) ticket created.");
+  sendTicketEmailNotification(data, primaryAssignee);
 }
 
-/* =================== LOAD / FILTER VIEWS =================== */
+/* =================== LOAD / FILTER =================== */
 async function showActiveTickets(){
   byId('ticket-section').classList.add('hidden');
   byId('ticket-list-section').classList.remove('hidden');
@@ -1113,7 +1073,7 @@ function ticketFilterUI(scope){
       <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
     </select>
     <input type="date" id="filter-date" class="form-control search-box" style="max-width:170px">
-    <span class="chip" id="chip-hasimg">Has Images</span>
+    <span class="btn btn-sm btn-outline" id="chip-hasimg">Has Images</span>
     <button class="btn btn-agora btn-sm" onclick="filterTickets('${scope}')">Filter</button>`;
   byId('filter-search').onkeydown=(e)=>{if(e.key==='Enter')filterTickets(scope)};
   byId('chip-hasimg').onclick=()=>byId('chip-hasimg').classList.toggle('active');
@@ -1333,23 +1293,21 @@ window.saveAssignees=async function(id){
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
   const old=(t.assignedNames||[]).join(', ');
   t.assignedTo=newU; t.assignedNames=newNames;
-  t.history.push({action:"Reassigned", user:curUser.name, date: ticketHasVirtual(t) ? virtualNowISO(t) : (new Date()).toISOString(), details:`${old} → ${newNames.join(', ')}`});
+  addHistory(t,"Reassigned",`${old} → ${newNames.join(', ')}`);
   await persistTicket(t);
   newU.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(t,to.username)});
   viewTicketDetails(id,false);
 };
 
 window.addComment=async function(id){
+  const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
   const text=(byId('new-comment')||{}).value?.trim()||'';
   const files=Array.from((byId('comment-files')||{files:[]}).files); const errs=validateFiles(files); if(errs.length) return alert("Upload errors:\n"+errs.join("\n"));
   const setMonitoring = !!byId('set-monitoring')?.checked;
   const sel=byId('comment-assignees'); const chosen=sel?Array.from(sel.selectedOptions).map(o=>normalizeEmail(o.value)):[]; const replace=byId('reassign-mode')?.checked||false;
-  const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
-  const users=getUsers(); 
-  const realNow = new Date().toISOString();
-  const c={id:uuidv4(), text, user:curUser.name, date: virtualNowISO(t, realNow), realAt: realNow, files:[], setMonitoring:setMonitoring||false};
+  const users=getUsers(); const c={id:uuidv4(), text, user:curUser.name, date:virtualNowISO(t), files:[], setMonitoring:setMonitoring||false};
 
-  if(!t.firstResponseAt){ t.firstResponseAt = c.date; } // visible timeline first response
+  if(!t.firstResponseAt){ t.firstResponseAt = c.date; } // first response in virtual time
 
   const pv=byId('comment-files-preview');
   if(files.length){
@@ -1367,20 +1325,18 @@ window.addComment=async function(id){
     t.assignedTo=newArr; t.assignedNames=newArr.map(u=>(users.find(x=>x.username===u)||{}).name||u);
     c.reassign={mode:replace?"replace":"add", old:oldArr.map(u=>(users.find(x=>x.username===u)||{}).name||u), added:added.map(u=>(users.find(x=>x.username===u)||{}).name||u), removed:removed.map(u=>(users.find(x=>x.username===u)||{}).name||u)};
     added.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(t,to.username)});
-    t.history.push({action:"ReassignedViaComment", user:curUser.name, date:c.date, details:`${c.reassign.old.join(', ')} → ${t.assignedNames.join(', ')}`});
+    addHistory(t,"ReassignedViaComment",`${c.reassign.old.join(', ')} → ${t.assignedNames.join(', ')}`);
   }
 
   if(setMonitoring && t.status==="open"){
     t.status = "monitoring";
-    t.monitoringStartedAt = c.date;
-    t.history.push({action:"SetMonitoring", user:curUser.name, date:c.date, details:text||''});
+    t.monitoringStartedAt = virtualNowISO(t);
+    addHistory(t,"SetMonitoring",text||'');
   }
 
   t.comments.push(c);
-  t.history.push({action:c.files.length?"CommentWithFiles":"Comment", user:curUser.name, date:c.date, details:text||'', files:(c.files||[])});
-
-  setSLACycle(t, 'comment', c.realAt, c.date);
-
+  addHistory(t, c.files.length?"CommentWithFiles":"Comment", text||'', c.files||[]);
+  setSLACycle(t, 'comment', c.date); // no-op for custom tickets (disabled)
   await persistTicket(t);
   showActiveTickets();
 };
@@ -1399,10 +1355,7 @@ async function doCloseFromModal(){
   const tickets = await loadAllTickets();
   const t = tickets.find(x => x.id === closeTicketId);
   if (!t) return;
-
-  const realNow = new Date().toISOString();
-  const close = { note, by: curUser.name, date: virtualNowISO(t, realNow), realAt: realNow, files: [] };
-
+  const close = { note, by: curUser.name, date: virtualNowISO(t), files: [] };
   const pv = byId('close-files-preview');
   files.forEach(()=>{ const bar=document.createElement('div'); bar.className='progress-mini'; bar.innerHTML='<div></div>'; pv.appendChild(bar); });
   for (let i=0;i<files.length;i++){
@@ -1412,8 +1365,8 @@ async function doCloseFromModal(){
     close.files.push({ name:f.name, type:f.type, url });
   }
   t.status = "closed"; t.close = close;
-  t.closedBy = close.by; t.closedDate = close.date.slice(0,10); t.closeComment = close.note; t.closeFiles = close.files;
-  t.history = t.history || []; t.history.push({ action:"ClosedWithFiles", user:curUser.name, date:close.date, details:note||'', files:(close.files||[]) });
+  t.closedBy = close.by; t.closedDate = (close.date||"").slice(0,10); t.closeComment = close.note; t.closeFiles = close.files;
+  addHistory(t, "ClosedWithFiles", note||'', close.files||[]);
   await persistTicket(t);
   hideCloseModal(); alert("Ticket closed."); showActiveTickets();
 }
@@ -1474,7 +1427,7 @@ async function renderSummary(){
   const now = new Date();
 
   const filtered = tickets.filter(t=>{
-    const created = new Date(createdAtReal(t)||now);
+    const created = new Date(t.createdAt||now);
     const inRange = inChosenRange(created, range, from, to);
     const alertOk = !alertSel || t.alertType===alertSel;
     const statusOk = !statusSel ? true : (statusSel==='closed'? t.status==='closed' : (t.status==='open'||t.status==='monitoring'));
@@ -1512,7 +1465,7 @@ async function renderSummary(){
 
   const ageBuckets = { '0-24h':0, '1-3d':0, '4-7d':0, '8d+':0 };
   active.forEach(t=>{
-    const mins = minutesBetween((t.sla?.baselineVirtual||t.createdAt), ticketHasVirtual(t)?virtualNowISO(t):new Date().toISOString());
+    const mins = minutesBetween(t.sla?.baseline||t.createdAt, now.toISOString());
     const days = mins/1440;
     if(days<=1) ageBuckets['0-24h']++;
     else if(days<=3) ageBuckets['1-3d']++;
@@ -1589,6 +1542,7 @@ function normalizeForExport(t){
   return {
     ID: t.id, DairyNumber: t.dairyNumber, FarmName: t.farmName, AlertType: t.alertType, Priority: t.priority,
     AssignedTo: (t.assignedNames || []).join("; "), Status: t.status, CreatedDate: t.createdDate || "", CreatedAtISO: t.createdAt || "",
+    TimeMode: t.timeMode||"normal", SLADisabled: t.sla?.disabled ? "Yes":"No",
     FirstResponseAt: firstRespAt, FirstResponseMinutes: firstRespMin,
     ClosedDate: t.close?.date||"", ClosedBy: t.close?.by||"", CloseDescription: t.close?.note||"", ResolutionMinutes: resolutionMin,
     OpenedBy: t.openedBy || "", IssueDescription: t.issueDesc || "",
@@ -1653,7 +1607,7 @@ async function exportSummary(){
   setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
 }
 
-/* =================== ADMIN PANEL + Custom Ticket + SLA Monitor =================== */
+/* =================== ADMIN PANEL + SLA Monitor =================== */
 function adminPanel(){
   if(curUser.role!=="admin") return alert("Admins only.");
   byId('ticket-section').classList.add('hidden');
@@ -1664,72 +1618,34 @@ function adminPanel(){
   byId('ticket-list-controls').innerHTML=`
     <h4 class="mb-2">Admin Panel</h4>
 
-    <!-- Custom Ticket (Backdated, virtual timeline) -->
+    <!-- SLA Monitor FIRST (top) -->
     <div class="sum-card mb-3">
-      <div class="sum-title">Custom Ticket (Backdated Timeline)</div>
+      <div class="sum-title">SLA Monitor</div>
+      <div id="sla-stats" class="mb-2"></div>
       <div class="row g-2">
-        <div class="col-md-3">
-          <label class="form-label">Ticket Date</label>
-          <input id="ct-date" type="date" class="form-control">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Ticket Time</label>
-          <input id="ct-time" type="time" class="form-control" step="60" value="09:00">
+        <div class="col-md-6">
+          <div class="sum-title">Recent Breaches</div>
+          <div id="sla-breaches-list"></div>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Service Person</label>
-          <input id="ct-service" type="text" class="form-control" readonly value="${curUser.name}">
+          <div class="sum-title">Upcoming Warnings (next 24h)</div>
+          <div id="sla-upcoming-warns"></div>
         </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Dairy Number</label>
-          <input id="ct-dairy" class="form-control">
+      </div>
+      <hr>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <div class="sum-title">Farms with Breaches</div>
+          <div id="sla-farms"></div>
         </div>
-        <div class="col-md-5">
-          <label class="form-label">Farm Name</label>
-          <input id="ct-farm" class="form-control">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Priority</label>
-          <select id="ct-priority" class="form-select">
-            <option>Low</option><option selected>Medium</option><option>High</option><option>Urgent</option>
-          </select>
-        </div>
-
-        <div class="col-md-4">
-          <label class="form-label">Alert Type</label>
-          <select id="ct-alert" class="form-select" onchange="toggleOtherAlertCT()">
-            <option value="">Select...</option>
-            <option>Temperature</option><option>Concentration</option>
-            <option>Plant Pressure</option><option>Milking Vacuum</option>
-            <option>Teat Spray</option><option>Other</option>
-          </select>
-        </div>
-        <div class="col-md-4 hidden" id="ct-other-wrap">
-          <label class="form-label">Other Alert</label>
-          <input id="ct-alert-other" class="form-control">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Assign To</label>
-          <select id="ct-assign" class="form-select"></select>
-        </div>
-
-        <div class="col-12">
-          <label class="form-label">Description of Issue</label>
-          <textarea id="ct-desc" class="form-control" rows="2"></textarea>
-        </div>
-        <div class="col-12">
-          <label class="form-label">Attach Photo/File</label>
-          <input type="file" id="ct-files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.txt">
-          <div id="ct-preview" class="mt-1"></div>
-        </div>
-        <div class="col-12 d-flex gap-2">
-          <button class="btn btn-agora" onclick="submitCustomTicket()">Create Custom Ticket</button>
-          <div class="small-note align-self-center">All subsequent comments/monitoring/closing will be timestamped from the chosen ticket time.</div>
+        <div class="col-md-6">
+          <div class="sum-title">Users with Breaches</div>
+          <div id="sla-users"></div>
         </div>
       </div>
     </div>
 
+    <!-- User Management -->
     <div class="sum-card mb-3">
       <div class="sum-title">User Management</div>
       <div class="row g-2">
@@ -1762,32 +1678,6 @@ function adminPanel(){
       <div id="login-history-table"></div>
     </div>
 
-    <div class="sum-card mb-3">
-      <div class="sum-title">SLA Monitor</div>
-      <div id="sla-stats" class="mb-2"></div>
-      <div class="row g-2">
-        <div class="col-md-6">
-          <div class="sum-title">Recent Breaches</div>
-          <div id="sla-breaches-list"></div>
-        </div>
-        <div class="col-md-6">
-          <div class="sum-title">Upcoming Warnings (next 24h)</div>
-          <div id="sla-upcoming-warns"></div>
-        </div>
-      </div>
-      <hr>
-      <div class="row g-2">
-        <div class="col-md-6">
-          <div class="sum-title">Farms with Breaches</div>
-          <div id="sla-farms"></div>
-        </div>
-        <div class="col-md-6">
-          <div class="sum-title">Users with Breaches</div>
-          <div id="sla-users"></div>
-        </div>
-      </div>
-    </div>
-
     <div class="sum-card">
       <div class="sum-title">User Ticket History</div>
       <div class="d-flex gap-2 align-items-center mb-2">
@@ -1799,93 +1689,19 @@ function adminPanel(){
       </div>
       <div id="user-history-table"></div>
     </div>
+
+    <!-- Custom Ticket button at very bottom -->
+    <div class="sum-card mt-3">
+      <div class="sum-title">Custom Ticket (Backdated)</div>
+      <div class="small-note mb-2">Create a ticket with a backdated start; all comments/monitoring/close times will progress from that date.</div>
+      <button class="btn btn-admin" onclick="openCustomTicket()">Create Custom Ticket</button>
+    </div>
   `;
   byId('ticket-table-wrap').innerHTML=''; byId('ticket-cards').innerHTML='';
   byId('ticket-view-modal').classList.add('hidden');
 
   renderUserList(); renderLoginHistory(); renderUserHistory(); renderSLAMonitor();
-  populateCustomAssign();
-  byId('ct-date').value = new Date().toISOString().slice(0,10);
-  byId('ct-files').addEventListener('change',()=>renderFilePreview(byId('ct-files').files, byId('ct-preview')));
 }
-function toggleOtherAlertCT(){ byId('ct-other-wrap').classList.toggle('hidden', (byId('ct-alert').value!=="Other")); }
-function populateCustomAssign(){
-  const users=getUsers(); const sel=byId('ct-assign'); sel.innerHTML='';
-  users.forEach(u=>{
-    const o=document.createElement('option'); o.value=u.username; o.textContent=u.name;
-    if(u.username===curUser.username) o.selected = true;
-    sel.appendChild(o);
-  });
-}
-async function submitCustomTicket(){
-  const date = (byId('ct-date').value||'').trim();
-  const time = (byId('ct-time').value||'').trim();
-  const dairy= (byId('ct-dairy').value||'').trim();
-  const farm = (byId('ct-farm').value||'').trim();
-  const priority = byId('ct-priority').value||'Medium';
-  const alert = byId('ct-alert').value||'';
-  const alertOther = (byId('ct-alert-other').value||'').trim();
-  const desc = (byId('ct-desc').value||'').trim();
-  const assign = normalizeEmail(byId('ct-assign').value||'');
-
-  if(!date || !dairy || !farm || !alert || !desc || !assign){ return alert("Please fill all required fields."); }
-  if(alert==="Other" && !alertOther){ return alert("Please specify 'Other' alert type."); }
-
-  const users=getUsers();
-  const assigned=[assign];
-  const assignedNames=assigned.map(u=>(users.find(x=>x.username===u)||{}).name||u);
-
-  const realStart = new Date().toISOString();
-  const virtualStart = toISOFromLocal(date, time);
-  const id = await generateTicketId4();
-
-  const data={
-    id,
-    createdDate: date,
-    createdAt: virtualStart,     // all UI math uses this
-    createdAtReal: realStart,    // SLA runs on this
-    timeModel: { mode:'virtual', virtualStart, realStart },
-    dairyNumber: dairy,
-    farmName: farm,
-    alertType: alert,
-    alertOther,
-    issueDesc: desc,
-    priority,
-    assignedTo: assigned,
-    assignedNames,
-    status:"open",
-    openedBy: curUser.name,
-    openedByUser: curUser.username,
-    position:"Agora Service",
-    comments:[],
-    history:[{action:"Created (Custom)",user:curUser.name,date:virtualStart,details:`Backdated start ${new Date(virtualStart).toLocaleString()}`}],
-    files:[],
-    firstResponseAt:null,
-    monitoringStartedAt:null,
-    close:null,
-    sla:null
-  };
-
-  const files=Array.from(byId('ct-files').files||[]); const errs=validateFiles(files); if(errs.length){ alert("Upload errors:\n"+errs.join("\n")); return; }
-  if(files.length){
-    const pv=byId('ct-preview');
-    files.forEach(()=>{const bar=document.createElement('div');bar.className='progress-mini';bar.innerHTML='<div></div>';pv.appendChild(bar)});
-    for(let i=0;i<files.length;i++){
-      const f=files[i]; const bar=pv.querySelectorAll('.progress-mini>div')[i];
-      const url=await uploadFileBlob(f,`attachments/${data.id}`,bar);
-      data.files.push({name:f.name,type:f.type,url});
-    }
-  }
-
-  // IMPORTANT: SLA uses REAL baseline, UI uses VIRTUAL
-  setSLACycle(data, 'created', realStart, virtualStart);
-
-  await persistTicket(data);
-  alert(`Custom ticket ${data.id} created for ${date} ${time||''}.`);
-  sendTicketEmailNotification(data, assign);
-  showActiveTickets();
-}
-
 function renderUserList(){
   const users=getUsers().sort((a,b)=>a.name.localeCompare(b.name));
   const box=byId('user-list'); box.innerHTML='';
@@ -1986,7 +1802,7 @@ async function renderSLAMonitor(){
 
   tickets.forEach(t=>{
     (t.sla?.breaches||[]).forEach(b=>breaches.push({t, b}));
-    if(t.status!=='closed' && t.sla?.nextWarnAt && !t.sla.warnSent){
+    if(t.status!=='closed' && t.sla && !t.sla.disabled && t.sla.nextWarnAt && !t.sla.warnSent){
       const warnAt = new Date(t.sla.nextWarnAt);
       const diffH = (warnAt-now)/3600000;
       if(diffH >= 0 && diffH <= 24) upcomingWarns.push({t, warnAt});
