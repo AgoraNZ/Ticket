@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Agora Ticketing Advanced + SLA</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<title>Agora Ticketing Advanced</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root{
     --bg:#f8faff; --primary:#001F3F; --accent:#FF851B;
@@ -23,11 +24,10 @@
   .btn-agora:hover{background:#ff6d00}
   .btn-admin{background:var(--primary);color:#fff;border:none;border-radius:6px}
   .btn-admin:hover{background:#173559}
-  .btn-outline{background:#fff;color:var(--primary);border:1px solid #ffa34a}
-  .btn-outline:hover{background:#FF851B;color:#fff}
+  .btn-outline{background:#fff;color:var(--primary);border:1px solid var(--accent)}
+  .btn-outline:hover{background:var(--accent);color:#fff}
   .nav-btns{display:flex;gap:10px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
   .logout-link{float:right;color:#a00;text-decoration:underline;cursor:pointer;font-size:.97em}
-
   .ticket-status-open{color:var(--success);font-weight:700}
   .ticket-status-closed{color:var(--danger);font-weight:700}
   .ticket-status-monitoring{color:var(--monitor);font-weight:700}
@@ -43,14 +43,14 @@
   .progress-mini>div{height:100%;background:var(--accent);width:0%;transition:width .2s}
   .hidden{display:none!important}
   footer{text-align:center;color:#999;font-size:.85em;margin-top:18px}
-
+  /* Desktop table */
   .table-area{display:block}
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .table,.table *{font-size:var(--table-font)!important}
   .table thead th{position:sticky;top:0;background:#fff;z-index:1}
   .table td,.table th{white-space:normal;word-break:break-word}
   .th-sort{cursor:pointer}
-
+  /* Mobile cards */
   .ticket-cards{display:none}
   .tcard{border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 8px #0000000a}
   .tcard-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
@@ -61,11 +61,9 @@
   .b-priority{border-radius:8px;padding:2px 6px;border:1px solid #ddd}
   .b-media{border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ddd;font-size:.8em}
   .b-sla{background:#ffebee;color:#b71c1c;border-radius:8px;padding:2px 6px;font-weight:700}
-  .b-warn{background:#fff3cd;color:#8a6d3b;border-radius:8px;padding:2px 6px;font-weight:700}
   .tcard-body{margin-top:6px}
   .tcard-actions{display:flex;gap:8px;margin-top:8px}
   .t-more{font-size:.92em}
-
   @media (max-width:800px){
     .table-area{display:none}
     .ticket-cards{display:block}
@@ -76,7 +74,7 @@
     h1{font-size:1.3rem}
     .logo-header{max-width:120px}
   }
-
+  /* Summary Dashboard */
   .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   .kpi{border:1px solid #eee;border-radius:12px;padding:10px;text-align:center;background:#fff}
   .kpi .num{font-size:1.4rem;font-weight:800}
@@ -86,7 +84,7 @@
   .sum-title{font-weight:700;margin-bottom:6px}
   .chip{display:inline-block;padding:4px 8px;border:1px solid #ddd;border-radius:14px;margin-right:6px;cursor:pointer;user-select:none}
   .chip.active{border-color:var(--accent);color:var(--accent);font-weight:600}
-
+  /* Admin: user list cards & matrices */
   .user-card{display:flex;align-items:center;justify-content:space-between;border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:10px}
   .role-badge{background:#e7f0ff;color:#1f4ea3;border-radius:12px;padding:2px 8px;font-size:.85em;margin-left:8px}
   .matrix-wrap{overflow-x:auto}
@@ -94,62 +92,46 @@
   .matrix .hdr,.matrix .cell{padding:10px 8px;border-bottom:1px solid #eee}
   .matrix .hdr{font-weight:700;color:#173559}
   .matrix .cell.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
+  /* Modal overlay (loading/album) */
   .screen-overlay{position:fixed;inset:0;background:#ffffffd9;display:none;align-items:center;justify-content:center;z-index:9999}
   .loader{width:90px;height:90px;border-radius:50%;border:8px solid #eee;border-top-color:var(--accent);animation:spin 1s linear infinite;margin-bottom:10px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .overlay-box{text-align:center;color:#173559}
-
   .album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;max-width:900px;margin:0 auto}
   .album-grid img{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid #eee}
-
-  .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef3ff;color:#173559;border:1px solid #dbe7ff;margin-right:6px}
-  .clicky{cursor:pointer}
   @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} .sum-grid{grid-template-columns:1fr} }
 </style>
-
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
-<!-- EmailJS -->
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-<!-- UUID -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuidv4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
 <div class="container-main" id="main-box">
-  <img id="logo-img" class="logo-header" style="display:none" alt="Agora logo">
+  <img id="logo-img" class="logo-header" style="display:none">
   <h1>Agora Dairy Ticketing</h1>
 
   <!-- LOGIN/SIGNUP -->
   <div id="login-section">
-    <form id="login-form" onsubmit="event.preventDefault();doLogin();">
-      <div id="login-box" class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" id="login-user" class="form-control" autocomplete="username" inputmode="email" required>
-        <label class="form-label mt-2">Password</label>
-        <input type="password" id="login-pass" class="form-control" autocomplete="current-password" required>
-        <div class="form-check mt-2">
-          <input class="form-check-input" type="checkbox" id="remember-me">
-          <label class="form-check-label" for="remember-me">Remember me on this device</label>
-        </div>
-        <button class="btn btn-agora mt-3 w-100" type="submit">Login</button>
-        <div class="mt-2 text-center"><span style="font-size:.98em;">No account? <a href="#" onclick="showSignup()">Sign Up</a></span></div>
-      </div>
-    </form>
+    <div id="login-box" class="mb-3">
+      <label class="form-label">Username</label>
+      <input type="text" id="login-user" class="form-control" autocomplete="username" required>
+      <label class="form-label mt-2">Password</label>
+      <input type="password" id="login-pass" class="form-control" autocomplete="current-password" required>
+      <button class="btn btn-agora mt-3 w-100" onclick="doLogin()">Login</button>
+      <div class="mt-2 text-center"><span style="font-size:.98em;">No account? <a href="#" onclick="showSignup()">Sign Up</a></span></div>
+    </div>
 
-    <form id="signup-form" class="mb-3 hidden" onsubmit="event.preventDefault();doSignup();">
-      <div id="signup-box">
-        <label class="form-label">Full Name</label>
-        <input type="text" id="signup-name" class="form-control" required>
-        <label class="form-label mt-2">Username</label>
-        <input type="text" id="signup-user" class="form-control" required>
-        <label class="form-label mt-2">Password</label>
-        <input type="password" id="signup-pass" class="form-control" required>
-        <button class="btn btn-agora mt-3 w-100" type="submit">Sign Up</button>
-        <div class="mt-2 text-center"><span style="font-size:.98em;">Have an account? <a href="#" onclick="showLogin()">Login</a></span></div>
-      </div>
-    </form>
+    <div id="signup-box" class="mb-3 hidden">
+      <label class="form-label">Full Name</label>
+      <input type="text" id="signup-name" class="form-control" required>
+      <label class="form-label mt-2">Username</label>
+      <input type="text" id="signup-user" class="form-control" required>
+      <label class="form-label mt-2">Password</label>
+      <input type="password" id="signup-pass" class="form-control" required>
+      <button class="btn btn-agora mt-3 w-100" onclick="doSignup()">Sign Up</button>
+      <div class="mt-2 text-center"><span style="font-size:.98em;">Have an account? <a href="#" onclick="showLogin()">Login</a></span></div>
+    </div>
     <div id="login-msg" class="text-danger mt-2" style="min-height:20px"></div>
   </div>
 
@@ -158,7 +140,7 @@
     <span class="logout-link" onclick="logout()">Logout</span>
     <div class="mb-2 text-center"><b id="user-position"></b></div>
 
-    <form id="ticket-form" autocomplete="off" enctype="multipart/form-data" onsubmit="event.preventDefault();submitTicket();">
+    <form id="ticket-form" autocomplete="off" enctype="multipart/form-data">
       <div class="mb-2">
         <label class="form-label">Service Person</label>
         <input type="text" id="service-person" class="form-control" readonly>
@@ -208,7 +190,7 @@
         <input type="file" id="ticket-file" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.txt">
         <div id="ticket-file-preview"></div>
       </div>
-      <button type="submit" class="btn btn-agora mt-2">Create Ticket</button>
+      <button type="button" class="btn btn-agora mt-2" onclick="submitTicket()">Create Ticket</button>
     </form>
 
     <div class="nav-btns mt-3">
@@ -239,7 +221,7 @@
     <div id="ticket-view-modal" class="mt-3 hidden"></div>
   </div>
 
-  <!-- SUMMARY -->
+  <!-- SUMMARY DASHBOARD -->
   <div id="summary-section" class="hidden">
     <div class="mb-2 d-flex flex-wrap gap-2 align-items-center">
       <button class="btn btn-outline" onclick="backToMain()">Back</button>
@@ -267,16 +249,21 @@
         <canvas id="chartReassignSLA" height="160"></canvas>
       </div>
     </div>
+    <div class="sum-card mt-3" id="recurring-box">
+      <div class="sum-title">Recurring Problems (all time)</div>
+      <div id="recurring-list"></div>
+      <div id="recurring-results" class="mt-2"></div>
+    </div>
     <div class="sum-card mt-3" id="photo-box">
       <div class="sum-title">Latest Photos by Dairy</div>
       <div id="latest-photos"></div>
     </div>
   </div>
 
-  <footer>Agora Ticketing v2.10 (2025-09-11)</footer>
+  <footer>Agora Ticketing v2.3 (2025-08-12)</footer>
 </div>
 
-<!-- Close Modal -->
+<!-- Close Modal (overlayed, not static) -->
 <div class="modal-mask" id="close-modal" style="display:none;position:fixed;inset:0;background:#00000055;align-items:center;justify-content:center;z-index:9990">
   <div class="modal-card" style="background:#fff;border-radius:12px;max-width:620px;width:92%;padding:14px">
     <div class="modal-header" style="font-weight:700;font-size:1.1rem">Close Ticket</div>
@@ -296,7 +283,7 @@
   </div>
 </div>
 
-<!-- Screen overlay -->
+<!-- Screen overlay (loading / album) -->
 <div id="screen-overlay" class="screen-overlay">
   <div class="overlay-box">
     <div class="loader"></div>
@@ -306,28 +293,16 @@
 
 <script>
 /* =================== CONFIG / INIT =================== */
-const seedUsers = [
-  { username:"regan.beaver@agora.co.nz", name:"Regan Beaver",    password:"Moometrics242", role:"admin" },
-  { username:"ahren.lomas@agora.co.nz",  name:"Ahren Lomas",     password:"MooMetrics24",  role:"admin" },
-  { username:"caroline@agora.co.nz",     name:"Caroline Wallace",password:"dairy123",      role:"admin" },
-  { username:"kip@agora.co.nz",          name:"Kip Bodle",       password:"dairy123",      role:"admin" },
-  { username:"josh.bull@agora.co.nz",    name:"Josh Bull",       password:"dairy123",      role:"admin" }, /* <-- fixed comma */
-  { username:"hayden.walsh@agora.co.nz", name:"Hayden Walsh",    password:"dairy123",      role:"admin" }
+const initialUsers = [
+  { username:"regan.beaver@agora.co.nz", name:"Regan Beaver", password:"Moometrics24", role:"admin" },
+  { username:"ahren.lomas@agora.co.nz", name:"Ahren Lomas", password:"MooMetrics24", role:"admin" },
+  { username:"caroline@agora.co.nz", name:"Caroline Wallace", password:"dairy123", role:"admin" },
+  { username:"kip@agora.co.nz", name:"Kip Bodle", password:"dairy123", role:"admin" },
+  { username:"josh.bull@agora.co.nz", name:"Josh Bull", password:"dairy123", role:"admin" }
 ];
-(function bootstrapUsers(){
-  try{
-    const existing = JSON.parse(localStorage.getItem("users")||"[]");
-    if(!existing.length){
-      localStorage.setItem("users", JSON.stringify(seedUsers.map(u=>({...u,username:u.username.toLowerCase()}))));
-    }else{
-      // ensure lowercasing + de-dup emails
-      const map=new Map();
-      [...existing, ...seedUsers].forEach(u=>{ map.set((u.username||"").toLowerCase(), {...u, username:(u.username||"").toLowerCase()}); });
-      localStorage.setItem("users", JSON.stringify([...map.values()]));
-    }
-  }catch(e){ localStorage.setItem("users", JSON.stringify(seedUsers.map(u=>({...u,username:u.username.toLowerCase()})))); }
-})();
-
+if(!localStorage.getItem("users")){
+  localStorage.setItem("users", JSON.stringify(initialUsers.map(u=>({...u,username:u.username.toLowerCase()}))));
+}
 const firebaseConfig = {
   apiKey:"AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
   authDomain:"dairy-farm-record-system.firebaseapp.com",
@@ -338,142 +313,87 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
+const ticketsFolder = "Agora V1 Tickets";
 
-/* Folders: try multiple to be robust */
-const ticketsFolders = ["Agora V1 Tickets","Tickets","Agora Tickets","TicketRecords"];
+// EmailJS
+const EMAILJS_SERVICE_ID = "service_228tpco";
+const EMAILJS_TEMPLATE_ID = "template_9s0ckye";
+const EMAILJS_PUBLIC_KEY = "8uQgECrkNStKV41S-";
+const TICKET_URL_ROOT = "https://agoranz.github.io/Ticket/";
+emailjs.init(EMAILJS_PUBLIC_KEY);
 
-/* EmailJS */
-const EMAILJS_SERVICE_ID          = "service_228tpco";
-const EMAILJS_TEMPLATE_ID         = "template_9s0ckye";   // New ticket created
-const EMAILJS_SLA_WARN_TEMPLATE   = "template_hp9krxq";   // SLA warning (2h prior)
-const EMAILJS_SLA_BREACH_TEMPLATE = "template_breach123"; // SLA breach notice (optional - create in EmailJS)
-const EMAILJS_PUBLIC_KEY          = "8uQgECrkNStKV41S-";
-const TICKET_URL_ROOT             = "https://agoranz.github.io/Ticket/";
-if(window.emailjs){ emailjs.init(EMAILJS_PUBLIC_KEY); }
+// SLA mins (first response within 24h; monitoring <= 7d)
+const SLA = { Temperature: 24*60, DEFAULT: 72*60 };
+const MONITOR_MAX_MIN = 7*24*60;
 
-/* SLA CONFIG (testable) */
-const SLA_TEST_MODE = false; // true => warn ~2min, breach ~3min
-const SLA_INITIAL_WARN_MIN   = SLA_TEST_MODE ? 2  : 22*60;
-const SLA_INITIAL_BREACH_MIN = SLA_TEST_MODE ? 3  : 24*60;
-const SLA_CYCLE_WARN_MIN     = SLA_TEST_MODE ? 2  : 70*60;
-const SLA_CYCLE_BREACH_MIN   = SLA_TEST_MODE ? 3  : 72*60;
-const SLA_WATCHDOG_INTERVAL  = 60*1000;
-
-/* Cache / State */
+// State
 let curUser=null, closeTicketId=null, currentSort={key:null,dir:1};
-let ticketsCache = { ts:0, data:[] };
-let watchdogTimer=null;
-let charts = {};
-const byId = (id)=>document.getElementById(id);
-const val  = (id)=>byId(id)?.value||'';
+let charts = {}; // chart instances
 
-/* =================== PERF: Lazy load heavy libs =================== */
-function ensureChartJs(){
-  return new Promise((res)=>{
-    if(window.Chart){ res(); return; }
-    const s=document.createElement('script');
-    s.src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
-    s.onload=res; document.head.appendChild(s);
-  });
-}
-function ensureXlsx(){
-  return new Promise((res)=>{
-    if(window.XLSX){ res(); return; }
-    const s=document.createElement('script');
-    s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    s.onload=res; document.head.appendChild(s);
-  });
-}
+/* =================== AUTH & LOGIN HISTORY =================== */
+const byId=(id)=>document.getElementById(id);
+const val=(id)=>byId(id).value||'';
+function getUsers(){return JSON.parse(localStorage.getItem("users")||"[]")}
+function setUsers(users){localStorage.setItem("users", JSON.stringify(users))}
+function findUser(username){return getUsers().find(u=>u.username===username.trim().toLowerCase())}
 
-/* =================== AUTH (desktop+mobile, remember me) =================== */
-function normalizeEmail(s){ return (s||'').trim().toLowerCase().replace(/\u200B/g,''); }
-function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]"); }
-function setUsers(users){ localStorage.setItem("users", JSON.stringify(users)); }
-function findUser(username){ return getUsers().find(u=>u.username===normalizeEmail(username)); }
+function showLogin(){byId('login-box').classList.remove('hidden');byId('signup-box').classList.add('hidden');byId('login-msg').textContent=''}
+function showSignup(){byId('signup-box').classList.remove('hidden');byId('login-box').classList.add('hidden');byId('login-msg').textContent=''}
 
-function deviceFingerprint(){
-  const ua = (navigator.userAgent||'').slice(0,140);
-  const plat = navigator.platform||'';
-  const lang = navigator.language||'';
-  return btoa(unescape(encodeURIComponent(`${ua}|${plat}|${lang}`))).slice(0,64);
-}
-function saveRememberMe(username){
-  if(!byId('remember-me')?.checked) return;
-  localStorage.setItem('rememberedUser', JSON.stringify({
-    username: normalizeEmail(username),
-    fp: deviceFingerprint(),
-    at: Date.now()
-  }));
-}
-function tryAutoPrefill(){
-  const r = JSON.parse(localStorage.getItem('rememberedUser')||'null');
-  if(!r) return;
-  if(r.fp !== deviceFingerprint()) return;
-  const u = findUser(r.username);
-  if(u){ byId('login-user').value = u.username; }
-}
-function showLogin(){ byId('login-form').classList.remove('hidden'); byId('signup-form').classList.add('hidden'); byId('login-msg').textContent=''; }
-function showSignup(){ byId('signup-form').classList.remove('hidden'); byId('login-form').classList.add('hidden'); byId('login-msg').textContent=''; }
-
-function pushLoginEvent(user){
-  const hist = JSON.parse(localStorage.getItem("loginHistory")||"[]");
-  hist.push({username:user.username,name:user.name,role:user.role,ts:new Date().toISOString(),fp:deviceFingerprint()});
-  localStorage.setItem("loginHistory", JSON.stringify(hist.slice(-500)));
-}
-function logout(){ curUser=null; location.reload(); }
-
-function doLogin(){
-  const username = normalizeEmail(val('login-user'));
-  const password = String(val('login-pass')||'');
-  const user = findUser(username);
-  if(user && user.password === password){
-    curUser = user; pushLoginEvent(user); saveRememberMe(username); showMain();
-  }else{
-    byId('login-msg').textContent = "Login failed: wrong username or password.";
-  }
-}
-function doSignup(){
-  const name  = (val('signup-name')||'').trim();
-  const email = normalizeEmail(val('signup-user'));
-  const pass  = String(val('signup-pass')||'');
-  if(!name||!email||!pass) return byId('login-msg').textContent="All fields required.";
-  if(findUser(email)) return byId('login-msg').textContent="Username already exists.";
-  const users=getUsers(); const user={username:email,name,password:pass,role:"service"}; users.push(user); setUsers(users);
-  curUser=user; pushLoginEvent(user); showMain();
-}
-
-/* =================== INIT UI =================== */
-(async function(){
-  try{
-    const logoRef=storage.ref("Agora Logo/2F6-1YdaEP.jpeg");
-    const url=await logoRef.getDownloadURL();
-    byId("logo-img").src=url; byId("logo-img").style.display="block";
-  }catch{}
-  tryAutoPrefill();
-})();
 function showMain(){
   byId('login-section').classList.add('hidden');
   byId('ticket-section').classList.remove('hidden');
   byId('ticket-list-section').classList.add('hidden');
   byId('summary-section').classList.add('hidden');
   updateNavButtons(); autoFillTicketForm(); loadActiveCount(); checkHashForTicket();
-  startSLAWatchdog();
+}
+function logout(){curUser=null;location.reload()}
+
+function doLogin(){
+  const username=(val('login-user')||'').trim().toLowerCase();
+  const password=val('login-pass');
+  const user=findUser(username);
+  if(user && user.password===password){curUser=user;pushLoginEvent(user);showMain()} else byId('login-msg').textContent="Login failed: Wrong username or password."
+}
+function doSignup(){
+  const name=(val('signup-name')||'').trim();
+  const username=(val('signup-user')||'').trim().toLowerCase();
+  const password=val('signup-pass');
+  if(!name||!username||!password) return byId('login-msg').textContent="All fields required.";
+  if(findUser(username)) return byId('login-msg').textContent="Username already exists.";
+  const users=getUsers(); const user={username,name,password,role:"service"}; users.push(user); setUsers(users); curUser=user; pushLoginEvent(user); showMain();
 }
 function updateNavButtons(){
   byId('user-position').textContent=`Position: Agora Service | ${curUser.name} (${curUser.role})`;
-  const isAdmin = curUser.role==="admin";
+  const isAdmin=curUser.role==="admin";
   ['btn-closed-tickets','btn-summary','btn-admin','btn-csv-top','btn-xlsx-top'].forEach(id=>byId(id).style.display=isAdmin?'':'none');
 }
 
-/* =================== FORM HELPERS =================== */
+/* Login history */
+function getLoginHistory(){ return JSON.parse(localStorage.getItem("loginHistory")||"[]"); }
+function setLoginHistory(arr){ localStorage.setItem("loginHistory", JSON.stringify(arr.slice(-200))); }
+function pushLoginEvent(user){
+  const hist=getLoginHistory();
+  hist.push({username:user.username,name:user.name,role:user.role,ts:new Date().toISOString()});
+  setLoginHistory(hist);
+}
+
+/* =================== MISC / DATES =================== */
+(async function(){
+  try{
+    const logoRef=storage.ref("Agora Logo/2F6-1YdaEP.jpeg");
+    const url=await logoRef.getDownloadURL();
+    byId("logo-img").src=url; byId("logo-img").style.display="block";
+  }catch{}
+})();
 function autoFillTicketForm(){
   byId('service-person').value=curUser.name;
   byId('ticket-date').value=(new Date()).toISOString().slice(0,10);
   const users=getUsers(), sel=byId('assign-to'); sel.innerHTML='';
-  users.forEach(u=>{const o=document.createElement('option');o.value=u.username; o.textContent=u.name; sel.appendChild(o)});
+  users.forEach(u=>{const o=document.createElement('option');o.value=u.username.toLowerCase();o.textContent=u.name;sel.appendChild(o)});
   byId('ticket-file').value=''; byId('ticket-file-preview').innerHTML='';
 }
-function toggleOtherAlert(){ byId('other-alert-div').classList.toggle('hidden', val('alert-type')!=="Other"); }
+function toggleOtherAlert(){byId('other-alert-div').classList.toggle('hidden', val('alert-type')!=="Other")}
 byId('ticket-file').addEventListener('change',()=>renderFilePreview(byId('ticket-file').files, byId('ticket-file-preview')));
 function renderFilePreview(filesLike, container){
   const files=Array.from(filesLike||[]); container.innerHTML='';
@@ -493,7 +413,7 @@ function looksLikeImage(obj){
 function minutesBetween(aIso,bIso){ const A=new Date(aIso).getTime(); const B=new Date(bIso).getTime(); if(!isFinite(A)||!isFinite(B))return 0; return Math.max(0, Math.round((B-A)/60000)); }
 function fmtHrs(min){ const h=Math.round((min||0)/60); return h+'h'; }
 
-/* =================== STORAGE HELPERS & PERF CACHE =================== */
+/* =================== STORAGE HELPERS =================== */
 const MAX_FILE_MB=20;
 const ALLOWED_TYPES=['image/jpeg','image/png','image/gif','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'];
 function validateFiles(files){
@@ -501,7 +421,7 @@ function validateFiles(files){
   return errs;
 }
 async function uploadFileBlob(file, prefix, progressBar){
-  const ref=storage.ref(`${prefix}_${file.name}`);
+  const ref=storage.ref(`${ticketsFolder}/${prefix}_${file.name}`);
   const task=ref.put(file);
   return new Promise((res,rej)=>{
     task.on('state_changed',
@@ -511,224 +431,16 @@ async function uploadFileBlob(file, prefix, progressBar){
     );
   });
 }
-function invalidateTicketsCache(){ ticketsCache.ts = 0; }
-async function listFolderJsons(prefix){
-  try{
-    const folderRef = storage.ref(prefix);
-    const res = await folderRef.listAll();
-    const jsonRefs = res.items.filter(it=>it.name.endsWith(".json") && !it.name.startsWith("attachments/") && !it.name.startsWith("comments/") && !it.name.startsWith("close/"));
-    return jsonRefs;
-  }catch(e){ return []; }
-}
-async function loadAllTickets(){
-  const now = Date.now();
-  if (now - ticketsCache.ts < 45*1000 && ticketsCache.data?.length){ return ticketsCache.data; }
-  try{
-    let refs=[];
-    for(const f of ticketsFolders){
-      const r = await listFolderJsons(f);
-      refs = refs.concat(r.map(rr=>({ref:rr, folder:f})));
-    }
-    const arr=[];
-    await Promise.all(refs.map(async({ref})=>{
-      const url=await ref.getDownloadURL();
-      const t=await fetch(url,{cache:'no-store'}).then(r=>r.json());
-      normalizeTicketShape(t);
-      arr.push(t);
-    }));
-    ticketsCache = { ts:Date.now(), data:arr };
-    return arr;
-  }catch(e){ console.error(e); return []; }
-}
-function normalizeTicketShape(t){
-  if(!Array.isArray(t.assignedTo)) t.assignedTo = t.assignedTo ? [t.assignedTo] : [];
-  if(!Array.isArray(t.assignedNames)) t.assignedNames = t.assignedName ? [t.assignedName] : (t.assignedTo||[]);
-  t.comments = t.comments || [];
-  t.history  = t.history || [];
-  if(!t.createdAt){
-    const createdEvt = (t.history||[]).find(h=> (h.action||"").toLowerCase()==="created");
-    t.createdAt = createdEvt?.date || (t.createdDate ? (t.createdDate + "T00:00:00.000Z") : new Date().toISOString());
-  }
-  if(!t.id) t.id = uuidv4(); // ensure unique ID exists even for older records
-  if(!t.status) t.status = "open";
-  // unify close structure
-  const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution;
-  if (!t.close && hasLegacyClose) {
-    t.close = { by:t.closedBy||"", date:t.closedDate||"", note:t.closeComment||t.resolution||"", files:t.closeFiles||[] };
-  } else if (t.close) {
-    t.close.by    = t.close.by   || t.closedBy   || "";
-    t.close.date  = t.close.date || t.closedDate || "";
-    t.close.note  = t.close.note || t.closeComment || t.resolution || "";
-    t.close.files = Array.isArray(t.close.files) ? t.close.files : (t.closeFiles || []);
-  }
-  ensureSLAInitialized(t);
-}
-async function loadActiveCount(){
-  const tickets=await loadAllTickets();
-  const n = tickets.filter(t=>t.status==="open" || t.status==="monitoring").length;
-  byId('num-open-tix').textContent=n;
-}
-
-/* =================== SLA ENGINE =================== */
-function ensureSLAInitialized(t){
-  t.sla = t.sla || {};
-  if (t.comments?.length){
-    const last = t.comments.reduce((a,c)=> new Date(c.date) > new Date(a.date) ? c : a, t.comments[0]);
-    if(!t.sla.baseline || new Date(last.date) > new Date(t.sla.baseline)){
-      setSLACycle(t, 'comment', last.date);
-    }
-  } else if(!t.sla.baseline){
-    setSLACycle(t, 'created', t.createdAt || new Date().toISOString());
-  }
-}
-function setSLACycle(t, basis, isoBaseline){
-  const cycle = Number(t.sla?.cycle||0) + (basis==='comment'?1:0);
-  const warnMin   = basis==='created' ? SLA_INITIAL_WARN_MIN   : SLA_CYCLE_WARN_MIN;
-  const breachMin = basis==='created' ? SLA_INITIAL_BREACH_MIN : SLA_CYCLE_BREACH_MIN;
-  const baseline = new Date(isoBaseline||new Date()).toISOString();
-  t.sla = {
-    ...t.sla,
-    cycle, basis, baseline,
-    nextWarnAt:   new Date(new Date(baseline).getTime() + warnMin*60000).toISOString(),
-    nextBreachAt: new Date(new Date(baseline).getTime() + breachMin*60000).toISOString(),
-    warnSent:false, breached:false,
-    breaches: Array.isArray(t.sla?.breaches) ? t.sla.breaches : []
-  };
-  t.history = t.history || [];
-  t.history.push({action:"SLA Scheduled", user:curUser?.name||"System", date:new Date().toISOString(),
-                  details:`Cycle ${t.sla.cycle} • basis=${basis}`});
-}
-function recipientsForTicket(t){
-  const users=getUsers();
-  const emails = new Set();
-  (t.assignedTo||[]).forEach(u=>emails.add(normalizeEmail(u)));
-  if(t.openedByUser){ emails.add(normalizeEmail(t.openedByUser)); }
-  return [...emails].map(e=>{
-    const u = users.find(x=>x.username===e);
-    return { email:e, name:u?.name||e };
-  });
-}
-function ticketLinkFor(t){ return TICKET_URL_ROOT + "#ticket=" + t.id; }
-function sendSLAWarningEmail(t, recipient, minutesToBreach){
-  if(!window.emailjs) return Promise.resolve();
-  const vars = {
-    to_name: recipient.name || recipient.email,
-    ticket_id: t.id,
-    dairy_number: t.dairyNumber,
-    farm_name: t.farmName,
-    alert_type: t.alertType==="Other" ? (t.alertType + ": " + (t.alertOther||"")) : t.alertType,
-    priority: t.priority,
-    assigned_name: (t.assignedNames||[]).join(', '),
-    opened_by: t.openedBy,
-    created_date: t.createdDate,
-    issue_desc: t.issueDesc,
-    ticket_link: ticketLinkFor(t),
-    sla_cycle: String(t.sla?.cycle ?? 0),
-    minutes_to_breach: String(minutesToBreach)
-  };
-  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_SLA_WARN_TEMPLATE, vars, EMAILJS_PUBLIC_KEY)
-    .catch(err=>console.error("EmailJS SLA warn error", err));
-}
-function sendSLABreachEmail(t){
-  if(!window.emailjs || !EMAILJS_SLA_BREACH_TEMPLATE) return Promise.resolve();
-  const recips = recipientsForTicket(t);
-  const varsBase = {
-    ticket_id: t.id,
-    dairy_number: t.dairyNumber,
-    farm_name: t.farmName,
-    alert_type: t.alertType==="Other" ? (t.alertType + ": " + (t.alertOther||"")) : t.alertType,
-    priority: t.priority,
-    assigned_name: (t.assignedNames||[]).join(', '),
-    opened_by: t.openedBy,
-    created_date: t.createdDate,
-    issue_desc: t.issueDesc,
-    ticket_link: ticketLinkFor(t),
-    sla_cycle: String(t.sla?.cycle ?? 0)
-  };
-  return Promise.all(recips.map(r=>{
-    const vars = { ...varsBase, to_name: r.name||r.email };
-    return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_SLA_BREACH_TEMPLATE, vars, EMAILJS_PUBLIC_KEY)
-      .catch(err=>console.error("EmailJS SLA breach error", err));
-  }));
-}
-let _watchdogRunning=false;
-async function runSLAWatchdogOnce(){
-  if(_watchdogRunning) return; _watchdogRunning=true;
-  try{
-    const now=new Date();
-    const tickets = await loadAllTickets();
-    for (const t of tickets.filter(x=>x.status!=='closed')){
-      ensureSLAInitialized(t);
-      const s=t.sla||{}; if(!s.baseline) continue;
-      const warnAt=new Date(s.nextWarnAt), breachAt=new Date(s.nextBreachAt);
-
-      const lastC = t.comments?.[t.comments.length-1];
-      if(s.basis==='created' && lastC && new Date(lastC.date) > new Date(s.baseline)){
-        setSLACycle(t,'comment',lastC.date); await persistTicket(t); continue;
-      }
-
-      if(!s.warnSent && now>=warnAt && now<breachAt){
-        const minsToBreach=Math.max(0,Math.round((breachAt-now)/60000));
-        const recips = recipientsForTicket(t);
-        await Promise.all(recips.map(r=>sendSLAWarningEmail(t,r,minsToBreach)));
-        t.sla.warnSent=true;
-        t.history.push({action:"SLA Warned", user:"System", date:new Date().toISOString(), details:`Cycle ${t.sla.cycle}`});
-        await persistTicket(t);
-      }
-      if(!s.breached && now>=breachAt){
-        t.sla.breached=true;
-        t.sla.breaches=[...(t.sla.breaches||[]), {at:new Date().toISOString(), cycle:s.cycle, basis:s.basis, baseline:s.baseline, assignedAtBreach:(t.assignedNames||[])}];
-        t.history.push({action:"SLA Breach", user:"System", date:new Date().toISOString(), details:`Cycle ${t.sla.cycle}`});
-        await persistTicket(t);
-        await sendSLABreachEmail(t);
-      }
-    }
-  }catch(e){ console.error("SLA watchdog error", e); }
-  finally{ _watchdogRunning=false; }
-}
-function startSLAWatchdog(){
-  if(watchdogTimer) clearInterval(watchdogTimer);
-  runSLAWatchdogOnce();
-  watchdogTimer = setInterval(runSLAWatchdogOnce, SLA_WATCHDOG_INTERVAL);
-}
-function slaSnapshot(t){
-  const now=new Date(), s=t.sla||{};
-  const warnAt=s.nextWarnAt?new Date(s.nextWarnAt):null;
-  const breachAt=s.nextBreachAt?new Date(s.nextBreachAt):null;
-  const warnDue=warnAt && now>=warnAt && !s.warnSent;
-  const breached=!!s.breached;
-  const minsOpenSinceBaseline=s.baseline? Math.max(0,Math.round((now - new Date(s.baseline))/60000)) : 0;
-  const minsToWarn = warnAt? Math.round((warnAt-now)/60000) : null;
-  const minsToBreach = breachAt? Math.round((breachAt-now)/60000) : null;
-  return { warnDue, breached, minsOpenSinceBaseline, minsToWarn, minsToBreach };
-}
-function renderSLAInline(t){
-  const s=t.sla||{}, fmt=x=>x?new Date(x).toLocaleString():'-';
-  const lastB=(s.breaches||[]).slice(-1)[0]?.at;
-  return `<div class="mt-2">
-    <span class="pill">SLA cycle: <b>${s.cycle||0}</b></span>
-    <span class="pill">Basis: <b>${s.basis||'-'}</b></span>
-    <span class="pill">Warn @ <b>${fmt(s.nextWarnAt)}</b></span>
-    <span class="pill">Breach @ <b>${fmt(s.nextBreachAt)}</b></span>
-    <span class="pill">Breaches: <b>${(s.breaches||[]).length}</b>${lastB?` (last: ${new Date(lastB).toLocaleString()})`:''}</span>
-  </div>`;
-}
-async function persistTicket(t){
-  // Save under first available folder
-  const folder = ticketsFolders[0];
-  await storage.ref(`${folder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
-  invalidateTicketsCache();
-}
 
 /* =================== CREATE TICKET =================== */
 async function submitTicket(){
-  const assigned=Array.from(byId('assign-to').selectedOptions).map(o=>normalizeEmail(o.value));
+  const assigned=Array.from(byId('assign-to').selectedOptions).map(o=>o.value.toLowerCase());
   if(!assigned.length) return byId('ticket-msg').textContent="Select at least one assignee.";
   const users=getUsers(), assignedNames=assigned.map(u=>(users.find(x=>x.username===u)||{}).name||u);
 
   const createdAtISO = new Date().toISOString();
   const data={
-    id:uuidv4(), // unique ticket id (NOT dairy number)
+    id:uuidv4(),
     createdDate:val('ticket-date'),
     createdAt: createdAtISO,
     dairyNumber:val('dairy-number').trim(),
@@ -748,36 +460,74 @@ async function submitTicket(){
     files:[],
     firstResponseAt:null,
     monitoringStartedAt:null,
-    close:null,
-    sla:null
+    close:null
   };
   if(!data.dairyNumber||!data.farmName||!data.alertType||!data.issueDesc) return byId('ticket-msg').textContent="All required fields must be filled out.";
   if(data.alertType==="Other"&&!data.alertOther) return byId('ticket-msg').textContent="Specify the 'Other' alert type.";
-
   const files=Array.from(byId('ticket-file').files||[]); const errs=validateFiles(files); if(errs.length) return alert("Upload errors:\n"+errs.join("\n"));
   if(files.length){
     const pv=byId('ticket-file-preview');
     files.forEach(()=>{const bar=document.createElement('div');bar.className='progress-mini';bar.innerHTML='<div></div>';pv.appendChild(bar)});
     for(let i=0;i<files.length;i++){
       const f=files[i]; const bar=pv.querySelectorAll('.progress-mini>div')[i];
-      const url=await uploadFileBlob(f,`${ticketsFolders[0]}/attachments/${data.id}`,bar);
+      const url=await uploadFileBlob(f,`attachments/${data.id}`,bar);
       data.files.push({name:f.name,type:f.type,url});
     }
   }
-
-  setSLACycle(data, 'created', createdAtISO);
-
-  await storage.ref(`${ticketsFolders[0]}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
-  invalidateTicketsCache();
-
-  byId('ticket-msg').textContent="Ticket created.";
-  byId('ticket-form').reset(); autoFillTicketForm(); loadActiveCount();
-
-  // Notify assignees (new ticket)
+  await storage.ref(`${ticketsFolder}/${data.id}.json`).put(new Blob([JSON.stringify(data)],{type:"application/json"}));
+  byId('ticket-msg').textContent="Ticket created."; byId('ticket-form').reset(); autoFillTicketForm(); loadActiveCount();
   assigned.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(data,to.username)});
 }
 
-/* =================== LOAD / FILTER =================== */
+/* =================== LOAD / NORMALISE =================== */
+async function loadAllTickets(){
+  try{
+    const folderRef=storage.ref(ticketsFolder);
+    const res=await folderRef.listAll();
+    const arr=[];
+    for(const fileRef of res.items){
+      if(fileRef.name.endsWith('.json') && !fileRef.name.startsWith('attachments/')){
+        const url=await fileRef.getDownloadURL();
+        const t=await fetch(url).then(r=>r.json());
+        if(!Array.isArray(t.assignedTo)) t.assignedTo = t.assignedTo ? [t.assignedTo] : [];
+        if(!Array.isArray(t.assignedNames)) t.assignedNames = t.assignedName ? [t.assignedName] : (t.assignedTo||[]);
+        t.comments = t.comments || [];
+        t.history  = t.history || [];
+        if(!t.createdAt){
+          const createdEvt = (t.history||[]).find(h=> (h.action||"").toLowerCase()==="created");
+          t.createdAt = createdEvt?.date || (t.createdDate ? (t.createdDate + "T00:00:00.000Z") : new Date().toISOString());
+        }
+        const hasLegacyClose = t.closedBy || t.closedDate || t.closeComment || t.resolution;
+        if (!t.close && hasLegacyClose) {
+          t.close = { by:t.closedBy||"", date:t.closedDate||"", note:t.closeComment||t.resolution||"", files:t.closeFiles||[] };
+        } else if (t.close) {
+          t.close.by   = t.close.by   || t.closedBy   || "";
+          t.close.date = t.close.date || t.closedDate || "";
+          t.close.note = t.close.note || t.closeComment || t.resolution || "";
+          t.close.files = Array.isArray(t.close.files) ? t.close.files : (t.closeFiles || []);
+        }
+        arr.push(t);
+      }
+    }
+    return arr;
+  }catch{return[]}
+}
+async function loadActiveCount(){
+  const tickets=await loadAllTickets();
+  const n = tickets.filter(t=>t.status==="open" || t.status==="monitoring").length;
+  byId('num-open-tix').textContent=n;
+}
+
+/* =================== NAV / FILTERS =================== */
+function backToMain(){
+  showMain();
+  byId('ticket-table-wrap').innerHTML='';
+  byId('ticket-cards').innerHTML='';
+  byId('ticket-list-controls').innerHTML='';
+  byId('ticket-view-modal').classList.add('hidden');
+  ['btn-csv','btn-xlsx'].forEach(id=>byId(id).style.display='none');
+  byId('summary-section').classList.add('hidden');
+}
 async function showActiveTickets(){
   byId('ticket-section').classList.add('hidden');
   byId('ticket-list-section').classList.remove('hidden');
@@ -794,33 +544,23 @@ async function showClosedTickets(){
   ['btn-csv','btn-xlsx'].forEach(id=>byId(id).style.display='');
   ticketFilterUI('closed');
 }
-function backToMain(){
-  showMain();
-  byId('ticket-table-wrap').innerHTML='';
-  byId('ticket-cards').innerHTML='';
-  byId('ticket-list-controls').innerHTML='';
-  byId('ticket-view-modal').classList.add('hidden');
-  ['btn-csv','btn-xlsx'].forEach(id=>byId(id).style.display='none');
-}
 function ticketFilterUI(scope){
   const users=getUsers();
   byId('ticket-list-controls').innerHTML = `
-    <div class="d-flex flex-wrap gap-2">
-      <input class="form-control search-box" style="max-width:220px" id="filter-search" placeholder="Keyword">
-      <select id="filter-assignee" class="form-select search-box" style="max-width:220px">
-        <option value="">All Users</option>
-        ${users.map(u=>`<option value="${u.username}">${u.name}</option>`).join('')}
-      </select>
-      <select id="filter-priority" class="form-select search-box" style="max-width:160px">
-        <option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option>
-      </select>
-      <select id="filter-alert" class="form-select search-box" style="max-width:200px">
-        <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
-      </select>
-      <input type="date" id="filter-date" class="form-control search-box" style="max-width:170px">
-      <span class="btn btn-sm btn-outline" id="chip-hasimg">Has Images</span>
-      <button class="btn btn-agora btn-sm" onclick="filterTickets('${scope}')">Filter</button>
-    </div>`;
+    <input class="form-control search-box d-inline" id="filter-search" placeholder="Keyword">
+    <select id="filter-assignee" class="form-select search-box">
+      <option value="">All Users</option>
+      ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
+    </select>
+    <select id="filter-priority" class="form-select search-box">
+      <option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option>
+    </select>
+    <select id="filter-alert" class="form-select search-box">
+      <option value="">All Alerts</option><option>Temperature</option><option>Concentration</option><option>Plant Pressure</option><option>Milking Vacuum</option><option>Teat Spray</option><option>Other</option>
+    </select>
+    <input type="date" id="filter-date" class="form-control search-box">
+    <span class="btn btn-sm btn-outline" id="chip-hasimg">Has Images</span>
+    <button class="btn btn-agora btn-sm" onclick="filterTickets('${scope}')">Filter</button>`;
   byId('filter-search').onkeydown=(e)=>{if(e.key==='Enter')filterTickets(scope)};
   byId('chip-hasimg').onclick=()=>byId('chip-hasimg').classList.toggle('active');
   filterTickets(scope);
@@ -838,29 +578,31 @@ async function filterTickets(scope){
         hasImg=byId('chip-hasimg')?.classList.contains('active');
   tickets=tickets.filter(t=>
     (!s || JSON.stringify(t).toLowerCase().includes(s.toLowerCase())) &&
-    (!ass || (t.assignedTo||[]).includes(ass)) &&
+    (!ass || (t.assignedTo||[]).map(x=>x.toLowerCase()).includes(ass.toLowerCase())) &&
     (!pr || t.priority===pr) &&
     (!al || t.alertType===al) &&
     (!dt || (t.createdDate||"").startsWith(dt)) &&
-    (!hasImg || (mediaCount(t)>0))
+    (!hasImg || (t.files?.length||0)>0)
   );
   renderTicketTable(tickets, scope==='closed');
   renderTicketCards(tickets, scope==='closed');
 }
 
 /* =================== TABLES & CARDS =================== */
+function slaFor(t){ return (t.alertType==="Temperature") ? SLA.Temperature : SLA.DEFAULT; }
 function shortRow(t){
-  const snap = slaSnapshot(t);
+  const nowISO=new Date().toISOString();
+  const minsOpen = (t.status==="open") ? minutesBetween(t.createdAt,nowISO) :
+                   (t.status==="monitoring" ? minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO) : 0);
   const ageStr = (t.status==="closed" && t.close?.date)
       ? `resolved ${fmtHrs(minutesBetween(t.createdAt, t.close.date))}`
-      : (t.status==="monitoring" ? `monitoring ${fmtHrs(snap.minsOpenSinceBaseline)}` : `open ${fmtHrs(snap.minsOpenSinceBaseline)}`);
+      : (t.status==="monitoring" ? `monitoring ${fmtHrs(minsOpen)}` : `open ${fmtHrs(minsOpen)}`);
   return {
     id:t.id,dairy:t.dairyNumber,farm:t.farmName,
     alert:t.alertType+(t.alertType==='Other'?`: ${t.alertOther||''}`:''),
-    pr:t.priority, ass:(t.assignedNames||[]).join(', '), opened:t.openedBy, date:t.createdDate||'', status:t.status, age:ageStr, snap
+    pr:t.priority, ass:(t.assignedNames||[]).join(', '), opened:t.openedBy, date:t.createdDate||'', status:t.status, age:ageStr
   }
 }
-let _rowsCache=[], _rowsClosedFlag=false;
 function sortBy(key, rows){
   if(currentSort.key===key) currentSort.dir*=-1; else {currentSort.key=key; currentSort.dir=1}
   rows.sort((a,b)=>{
@@ -870,44 +612,52 @@ function sortBy(key, rows){
 }
 function renderTicketTable(tickets,isClosed){
   const rows=tickets.map(shortRow);
-  _rowsCache=rows; _rowsClosedFlag=isClosed;
   let html=`<table class="table table-bordered table-sm"><thead><tr>
-    <th class="th-sort" onclick="renderSorted('dairy')">Dairy #</th>
-    <th class="th-sort" onclick="renderSorted('farm')">Farm</th>
-    <th class="th-sort" onclick="renderSorted('alert')">Alert</th>
-    <th class="th-sort" onclick="renderSorted('pr')">Prio</th>
+    <th class="th-sort" onclick="renderSorted('dairy', ${isClosed})">Dairy #</th>
+    <th class="th-sort" onclick="renderSorted('farm', ${isClosed})">Farm</th>
+    <th class="th-sort" onclick="renderSorted('alert', ${isClosed})">Alert</th>
+    <th class="th-sort" onclick="renderSorted('pr', ${isClosed})">Prio</th>
     <th>Assigned</th>
-    <th class="th-sort" onclick="renderSorted('opened')">Opened</th>
-    <th class="th-sort" onclick="renderSorted('date')">Date</th>
-    <th class="th-sort" onclick="renderSorted('age')">Age</th>
+    <th class="th-sort" onclick="renderSorted('opened', ${isClosed})">Opened</th>
+    <th class="th-sort" onclick="renderSorted('date', ${isClosed})">Date</th>
+    <th class="th-sort" onclick="renderSorted('age', ${isClosed})">Age</th>
     <th>Status</th><th></th></tr></thead><tbody id="ticket-tbody">`;
   rows.forEach(r=>{
-    const t=tickets.find(x=>x.id===r.id); const snap=r.snap;
-    const badge = snap.breached ? `<span class="badge bg-danger">SLA</span>` : (snap.warnDue? `<span class="badge bg-warning text-dark">Warn</span>` : '');
+    const t=tickets.find(x=>x.id===r.id);
+    const slaMins = slaFor(t);
+    const isActive = t.status!=='closed';
+    const currMins = isActive ? (t.status==='monitoring' ? minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString())
+                                                         : minutesBetween(t.createdAt, new Date().toISOString())) : 0;
+    const slaBreach = isActive && currMins>slaMins ? `<span class="badge bg-danger">SLA</span>` : '';
     html+=`<tr>
       <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosed})">${r.dairy}</span></td>
       <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
-      <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${badge}</td>
+      <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${slaBreach}</td>
       <td><span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span></td>
       <td>${!isClosed && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="showCloseModal('${r.id}')">Close</button>`:''}</td></tr>`;
   });
   html+=`</tbody></table>`;
   byId('ticket-table-wrap').innerHTML=html;
-}
-window.renderSorted=function(key){
-  const rows=[..._rowsCache]; sortBy(key,rows);
-  const tb=byId('ticket-tbody');
-  tb.innerHTML=rows.map(r=>{
-    const t=(ticketsCache.data||[]).find(x=>x.id===r.id)||{};
-    const snap=r.snap;
-    const badge = snap.breached ? `<span class="badge bg-danger">SLA</span>` : (snap.warnDue? `<span class="badge bg-warning text-dark">Warn</span>` : '');
-    return `<tr>
-      <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${_rowsClosedFlag})">${r.dairy}</span></td>
-      <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
-      <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${badge}</td>
-      <td><span class="ticket-status-${t.status}">${(t.status||'')[0]?.toUpperCase()+(t.status||'').slice(1)}</span></td>
-      <td>${!_rowsClosedFlag && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="showCloseModal('${r.id}')">Close</button>`:''}</td></tr>`;
-  }).join('');
+
+  window.renderSorted=async function(key,isClosedFlag){
+    let t2=(await loadAllTickets()).filter(t=>isClosedFlag? t.status==='closed' : (t.status==='open'||t.status==='monitoring'));
+    const r2=t2.map(shortRow); sortBy(key,r2);
+    const tb=byId('ticket-tbody');
+    tb.innerHTML=r2.map(r=>{
+      const t=t2.find(x=>x.id===r.id);
+      const slaMins = slaFor(t);
+      const isActive = t.status!=='closed';
+      const currMins = isActive ? (t.status==='monitoring' ? minutesBetween(t.monitoringStartedAt||t.createdAt, new Date().toISOString())
+                                                           : minutesBetween(t.createdAt, new Date().toISOString())) : 0;
+      const slaBreach = isActive && currMins>slaMins ? `<span class="badge bg-danger">SLA</span>` : '';
+      return `<tr>
+        <td><span class="ticket-link" onclick="viewTicketDetails('${r.id}', ${isClosedFlag})">${r.dairy}</span></td>
+        <td>${r.farm}</td><td>${r.alert}</td><td>${r.pr}</td><td>${r.ass}</td>
+        <td>${r.opened}</td><td>${r.date}</td><td>${r.age} ${slaBreach}</td>
+        <td><span class="ticket-status-${t.status}">${t.status[0].toUpperCase()+t.status.slice(1)}</span></td>
+        <td>${!isClosedFlag && curUser.role==="admin" ? `<button class="btn btn-sm btn-agora" onclick="showCloseModal('${r.id}')">Close</button>`:''}</td></tr>`;
+    }).join('');
+  }
 }
 function mediaCount(t){
   const issueImgs=(t.files||[]).filter(looksLikeImage).length;
@@ -917,11 +667,13 @@ function mediaCount(t){
 }
 function renderTicketCards(tickets,isClosed){
   const wrap=byId('ticket-cards'); wrap.innerHTML='';
-  if(!tickets.length){ wrap.innerHTML='<i>No tickets found for the current filter.</i>'; return; }
   tickets.forEach(t=>{
-    const snap = slaSnapshot(t);
+    const nowISO=new Date().toISOString();
+    const statusMinutes = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, nowISO)
+                        : (t.status==='open') ? minutesBetween(t.createdAt, nowISO) : 0;
     const mCount=mediaCount(t);
-    const badge = snap.breached ? `<span class="b-sla">SLA</span>` : (snap.warnDue? `<span class="b-warn">Warn</span>` : '');
+    const slaMins = slaFor(t);
+    const slaBadge = (t.status!=='closed' && statusMinutes>slaMins) ? `<span class="b-sla">SLA</span>` : '';
     const card=document.createElement('div'); card.className='tcard'; card.id=`card-${t.id}`;
     card.innerHTML=`
       <div class="tcard-head">
@@ -932,9 +684,9 @@ function renderTicketCards(tickets,isClosed){
         <div class="t-badges">
           <span class="b-priority">${t.priority}</span>
           <span class="b-status ${t.status==='open'?'text-success':(t.status==='monitoring'?'text-primary':'text-danger')}">${t.status}</span>
-          ${badge}
-          <span class="b-age">${fmtHrs(snap.minsOpenSinceBaseline)}</span>
+          <span class="b-age">${fmtHrs(statusMinutes)}</span>
           ${mCount?`<span class="b-media">${mCount}</span>`:''}
+          ${slaBadge}
         </div>
       </div>
       <div class="tcard-body">
@@ -959,7 +711,6 @@ window.viewTicketDetails=async function(id,isClosed){
   const container=isMobile?byId(`expand-${id}`):byId('ticket-view-modal');
   container.classList.remove('hidden');
   let html=`<h5>Ticket #${t.dairyNumber}</h5>
-    <div class="small-note">Unique ID: ${t.id}</div>
     <b>Farm:</b> ${t.farmName}<br>
     <b>Alert:</b> ${t.alertType}${t.alertType==='Other'?": "+(t.alertOther||""):""}<br>
     <b>Priority:</b> ${t.priority}<br>
@@ -969,7 +720,7 @@ window.viewTicketDetails=async function(id,isClosed){
     <b>First Response:</b> ${t.firstResponseAt? new Date(t.firstResponseAt).toLocaleString() : '<i>Not yet</i>'}<br>
     <b>Issue:</b> ${t.issueDesc}<br>
     <b>Opened:</b> ${t.createdDate||""} by ${t.openedBy} (${t.position})<br>
-    ${renderSLAInline(t)}`;
+    <b>Ticket ID:</b> ${t.id}<br>`;
   if(t.files?.length){
     html+=`<div class="mt-2"><b>Files:</b> `+t.files.map(f=>looksLikeImage(f)?`<a href="${f.url}" target="_blank"><img class="photo-thumb" src="${f.url}" loading="lazy"></a>`:`<a class="file-chip" href="${f.url}" target="_blank">${f.name||'file'}</a>`).join(' ')+`</div>`;
   }
@@ -981,6 +732,7 @@ window.viewTicketDetails=async function(id,isClosed){
     </div>`;
   });
   html+=`</div>`;
+  const canCommentReassign=(t.status!=="closed") && (curUser.role==="admin" || (t.assignedTo||[]).includes(curUser.username.toLowerCase()));
   if(t.status!=="closed"){
     const users=getUsers();
     const allowMonitorToggle = t.status==="open";
@@ -993,10 +745,10 @@ window.viewTicketDetails=async function(id,isClosed){
           <label class="form-label mb-0">Assignees (optional)</label>
           <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="reassign-mode"><label class="form-check-label" for="reassign-mode">Replace current</label></div>
         </div>
-        <select id="comment-assignees" class="form-select mt-1" multiple>
-          ${users.map(u=>`<option value="${u.username}">${u.name}</option>`).join('')}
+        <select id="comment-assignees" class="form-select mt-1" multiple ${canCommentReassign?'':'disabled'}>
+          ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
         </select>
-        <div class="small-note mt-1">Leave empty to keep current assignees. Toggle = Replace; otherwise Add.</div>
+        <div class="small-note mt-1">${canCommentReassign?'Leave empty to keep current assignees. Toggle = Replace; otherwise Add.':'Only current assignees or admins can change assignees.'}</div>
       </div>
       <div class="form-check form-switch mt-2 ${allowMonitorToggle?'':'hidden'}">
         <input class="form-check-input" type="checkbox" id="set-monitoring">
@@ -1028,45 +780,42 @@ function renderAssigneeEditor(t){
   return `<div class="mt-2">
     <label class="form-label">Edit Assignees</label>
     <select id="edit-assignees" class="form-select" multiple>
-      ${users.map(u=>`<option value="${u.username}" ${t.assignedTo?.includes(u.username)?'selected':''}>${u.name}</option>`).join('')}
+      ${users.map(u=>`<option value="${u.username.toLowerCase()}" ${t.assignedTo?.includes(u.username.toLowerCase())?'selected':''}>${u.name}</option>`).join('')}
     </select>
     <button class="btn btn-admin mt-1" onclick="saveAssignees('${t.id}')">Save Assignees</button>
   </div>`;
 }
 window.saveAssignees=async function(id){
   if(curUser.role!=="admin") return;
-  const sel=byId('edit-assignees'); const newU=Array.from(sel.selectedOptions).map(o=>normalizeEmail(o.value));
+  const sel=byId('edit-assignees'); const newU=Array.from(sel.selectedOptions).map(o=>o.value.toLowerCase());
   const users=getUsers(); const newNames=newU.map(u=>(users.find(x=>x.username===u)||{}).name||u);
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
   const old=(t.assignedNames||[]).join(', ');
   t.assignedTo=newU; t.assignedNames=newNames;
   t.history.push({action:"Reassigned", user:curUser.name, date:(new Date()).toISOString(), details:`${old} → ${newNames.join(', ')}`});
-  await persistTicket(t);
+  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
   newU.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(t,to.username)});
   viewTicketDetails(id,false);
 };
-
 window.addComment=async function(id){
   const text=(byId('new-comment')||{}).value?.trim()||'';
   const files=Array.from((byId('comment-files')||{files:[]}).files); const errs=validateFiles(files); if(errs.length) return alert("Upload errors:\n"+errs.join("\n"));
   const setMonitoring = !!byId('set-monitoring')?.checked;
-  const sel=byId('comment-assignees'); const chosen=sel?Array.from(sel.selectedOptions).map(o=>normalizeEmail(o.value)):[]; const replace=byId('reassign-mode')?.checked||false;
+  const sel=byId('comment-assignees'); const chosen=sel?Array.from(sel.selectedOptions).map(o=>o.value.toLowerCase()):[]; const replace=byId('reassign-mode')?.checked||false;
   const ts=await loadAllTickets(); const t=ts.find(x=>x.id===id); if(!t) return;
-  const users=getUsers(); const c={id:uuidv4(), text, user:curUser.name, date:(new Date()).toISOString(), files:[], setMonitoring:setMonitoring||false};
-
-  if(!t.firstResponseAt){ t.firstResponseAt = new Date().toISOString(); }
-
+  const users=getUsers(); const c={id:uuidv4(), text, user:curUser.name, date:(new Date()).toLocaleString(), files:[], setMonitoring:setMonitoring||false};
+  if(!t.firstResponseAt){ t.firstResponseAt = new Date().toISOString(); } // SLA 24h to first response timer
   const pv=byId('comment-files-preview');
   if(files.length){
     files.forEach(()=>{const bar=document.createElement('div');bar.className='progress-mini';bar.innerHTML='<div></div>';pv.appendChild(bar)});
     for(let i=0;i<files.length;i++){
       const f=files[i]; const bar=pv.querySelectorAll('.progress-mini>div')[i];
-      const url=await uploadFileBlob(f,`${ticketsFolders[0]}/comments/${id}_${c.id}`,bar);
+      const url=await uploadFileBlob(f,`comments/${id}_${c.id}`,bar);
       c.files.push({name:f.name,type:f.type,url});
     }
   }
-
-  if(chosen.length){
+  const canReassign=(t.status!=="closed")&&(curUser.role==="admin"||(t.assignedTo||[]).includes(curUser.username.toLowerCase()));
+  if(canReassign && chosen.length){
     const old=t.assignedTo||[]; const oldSet=new Set(old); const newSet=new Set(replace?chosen:[...old,...chosen]);
     const oldArr=[...oldSet], newArr=[...newSet], added=newArr.filter(x=>!oldSet.has(x)), removed=replace?oldArr.filter(x=>!newSet.has(x)):[];
     t.assignedTo=newArr; t.assignedNames=newArr.map(u=>(users.find(x=>x.username===u)||{}).name||u);
@@ -1074,19 +823,14 @@ window.addComment=async function(id){
     added.forEach(un=>{const to=users.find(u=>u.username===un); if(to) sendTicketEmailNotification(t,to.username)});
     t.history.push({action:"ReassignedViaComment", user:curUser.name, date:(new Date()).toISOString(), details:`${c.reassign.old.join(', ')} → ${t.assignedNames.join(', ')}`});
   }
-
   if(setMonitoring && t.status==="open"){
     t.status = "monitoring";
     t.monitoringStartedAt = new Date().toISOString();
     t.history.push({action:"SetMonitoring", user:curUser.name, date:(new Date()).toISOString(), details:text||''});
   }
-
   t.comments.push(c);
   t.history.push({action:c.files.length?"CommentWithFiles":"Comment", user:curUser.name, date:(new Date()).toISOString(), details:text||'', files:(c.files||[])});
-
-  setSLACycle(t, 'comment', c.date);
-
-  await persistTicket(t);
+  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)],{type:"application/json"}));
   showActiveTickets();
 };
 
@@ -1109,17 +853,17 @@ async function doCloseFromModal(){
   for (let i=0;i<files.length;i++){
     const f = files[i];
     const barFill = pv.querySelectorAll('.progress-mini > div')[i];
-    const url = await uploadFileBlob(f, `${ticketsFolders[0]}/close/${t.id}`, barFill);
+    const url = await uploadFileBlob(f, `close/${t.id}`, barFill);
     close.files.push({ name:f.name, type:f.type, url });
   }
   t.status = "closed"; t.close = close;
   t.closedBy = close.by; t.closedDate = close.date.slice(0,10); t.closeComment = close.note; t.closeFiles = close.files;
   t.history = t.history || []; t.history.push({ action:"ClosedWithFiles", user:curUser.name, date:(new Date()).toISOString(), details:note||'', files:(close.files||[]) });
-  await persistTicket(t);
+  await storage.ref(`${ticketsFolder}/${t.id}.json`).put(new Blob([JSON.stringify(t)], { type: "application/json" }));
   hideCloseModal(); alert("Ticket closed."); showActiveTickets();
 }
 
-/* =================== SUMMARY =================== */
+/* =================== SUMMARY DASHBOARD =================== */
 function chipsUI(){
   return `
     <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -1153,7 +897,6 @@ async function showSummary(){
   byId('ticket-list-section').classList.add('hidden');
   byId('summary-section').classList.remove('hidden');
   byId('summary-filters').innerHTML = chipsUI();
-  await ensureChartJs();
   renderSummary();
 }
 function inChosenRange(date, range, from, to){
@@ -1164,6 +907,7 @@ function inChosenRange(date, range, from, to){
 }
 function destroyCharts(){ Object.values(charts).forEach(ch=>{ try{ch.destroy()}catch{} }); charts = {}; }
 function countBy(arr, fn){ const o={}; arr.forEach(x=>{const k=fn(x); o[k]=(o[k]||0)+1}); return o; }
+function groupBy(arr, fn){ const o={}; arr.forEach(x=>{const k=(typeof fn==='function')?fn(x):x[fn]; (o[k]||(o[k]=[])).push(x)}); return o; }
 
 async function renderSummary(){
   const tickets = await loadAllTickets();
@@ -1184,26 +928,38 @@ async function renderSummary(){
   const active = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
   const closedAll = tickets.filter(t=>t.status==='closed');
 
+  // KPI tiles
+  const activeCountsByType = countBy(active, t=>t.alertType||'Unknown');
+  const openTypeTiles = Object.entries(activeCountsByType).filter(([k,v])=>v>0).map(([k,v])=>({label:`Open ${k}`, value:v}));
+
+  // metrics only from "new format" (after createdAt exists)
   const newFormat = tickets.filter(t=>!!t.createdAt);
   const responses = newFormat.filter(t=>t.firstResponseAt);
   const avgFirstResponseMin = responses.length ? Math.round(responses.reduce((a,t)=>a+minutesBetween(t.createdAt, t.firstResponseAt),0)/responses.length) : 0;
   const closedNew = newFormat.filter(t=>t.status==='closed' && t.close?.date);
   const avgResolutionMin = closedNew.length ? Math.round(closedNew.reduce((a,t)=>a+minutesBetween(t.createdAt, t.close.date),0)/closedNew.length) : 0;
 
-  const totalBreaches = tickets.reduce((a,t)=>a+((t.sla?.breaches||[]).length),0);
+  const activeBreach = active.filter(t=>{
+    const m = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString()) : minutesBetween(t.createdAt, now.toISOString());
+    const slaBreach = m > slaFor(t);
+    const monBreach = (t.status==='monitoring') && m > MONITOR_MAX_MIN;
+    return slaBreach || monBreach;
+  }).length;
 
+  // KPI HTML
   const kpi = [
     {label:'Active Tickets', value:active.length},
     {label:'Closed Tickets (all time)', value:closedAll.length},
+    ...openTypeTiles.map(o=>({label:o.label, value:o.value})),
     {label:'Avg First Response (new)', value:fmtHrs(avgFirstResponseMin)||'-'},
     {label:'Avg Resolution (new)', value:avgResolutionMin?fmtHrs(avgResolutionMin):'0h'},
-    {label:'SLA Breaches (all time)', value:totalBreaches}
+    {label:'Active SLA Breaches', value:activeBreach}
   ];
   byId('kpi-grid').innerHTML = kpi.map(x=>`<div class="kpi"><div class="num">${x.value}</div><div class="label">${x.label}</div></div>`).join('');
 
-  await ensureChartJs();
   destroyCharts();
 
+  // Donut = all tickets (all time) by alert type
   const allCounts = countBy(tickets, x=>x.alertType||'Unknown');
   charts.alertType = new Chart(byId('chartAlertType').getContext('2d'), {
     type:'doughnut',
@@ -1211,9 +967,11 @@ async function renderSummary(){
     options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
   });
 
+  // Open age (active only, regardless of filter)
   const ageBuckets = { '0-24h':0, '1-3d':0, '4-7d':0, '8d+':0 };
   active.forEach(t=>{
-    const mins = minutesBetween(t.sla?.baseline||t.createdAt, now.toISOString());
+    const mins = (t.status==='monitoring') ? minutesBetween(t.monitoringStartedAt||t.createdAt, now.toISOString())
+                                           : minutesBetween(t.createdAt, now.toISOString());
     const days = mins/1440;
     if(days<=1) ageBuckets['0-24h']++;
     else if(days<=3) ageBuckets['1-3d']++;
@@ -1225,22 +983,64 @@ async function renderSummary(){
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{precision:0}}} }
   });
 
+  // Average times (new‑format only)
   charts.times = new Chart(byId('chartTimes').getContext('2d'), {
     type:'bar',
     data:{ labels:['First Response','Resolution'], datasets:[{ data:[Math.round(avgFirstResponseMin/60), Math.round(avgResolutionMin/60)] }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, title:{display:true,text:'hours'}}} }
   });
 
+  // Reassignments & SLA
   const reassignedCount = tickets.filter(t=>(t.history||[]).some(h=>(h.action||'').toLowerCase().includes('reassign'))).length;
   charts.reassignSLA = new Chart(byId('chartReassignSLA').getContext('2d'), {
-    type:'bar', data:{ labels:['Reassigned','SLA Breaches'], datasets:[{ data:[reassignedCount, totalBreaches] }] },
+    type:'bar', data:{ labels:['Reassigned','SLA Breaches'], datasets:[{ data:[reassignedCount, activeBreach] }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
   });
 
+  // Recurring problems (all time). Key: Dairy + Alert.
+  const key = t => `${t.dairyNumber} | ${t.alertType}`;
+  const map = groupBy(tickets, key);
+  const recur = Object.entries(map).filter(([k,arr])=>arr.length>=3).sort((a,b)=>b[1].length - a[1].length).slice(0,8);
+  byId('recurring-list').innerHTML = recur.length
+    ? `<ul class="mb-0">${recur.map(([k,arr])=>`<li><a href="#" onclick="showRecurring('${k.replace(/'/g,"\\'")}');return false;">${k}</a> — <b>${arr.length}</b> tickets</li>`).join('')}</ul>`
+    : `<i>No recurring clusters yet.</i>`;
+  byId('recurring-results').innerHTML='';
+
+  // Latest photos by dairy (albums)
   renderLatestPhotosByDairy(tickets);
 }
 
-/* =================== Latest Photos by Dairy =================== */
+function showOverlay(text){ const o=byId('screen-overlay'); byId('overlay-text').textContent=text||'Loading…'; o.style.display='flex'; }
+function hideOverlay(){ byId('screen-overlay').style.display='none'; }
+
+async function showRecurring(key){
+  showOverlay('Loading tickets…');
+  const tickets = await loadAllTickets();
+  const arr = tickets.filter(t=>`${t.dairyNumber} | ${t.alertType}`===key);
+  // Cards like ticket cards
+  const wrap = document.createElement('div');
+  arr.forEach(t=>{
+    const link=`<a href="#ticket=${t.id}">open</a>`;
+    const closed = t.status==='closed' ? (t.close?.date||'') : '';
+    const card = document.createElement('div');
+    card.className='tcard';
+    card.innerHTML=`
+      <div class="tcard-head">
+        <div><div class="t-id">#${t.dairyNumber} • ${t.farmName}</div><div class="text-muted t-more">${t.alertType}</div></div>
+        <div class="t-badges"><span class="b-status ${t.status==='open'?'text-success':(t.status==='monitoring'?'text-primary':'text-danger')}">${t.status}</span></div>
+      </div>
+      <div class="tcard-body">
+        <div><b>Opened:</b> ${t.createdDate||''} • <b>Closed:</b> ${closed||'-'} • ${link}</div>
+        <div class="mt-1">${t.issueDesc||''}</div>
+      </div>`;
+    wrap.appendChild(card);
+  });
+  byId('recurring-results').innerHTML = `<div class="mt-2"><b>Tickets for ${key} (all time)</b></div>`;
+  byId('recurring-results').appendChild(wrap);
+  hideOverlay();
+}
+
+/* Photos by dairy with album modal */
 function renderLatestPhotosByDairy(tickets){
   const byDairy={};
   tickets.forEach(t=>{
@@ -1261,10 +1061,8 @@ function renderLatestPhotosByDairy(tickets){
       <div>${few.map(x=>`<img class="photo-thumb" src="${x.url}" loading="lazy">`).join('')}</div>`;
     box.appendChild(shell);
   });
-  window._photoAlbums=byDairy;
+  window._photoAlbums=byDairy; // store for album modal
 }
-function showOverlay(text){ const o=byId('screen-overlay'); byId('overlay-text').textContent=text||'Loading…'; o.style.display='flex'; }
-function hideOverlay(){ byId('screen-overlay').style.display='none'; }
 function openAlbum(dairy){
   const album=(window._photoAlbums||{})[dairy]||[];
   showOverlay(`Dairy #${dairy} — ${album.length} photos`);
@@ -1272,49 +1070,60 @@ function openAlbum(dairy){
   const box=document.createElement('div');
   box.innerHTML=`<div class="album-grid">${album.map(p=>`<a href="${p.url}" target="_blank"><img src="${p.url}" loading="lazy"></a>`).join('')}</div>
     <div class="mt-3"><button class="btn btn-agora" onclick="hideOverlay()">Close</button></div>`;
-  const ob=byId('overlay-text'); ob.innerHTML=''; 
-  o.querySelector('.overlay-box').innerHTML=''; 
+  const ob=byId('overlay-text'); ob.innerHTML=''; // clear text
+  o.querySelector('.overlay-box').innerHTML=''; // replace
   o.querySelector('.overlay-box').appendChild(box);
 }
 
 /* =================== EXPORTS =================== */
-function normalizeForExport(t){
+function normalizeTicket(t){
+  let closedBy   = (t.close && t.close.by)   || t.closedBy   || "";
+  let closedDate = (t.close && t.close.date) || t.closedDate || "";
+  let closeNote  = (t.close && t.close.note) || t.closeComment || t.resolution || "";
+  if ((!closedBy || !closedDate || !closeNote) && Array.isArray(t.history)) {
+    const closeEvt = [...t.history].reverse().find(h => ((h.action||"").toLowerCase().includes("closed")));
+    if (closeEvt) {
+      closedBy   = closedBy   || closeEvt.user || "";
+      closedDate = closedDate || (closeEvt.date ? closeEvt.date.slice(0,10) : "");
+      closeNote  = closeNote  || (closeEvt.details || "");
+    }
+  }
   const issueFiles    = (t.files || []).map(f => f.url).join(" ; ");
   const commentFiles  = (t.comments || []).flatMap(c => (c.files || []).map(f => f.url)).join(" ; ");
   const resolvedFiles = ((t.close && t.close.files) || t.closeFiles || []).map(f => f.url).join(" ; ");
   const firstRespAt = t.firstResponseAt || "";
   const firstRespMin = firstRespAt ? minutesBetween(t.createdAt, firstRespAt) : "";
   const resolutionMin = (t.status==='closed' && t.close?.date) ? minutesBetween(t.createdAt, t.close.date) : "";
+  const monitoringAt = t.monitoringStartedAt || "";
+  const monitoringMinActive = (t.status==='monitoring' && monitoringAt) ? minutesBetween(monitoringAt, new Date().toISOString()) : "";
+  const monitoringMinTotal = monitoringAt ? (t.status==='closed' ? minutesBetween(monitoringAt, t.close?.date||new Date().toISOString()) : monitoringMinActive) : "";
+  const reassignedCount = (t.history || []).filter(h => (h.action || "").toLowerCase().includes("reassign")).length;
   const lastUpdated = ((t.history || []).map(h => h.date).sort().pop()) || t.createdAt || t.createdDate || "";
-  const breaches = (t.sla?.breaches||[]).length;
   return {
     ID: t.id, DairyNumber: t.dairyNumber, FarmName: t.farmName, AlertType: t.alertType, Priority: t.priority,
     AssignedTo: (t.assignedNames || []).join("; "), Status: t.status, CreatedDate: t.createdDate || "", CreatedAtISO: t.createdAt || "",
-    FirstResponseAt: firstRespAt, FirstResponseMinutes: firstRespMin,
-    ClosedDate: t.close?.date||"", ClosedBy: t.close?.by||"", CloseDescription: t.close?.note||"", ResolutionMinutes: resolutionMin,
-    OpenedBy: t.openedBy || "", IssueDescription: t.issueDesc || "",
-    IssueFiles: issueFiles, CommentFileURLs: commentFiles, ResolvedFiles: resolvedFiles,
-    CommentsCount: (t.comments || []).length, HistoryCount: (t.history || []).length, SLABreaches: breaches, SLACycle: t.sla?.cycle||0
+    FirstResponseAt: firstRespAt, FirstResponseMinutes: firstRespMin, MonitoringStartedAt: monitoringAt, MonitoringMinutes: monitoringMinTotal,
+    ClosedDate: closedDate, ClosedBy: closedBy, CloseDescription: closeNote, ResolutionMinutes: resolutionMin, OpenedBy: t.openedBy || "",
+    IssueDescription: t.issueDesc || "", IssueFiles: issueFiles, CommentFileURLs: commentFiles, ResolvedFiles: resolvedFiles,
+    CommentsCount: (t.comments || []).length, HistoryCount: (t.history || []).length, ReassignedCount: reassignedCount, LastUpdated: lastUpdated
   };
 }
 async function exportToCSV(){
-  await ensureXlsx();
   const tickets=await loadAllTickets();
-  const flat=tickets.map(normalizeForExport);
-  if(!flat.length){ alert("No data to export."); return; }
-  const headers = Object.keys(flat[0]);
+  const flat=tickets.map(normalizeTicket);
+  const headers = Object.keys(flat[0] || {ID:"",DairyNumber:""});
   const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   const rows=[headers.join(',')].concat(flat.map(r=>headers.map(h=>quote(r[h])).join(',')));
   const csv="\uFEFF"+rows.join("\r\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download="tickets_export.csv"; document.body.appendChild(a); a.click();
+  const a=document.createElement('a'); a.href=url; a.download="tickets_export.csv";
+  document.body.appendChild(a); a.click();
   setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
 }
 async function exportToXLSX(){
-  await ensureXlsx();
   const tickets=await loadAllTickets();
-  const flat=tickets.map(normalizeForExport);
+  const flat=tickets.map(normalizeTicket);
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.json_to_sheet(flat);
   XLSX.utils.book_append_sheet(wb, ws, "Tickets");
@@ -1335,21 +1144,62 @@ async function exportToXLSX(){
   if(comments.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(comments), "Comments");
   XLSX.writeFile(wb, "tickets_export.xlsx");
 }
+
+/* Export Summary CSV */
 async function exportSummary(){
   const tickets = await loadAllTickets();
+  const now = new Date();
+
   const active = tickets.filter(t=>t.status==='open'||t.status==='monitoring');
   const closedAll = tickets.filter(t=>t.status==='closed');
-  const totalBreaches = tickets.reduce((a,t)=>a+((t.sla?.breaches||[]).length),0);
+
+  const countBy = (arr, fn)=>arr.reduce((m,x)=>{const k=fn(x); m[k]=(m[k]||0)+1; return m;}, {});
+  const allCounts = countBy(tickets, t=>t.alertType||'Unknown');
+
+  const minutesBetween=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/60000));
+  const slaFor=t=> (t.alertType==="Temperature") ? 24*60 : 72*60;
+
+  const ageBuckets = { '0-24h':0, '1-3d':0, '4-7d':0, '8d+':0 };
+  active.forEach(t=>{
+    const mins = (t.status==='monitoring')
+      ? minutesBetween(t.monitoringStartedAt||t.createdAt, now)
+      : minutesBetween(t.createdAt, now);
+    const days = mins/1440;
+    if(days<=1) ageBuckets['0-24h']++;
+    else if(days<=3) ageBuckets['1-3d']++;
+    else if(days<=7) ageBuckets['4-7d']++;
+    else ageBuckets['8d+']++;
+  });
+
+  const newFmt = tickets.filter(t=>!!t.createdAt);
+  const resp = newFmt.filter(t=>t.firstResponseAt);
+  const avgFR = resp.length ? Math.round(resp.reduce((a,t)=>a+minutesBetween(t.createdAt,t.firstResponseAt),0)/resp.length) : 0;
+  const closedNew = newFmt.filter(t=>t.status==='closed' && t.close?.date);
+  const avgRes = closedNew.length ? Math.round(closedNew.reduce((a,t)=>a+minutesBetween(t.createdAt,t.close.date),0)/closedNew.length) : 0;
+
+  const activeBreach = active.filter(t=>{
+    const mins = (t.status==='monitoring')
+      ? minutesBetween(t.monitoringStartedAt||t.createdAt, now)
+      : minutesBetween(t.createdAt, now);
+    return mins > slaFor(t) || (t.status==='monitoring' && mins > 7*24*60);
+  }).length;
+
   const rows = [
     ['Section','Metric','Value'],
     ['KPI','Active Tickets', active.length],
     ['KPI','Closed Tickets (all time)', closedAll.length],
-    ['KPI','SLA Breaches (all time)', totalBreaches]
+    ['KPI','Avg First Response (new, hours)', Math.round(avgFR/60)],
+    ['KPI','Avg Resolution (new, hours)', Math.round(avgRes/60)],
+    ['KPI','Active SLA Breaches', activeBreach],
+    ...Object.entries(allCounts).map(([k,v])=>['All-time by Alert Type', k, v]),
+    ...Object.entries(ageBuckets).map(([k,v])=>['Open Age Buckets', k, v])
   ];
+
   const csv = '\uFEFF' + rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'summary_export.csv';
+  const a = document.createElement('a');
+  a.href = url; a.download = 'summary_export.csv';
   document.body.appendChild(a); a.click();
   setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)}, 800);
 }
@@ -1389,7 +1239,7 @@ function adminPanel(){
       <div class="d-flex gap-2 align-items-center mb-2">
         <select id="loginhist-user" class="form-select" style="max-width:240px">
           <option value="">All users</option>
-          ${users.map(u=>`<option value="${u.username}">${u.name}</option>`).join('')}
+          ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
         </select>
         <button class="btn btn-agora" onclick="renderLoginHistory()">Apply</button>
         <button class="btn btn-outline" onclick="clearLoginHistory()">Clear</button>
@@ -1402,7 +1252,7 @@ function adminPanel(){
       <div class="d-flex gap-2 align-items-center mb-2">
         <select id="hist-user" class="form-select" style="max-width:240px">
           <option value="">All users</option>
-          ${users.map(u=>`<option value="${u.username}">${u.name}</option>`).join('')}
+          ${users.map(u=>`<option value="${u.username.toLowerCase()}">${u.name}</option>`).join('')}
         </select>
         <button class="btn btn-agora" onclick="renderUserHistory()">Apply</button>
       </div>
@@ -1426,7 +1276,7 @@ function renderUserList(){
 }
 function viewProfile(username){
   const u=getUsers().find(x=>x.username===username); if(!u) return;
-  showOverlay('');
+  showOverlay(''); // reuse overlay as modal
   const o=byId('screen-overlay'); const box=document.createElement('div');
   box.innerHTML=`<div class="sum-card" style="max-width:520px;margin:0 auto">
     <div class="sum-title">User Profile</div>
@@ -1439,7 +1289,7 @@ function viewProfile(username){
 }
 function createUser(){
   const name=(byId('new-fullname').value||'').trim();
-  const email=normalizeEmail(byId('new-email').value||'');
+  const email=(byId('new-email').value||'').trim().toLowerCase();
   const role=(byId('new-role').value||'service').trim();
   if(!name||!email) return alert('Name and email required.');
   const users=getUsers(); if(users.some(u=>u.username===email)) return alert('Email already exists.');
@@ -1447,9 +1297,7 @@ function createUser(){
 }
 function renderLoginHistory(){
   const sel=(byId('loginhist-user')||{}).value||'';
-  const hist=(JSON.parse(localStorage.getItem("loginHistory")||"[]"))
-    .filter(h=>!sel || h.username===sel)
-    .sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,200);
+  const hist=getLoginHistory().filter(h=>!sel || h.username.toLowerCase()===sel).sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,100);
   const box=byId('login-history-table');
   if(!hist.length){ box.innerHTML='<i>No logins yet.</i>'; return; }
   box.innerHTML = `
@@ -1464,16 +1312,16 @@ function renderLoginHistory(){
       </div>
     </div>`;
 }
-function clearLoginHistory(){ if(!confirm('Clear all login history?')) return; localStorage.setItem("loginHistory","[]"); renderLoginHistory(); }
+function clearLoginHistory(){ if(!confirm('Clear all login history?')) return; setLoginHistory([]); renderLoginHistory(); }
 async function renderUserHistory(){
   const tickets = await loadAllTickets();
   const selected = (byId('hist-user')||{}).value||'';
   const users = getUsers();
   const keyFor = (t)=>{
-    if(t.openedByUser) return t.openedByUser;
+    if(t.openedByUser) return t.openedByUser.toLowerCase();
     const nm=(t.openedBy||'').trim().toLowerCase();
     const m=users.find(u=>u.name.toLowerCase()===nm);
-    return (m? m.username : nm);
+    return (m? m.username : nm).toLowerCase();
   };
   const perUser = {};
   tickets.forEach(t=>{
@@ -1483,7 +1331,7 @@ async function renderUserHistory(){
     if(!perUser[k]) perUser[k] = { name: properName, created:0, reassigned:0, closed:0, comments:0 };
     perUser[k].created++;
     perUser[k].closed      += (t.status==='closed') ? 1 : 0;
-    perUser[k].reassigned  += (t.history||[]).filter(h=>(h.action||"").toLowerCase().includes("reassign")).length;
+    perUser[k].reassigned  += (t.history||[]).filter(h=>(h.action||'').toLowerCase().includes('reassign')).length;
     perUser[k].comments    += (t.comments||[]).length;
   });
   const rows = Object.values(perUser).sort((a,b)=>a.name.localeCompare(b.name));
@@ -1504,32 +1352,31 @@ async function renderUserHistory(){
     </div>`;
 }
 
-/* =================== EMAIL: ticket created =================== */
+/* =================== EMAIL =================== */
 function sendTicketEmailNotification(ticket, toEmail){
   const users=getUsers();
-  const openedUser=users.find(u=>u.username===normalizeEmail(ticket.openedByUser||""));
+  const openedUser=users.find(u=>u.username.toLowerCase()===(ticket.openedByUser||"").toLowerCase());
   if(!toEmail) return;
+  const ticketLink=TICKET_URL_ROOT + "#ticket=" + ticket.id;
   const emailVars = {
     ticket_id: ticket.id,
     dairy_number: ticket.dairyNumber,
     farm_name: ticket.farmName,
     alert_type: ticket.alertType==="Other" ? (ticket.alertType + ": " + (ticket.alertOther||"")) : ticket.alertType,
     priority: ticket.priority,
-    assigned_name: (ticket.assignedNames||[]).join(', '),
+    assigned_to: (ticket.assignedNames||[]).join(', '),
     opened_by: ticket.openedBy,
     created_date: ticket.createdDate,
     issue_desc: ticket.issueDesc,
-    ticket_link: ticketLinkFor(ticket),
+    ticket_link: ticketLink,
     to_email: toEmail,
     cc_email: openedUser ? openedUser.username : ""
   };
-  if(window.emailjs){
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
-      .catch(err=>console.error("EmailJS send error", err));
-  }
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailVars, EMAILJS_PUBLIC_KEY)
+    .catch(err=>console.error("EmailJS send error", err));
 }
 
-/* =================== HASH DEEP LINK =================== */
+/* =================== DEEP LINK =================== */
 window.addEventListener("hashchange", checkHashForTicket);
 function checkHashForTicket(){
   const hash=location.hash||"";
@@ -1540,83 +1387,5 @@ function checkHashForTicket(){
   }
 }
 </script>
-
-<!-- =================== EMAIL TEMPLATES (for EmailJS) =================== -->
-<!--
-TEMPLATE: SLA WARNING (template_hp9krxq)
-Vars: to_name, ticket_id, dairy_number, farm_name, alert_type, priority, assigned_name, opened_by, created_date, issue_desc, ticket_link, sla_cycle, minutes_to_breach
-HTML:
-<div style="font-family: system-ui, sans-serif, Arial; font-size: 14px; color: #001f3f;">
-  <div style="font-size: 16px; color: #FF851B; font-weight: bold; margin-bottom: 6px;">
-    ⏰ SLA Warning — Action Needed (2 hours to breach)
-  </div>
-  <div style="margin-bottom: 10px;">
-    Hello {{to_name}},
-    <br>
-    This ticket is approaching an SLA breach. You have <b>{{minutes_to_breach}} minutes</b> to respond before a breach is registered.
-  </div>
-  <div style="padding: 14px 16px; background: #f7f9fb; border-radius: 8px; border: 1px solid #eee; margin-bottom: 12px;">
-    <table>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Ticket ID:</td><td>{{ticket_id}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Dairy Number:</td><td>{{dairy_number}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Farm Name:</td><td>{{farm_name}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Alert Type:</td><td>{{alert_type}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Priority:</td><td>{{priority}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Assigned To:</td><td>{{assigned_name}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Opened By:</td><td>{{opened_by}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">Created Date:</td><td>{{created_date}}</td></tr>
-      <tr><td style="font-weight: bold; padding: 2px 8px 2px 0;">SLA Cycle:</td><td>{{sla_cycle}}</td></tr>
-    </table>
-  </div>
-  <div style="margin: 8px 0 8px 0;">
-    <span style="font-weight: bold;">Issue Description:</span>
-    <div style="background:#f6f6f8; padding:10px 12px; border-radius:5px; margin-top:2px;">
-      {{issue_desc}}
-    </div>
-  </div>
-  <div style="margin:14px 0;">
-    <span style="font-weight:bold;">Ticket Link:</span>
-    <a href="{{ticket_link}}" style="color:#FF851B; word-break:break-all;">{{ticket_link}}</a>
-  </div>
-  <div style="margin-top: 22px; color: #999; font-size: 13px;">
-    This is an automated notification from the Agora Dairy Support Team.<br>
-    Add a comment on the ticket to reset the SLA timer.
-  </div>
-</div>
--->
-
-<!--
-TEMPLATE: SLA BREACH (template_breach123)
-Vars: to_name, ticket_id, dairy_number, farm_name, alert_type, priority, assigned_name, opened_by, created_date, issue_desc, ticket_link, sla_cycle
-HTML:
-<div style="font-family: system-ui, sans-serif, Arial; font-size: 14px; color: #001f3f;">
-  <div style="font-size: 16px; color: #b71c1c; font-weight: bold; margin-bottom: 6px;">
-    ❗ SLA Breach — Immediate Attention Required
-  </div>
-  <div style="margin-bottom: 10px;">
-    Hello {{to_name}},
-    <br>
-    This ticket has <b>breached</b> SLA (cycle {{sla_cycle}}). Please respond and update the ticket.
-  </div>
-  <div style="padding: 14px 16px; background: #f7f9fb; border-radius: 8px; border: 1px solid #eee; margin-bottom: 12px;">
-    <table>
-      <tr><td style="font-weight: bold; padding-right:8px;">Ticket ID:</td><td>{{ticket_id}}</td></tr>
-      <tr><td style="font-weight: bold; padding-right:8px;">Dairy Number:</td><td>{{dairy_number}}</td></tr>
-      <tr><td style="font-weight: bold; padding-right:8px;">Farm Name:</td><td>{{farm_name}}</td></tr>
-      <tr><td style="font-weight: bold; padding-right:8px;">Alert Type:</td><td>{{alert_type}}</td></tr>
-      <tr><td style="font-weight: bold; padding-right:8px;">Priority:</td><td>{{priority}}</td></tr>
-      <tr><td style="font-weight: bold; padding-right:8px;">Assigned To:</td><td>{{assigned_name}}</td></tr>
-      <tr><td style="font-weight: bold; padding-right:8px;">Opened By:</td><td>{{opened_by}}</td></tr>
-      <tr><td style="font-weight: bold; padding-right:8px;">Created Date:</td><td>{{created_date}}</td></tr>
-    </table>
-  </div>
-  <div style="margin:14px 0;">
-    <a href="{{ticket_link}}" style="color:#FF851B; word-break:break-all;">Open ticket</a>
-  </div>
-  <div style="margin-top: 22px; color: #999; font-size: 13px;">
-    Automated message — Agora Dairy Support Team
-  </div>
-</div>
--->
 </body>
 </html>
